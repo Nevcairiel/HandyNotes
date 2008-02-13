@@ -1,0 +1,21 @@
+﻿## Interface: 20300
+## Title: HandyNotes
+## Notes: Handy notes for your maps
+## Author: Xinhuan
+## Version: 0.1
+## DefaultState: enabled
+## X-Category: Map
+## X-eMail: xinhuan @ gmail DOT com
+## X-Embeds: Ace3
+## OptionalDeps: Ace3
+
+## SavedVariables: HandyNotesDB
+
+# Library files
+embeds.xml
+
+# Locale files
+Locales.xml
+
+# Core files
+HandyNotes.lua
