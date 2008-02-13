@@ -1,6 +1,6 @@
 ﻿---------------------------------------------------------
 -- Addon declaration
-HandyNotes_FlightMasters = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_FlightMasters")
+HandyNotes_FlightMasters = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_FlightMasters","AceEvent-3.0")
 local HFM = HandyNotes_FlightMasters
 local Astrolabe = DongleStub("Astrolabe-0.4")
 --local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_FlightMasters", false)
