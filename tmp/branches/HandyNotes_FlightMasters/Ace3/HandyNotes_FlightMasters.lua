@@ -2,7 +2,9 @@
 -- Addon declaration
 HandyNotes_FlightMasters = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_FlightMasters", "AceEvent-3.0")
 local HFM = HandyNotes_FlightMasters
+local Astrolabe = DongleStub("Astrolabe-0.4")
 --local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_FlightMasters", false)
+
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
@@ -14,6 +16,12 @@ local defaults = {
 		show_both_factions = true,
 	},
 }
+
+
+---------------------------------------------------------
+-- Localize some globals
+local next = next
+local GameTooltip = GameTooltip
 
 
 ---------------------------------------------------------
@@ -108,10 +116,11 @@ function HFMHandler:OnLeave(mapFile, coord)
 end
 
 do
+	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
 		if not t then return nil end
 		local state, value = next(t, prestate)
-		while state do
+		while state do -- Have we reached the end of this zone?
 			if value == playerFaction then
 				-- Same faction flightpoint
 				return state, icons[1], db.icon_scale, db.icon_alpha
@@ -122,13 +131,63 @@ do
 				-- Both factions flightpoint
 				return state, icons[3], db.icon_scale, db.icon_alpha
 			end
-			state, value = next(t, state)
+			state, value = next(t, state) -- Get next data
 		end
 		return nil, nil, nil, nil
 	end
-
 	function HFMHandler:GetNodes(mapFile)
 		return iter, HFM_Data[mapFile], nil
+	end
+end
+
+do
+	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
+	local tablepool = setmetatable({}, {__mode = 'k'})
+	local continentMapFile = {
+		["Kalimdor"] = 1,
+		["Azeroth"] = 2,
+		["Expansion01"] = 3,
+	}
+	local function iter(t, prestate)
+		if not t then return nil end
+		local zone = t.Z
+		local mapFile = t.C[zone]
+		local data = HFM_Data[mapFile]
+		local state, value
+		while mapFile do
+			if data then -- Only if there is data for this zone
+				state, value = next(data, prestate)
+				while state do -- Have we reached the end of this zone?
+					if value == playerFaction then
+						-- Same faction flightpoint
+						return state, zone, icons[1], db.icon_scale, db.icon_alpha
+					elseif db.show_both_factions and value + playerFaction == 3 then
+						-- Enemy faction flightpoint
+						return state, zone, icons[2], db.icon_scale, db.icon_alpha
+					elseif value >= 3 then
+						-- Both factions flightpoint
+						return state, zone, icons[3], db.icon_scale, db.icon_alpha
+					end
+					state, value = next(data, state) -- Get next data
+				end
+			end
+			-- Get next zone
+			t.Z = t.Z + 1
+			zone = zone + 1
+			mapFile = t.C[zone]
+			data = HFM_Data[mapFile]
+			prestate = nil
+		end
+		tablepool[t] = true
+		return nil, nil, nil, nil, nil
+	end
+	function HFMHandler:GetNodesForContinent(mapFile)
+		local tbl = next(tablepool) or {}
+		tablepool[tbl] = nil
+
+		tbl.C = Astrolabe.ContinentList[ continentMapFile[mapFile] ]
+		tbl.Z = 1
+		return iter, tbl, nil
 	end
 end
 
