@@ -63,7 +63,7 @@ local options = {
 	get = function(info) return db[info.arg] end,
 	set = function(info, v)
 		db[info.arg] = v
-		HFM:SendMessage("HandyNotes_NotifyUpdate", "FlightMasters")
+		HFM:SendMessage("HandyNotes_NotifyUpdate", "Mailboxes")
 	end,
 	args = {
 		desc = {
