@@ -1,0 +1,12 @@
+﻿## Interface: 20300
+## Title: HandyNotes_FlightMasters
+## Notes: Database of FlightMaster locations for HandyNotes
+## Author: Xinhuan
+## Version: 1
+## DefaultState: enabled
+## X-Category: Map
+## X-eMail: xinhuan @ gmail DOT com
+## SavedVariables: HandyNotes_FlightMastersDB
+## RequiredDeps: HandyNotes
+
+HandyNotes_FlightMasters.lua
