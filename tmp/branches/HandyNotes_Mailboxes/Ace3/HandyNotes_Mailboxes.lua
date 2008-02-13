@@ -30,11 +30,6 @@ local GameTooltip = GameTooltip
 -- Constants
 local icon = "Interface\\Icons\\INV_Letter_15"
 local MBHandler = {}
-function MBHandler:OnEnter(mapFile, coord)
-	-- no tooltip needed for a mailbox
-end
-function HMBHandler:OnLeave(mapFile, coord)
-end
 
 do
 	-- This is a custom iterator we use to iterate over every node in a given zone
