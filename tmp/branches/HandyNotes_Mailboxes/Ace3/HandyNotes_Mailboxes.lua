@@ -2,6 +2,7 @@
 -- Addon declaration
 HandyNotes_Mailboxes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Mailboxes","AceEvent-3.0")
 local HMB = HandyNotes_Mailboxes
+local Astrolabe = DongleStub("Astrolabe-0.4")
 --local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_Mailboxes", false)
 
 
@@ -74,11 +75,18 @@ end
 
 function HMB:AddMailBox()
 	SetMapToCurrentZone()
-	local x, y = GetPlayerMapPosition("player")
-	local coord = HandyNotes:getCoord(x, y)
+	local c,z,x, y = Astrolabe:GetCurrentPlayerPosition()
+	local loc = HandyNotes:getCoord(x, y)
 	local mapFile = GetMapInfo()
-	-- TODO: Add code to remove nearby mailboxes within about 15 yards
-	self.db.global.mailboxes[mapFile][coord] = true
+	for coord,value in pairs(self.db.global.mailboxes[mapFile]) do
+		if value then
+			local x2,y2 = HandyNotes:getXY(coord)
+			if Astrolabe:ComputeDistance(c,z,x,y,c,z,x2,y2) < 15 then
+				self.db.global.mailboxes[mapFile][coord] = nil
+			end
+		end
+	end
+	self.db.global.mailboxes[mapFile][loc] = true
 	HMB:SendMessage("HandyNotes_NotifyUpdate", "Mailboxes")
 end
 
