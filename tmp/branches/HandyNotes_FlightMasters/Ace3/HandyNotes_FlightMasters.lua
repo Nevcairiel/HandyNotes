@@ -23,6 +23,7 @@ local defaults = {
 -- Localize some globals
 local next = next
 local GameTooltip = GameTooltip
+local WorldMapTooltip = WorldMapTooltip
 
 
 ---------------------------------------------------------
@@ -104,16 +105,16 @@ local HFMHandler = {}
 
 function HFMHandler:OnEnter(mapFile, coord)
 	if ( self:GetCenter() > self:GetParent():GetCenter() ) then -- compare X coordinate
-		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+		WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	GameTooltip:SetText(HFM_DataType[ HFM_Data[mapFile][coord] ])
-	GameTooltip:Show()
+	WorldMapTooltip:SetText(HFM_DataType[ HFM_Data[mapFile][coord] ])
+	WorldMapTooltip:Show()
 end
 
 function HFMHandler:OnLeave(mapFile, coord)
-	GameTooltip:Hide()
+	WorldMapTooltip:Hide()
 end
 
 do
