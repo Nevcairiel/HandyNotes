@@ -59,8 +59,8 @@ local function getNewPin()
 	pin = CreateFrame("Button", "HandyNotesPin"..pinCount, WorldMapButton)
 	pin:SetFrameLevel(5)
 	pin:EnableMouse(true)
-	pin:SetWidth(16)
-	pin:SetHeight(16)
+	pin:SetWidth(12)
+	pin:SetHeight(12)
 	pin:SetPoint("CENTER", WorldMapButton, "CENTER")
 	local texture = pin:CreateTexture(nil, "OVERLAY")
 	pin.texture = texture
@@ -138,15 +138,15 @@ function HandyNotes:GetMapFile(C, Z)
 		end
 	end
 end
---[[
-	Public functions for plugins to generate valid coords to xy
-]]
+
+-- Public functions for plugins to convert between coords <--> x,y
 function HandyNotes:getCoord(x, y)
 	return floor(x * 10000 + 0.5) * 10000 + floor(y * 10000 + 0.5)
 end
 function HandyNotes:getXY(id)
 	return floor(id / 10000) / 10000, (id % 10000) / 10000
 end
+
 -- This function updates all the icons on the world map
 function HandyNotes:UpdateWorldMap()
 	if not WorldMapButton:IsVisible() then return end
@@ -161,12 +161,12 @@ function HandyNotes:UpdateWorldMap()
 	local mapFile = self:GetMapFile(continent, zone)
 	for pluginName, pluginHandler in pairs(self.plugins) do
 		if continent > 0 and zone == 0 then
-			-- We are viewing a continent map
+			-- We are viewing a continent map, we check for the continent iterator
 			if pluginHandler.GetNodesForContinent then
 				for coord, zone, iconpath, scale, alpha in pluginHandler:GetNodesForContinent(mapFile) do
 					local icon = getNewPin()
-					icon:SetHeight(16 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
-					icon:SetWidth(16 * ourScale * scale)
+					icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
+					icon:SetWidth(12 * ourScale * scale)
 					icon:SetAlpha(ourAlpha * alpha)
 					icon.texture:SetTexture(iconpath)
 					icon:SetScript("OnClick", pinsHandler.OnClick)
@@ -184,8 +184,8 @@ function HandyNotes:UpdateWorldMap()
 			-- We are viewing a zone map inside a continent
 			for coord, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
 				local icon = getNewPin()
-				icon:SetHeight(16 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
-				icon:SetWidth(16 * ourScale * scale)
+				icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
+				icon:SetWidth(12 * ourScale * scale)
 				icon:SetAlpha(ourAlpha * alpha)
 				icon.texture:SetTexture(iconpath)
 				icon:SetScript("OnClick", pinsHandler.OnClick)
