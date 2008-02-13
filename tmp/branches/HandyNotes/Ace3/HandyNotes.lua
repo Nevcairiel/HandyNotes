@@ -82,12 +82,16 @@ In this table, the format is:
 	Value = {table containing a set of standard functions, which we'll call pluginHandler}
 
 Standard functions we require for every plugin:
-    :OnEnter(self)              = Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
-	:OnLeave(self)              = Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
-	:OnClick(self, button)      = Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
-	:GetNodes(mapFile)          = This function should return an iterator function. The iterator will loop over and return 4 values
-	                                (coord, iconpath, scale, alpha)
-                                  for every node in the requested continent/zone.
+	:GetNodes(mapFile)      = This function should return an iterator function. The iterator will loop over and return 4 values
+	                             (coord, iconpath, scale, alpha)
+                              for every node in the requested zone.
+Standard functions you can provide optionally:
+	:OnEnter(self)          = Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
+	:OnLeave(self)          = Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
+	:OnClick(self, button)  = Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
+	:GetNodesForContinent(mapFile) = This function should return an iterator function. The iterator should return
+                                         (coord, zone, iconpath, scale, alpha)
+                                     for every node in the requested continent.
 ]]
 
 function HandyNotes:RegisterPluginDB(pluginName, pluginHandler, optionsTable)
@@ -104,13 +108,16 @@ end
 
 local pinsHandler = {}
 function pinsHandler:OnEnter()
-	HandyNotes.plugins[self.pluginName].OnEnter(self, self.mapFile, self.coord)
+	local func = HandyNotes.plugins[self.pluginName].OnEnter
+	if type(func) == "function" then func(self, self.mapFile, self.coord) end
 end
 function pinsHandler:OnLeave()
-	HandyNotes.plugins[self.pluginName].OnLeave(self, self.mapFile, self.coord)
+	local func = HandyNotes.plugins[self.pluginName].OnLeave
+	if type(func) == "function" then func(self, self.mapFile, self.coord) end
 end
 function pinsHandler:OnClick()
-	HandyNotes.plugins[self.pluginName].OnClick(self, self.mapFile, self.coord)
+	local func = HandyNotes.plugins[self.pluginName].OnClick
+	if type(func) == "function" then func(self, self.mapFile, self.coord) end
 end
 
 
@@ -145,21 +152,44 @@ function HandyNotes:UpdateWorldMap()
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
 	local mapFile = self:GetMapFile(continent, zone)
 	for pluginName, pluginHandler in pairs(self.plugins) do
-		for coord, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
-			local icon = getNewPin()
-			icon:SetHeight(16 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
-			icon:SetWidth(16 * ourScale * scale)
-			icon:SetAlpha(ourAlpha * alpha)
-			icon.texture:SetTexture(iconpath)
-			icon:SetScript("OnClick", pinsHandler.OnClick)
-			icon:SetScript("OnEnter", pinsHandler.OnEnter)
-			icon:SetScript("OnLeave", pinsHandler.OnLeave)
-			local xPos, yPos = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, continent, zone, xPos, yPos)
-			worldmapPins[pluginName][coord] = icon
-			icon.pluginName = pluginName
-			icon.coord = coord
-			icon.mapFile = mapFile
+		if continent > 0 and zone == 0 then
+			-- We are viewing a continent map
+			if pluginHandler.GetNodesForContinent then
+				for coord, zone, iconpath, scale, alpha in pluginHandler:GetNodesForContinent(mapFile) do
+					local icon = getNewPin()
+					icon:SetHeight(16 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
+					icon:SetWidth(16 * ourScale * scale)
+					icon:SetAlpha(ourAlpha * alpha)
+					icon.texture:SetTexture(iconpath)
+					icon:SetScript("OnClick", pinsHandler.OnClick)
+					icon:SetScript("OnEnter", pinsHandler.OnEnter)
+					icon:SetScript("OnLeave", pinsHandler.OnLeave)
+					local xPos, yPos = floor(coord / 10000) / 10000, (coord % 10000) / 10000
+					Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, continent, zone, xPos, yPos)
+					worldmapPins[pluginName][coord] = icon
+					icon.pluginName = pluginName
+					icon.coord = coord
+					icon.mapFile = self:GetMapFile(continent, zone)
+				end
+			end
+		elseif continent > 0 and zone > 0 then
+			-- We are viewing a zone map inside a continent
+			for coord, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
+				local icon = getNewPin()
+				icon:SetHeight(16 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
+				icon:SetWidth(16 * ourScale * scale)
+				icon:SetAlpha(ourAlpha * alpha)
+				icon.texture:SetTexture(iconpath)
+				icon:SetScript("OnClick", pinsHandler.OnClick)
+				icon:SetScript("OnEnter", pinsHandler.OnEnter)
+				icon:SetScript("OnLeave", pinsHandler.OnLeave)
+				local xPos, yPos = floor(coord / 10000) / 10000, (coord % 10000) / 10000
+				Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, continent, zone, xPos, yPos)
+				worldmapPins[pluginName][coord] = icon
+				icon.pluginName = pluginName
+				icon.coord = coord
+				icon.mapFile = mapFile
+			end
 		end
 	end
 end
