@@ -138,7 +138,15 @@ function HandyNotes:GetMapFile(C, Z)
 		end
 	end
 end
-
+--[[
+	Public functions for plugins to generate valid coords to xy
+]]
+function HandyNotes:getCoord(x, y)
+	return floor(x * 10000 + 0.5) * 10000 + floor(y * 10000 + 0.5)
+end
+function HandyNotes:getXY(id)
+	return floor(id / 10000) / 10000, (id % 10000) / 10000
+end
 -- This function updates all the icons on the world map
 function HandyNotes:UpdateWorldMap()
 	if not WorldMapButton:IsVisible() then return end
