@@ -13,6 +13,7 @@ local Astrolabe = DongleStub("Astrolabe-0.4")
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
 local db
+local options
 local defaults = {
 	profile = {
 		enabled       = true,
@@ -84,12 +85,12 @@ Standard functions we require for every plugin:
     :OnEnter(self)              = Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
 	:OnLeave(self)              = Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
 	:OnClick(self, button)      = Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
-	:GetNodes(continent, zone)  = This function should return an iterator function. The iterator will loop over and return 4 values
+	:GetNodes(mapFile)          = This function should return an iterator function. The iterator will loop over and return 4 values
 	                                (coord, iconpath, scale, alpha)
                                   for every node in the requested continent/zone.
 ]]
 
-function HandyNotes:RegisterPluginDB(pluginName, pluginHandler)
+function HandyNotes:RegisterPluginDB(pluginName, pluginHandler, optionsTable)
 	if self.plugins[pluginName] ~= nil then
 		error(pluginName.." is already registered by another plugin.")
 	else
@@ -97,6 +98,19 @@ function HandyNotes:RegisterPluginDB(pluginName, pluginHandler)
 	end
 	worldmapPins[pluginName] = {}
 	minimapPins[pluginName] = {}
+	options.args.plugins.args[pluginName] = optionsTable
+end
+
+
+local pinsHandler = {}
+function pinsHandler:OnEnter()
+	HandyNotes.plugins[self.pluginName].OnEnter(self, self.mapFile, self.coord)
+end
+function pinsHandler:OnLeave()
+	HandyNotes.plugins[self.pluginName].OnLeave(self, self.mapFile, self.coord)
+end
+function pinsHandler:OnClick()
+	HandyNotes.plugins[self.pluginName].OnClick(self, self.mapFile, self.coord)
 end
 
 
@@ -129,32 +143,44 @@ function HandyNotes:UpdateWorldMap()
 	local ourScale, ourAlpha = db.icon_scale, db.icon_alpha
 
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
+	local mapFile = self:GetMapFile(continent, zone)
 	for pluginName, pluginHandler in pairs(self.plugins) do
-		for coord, iconpath, scale, alpha in pluginHandler:GetNodes(continent, zone) do
+		for coord, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
 			local icon = getNewPin()
-			icon:SetScale(ourScale * scale)
+			icon:SetHeight(16 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
+			icon:SetWidth(16 * ourScale * scale)
 			icon:SetAlpha(ourAlpha * alpha)
-			icon:SetTexture(iconpath)
-			icon:SetScript("OnClick", pluginHandler.OnClick)
-			icon:SetScript("OnEnter", pluginHandler.OnEnter)
-			icon:SetScript("OnLeave", pluginHandler.OnLeave)
+			icon.texture:SetTexture(iconpath)
+			icon:SetScript("OnClick", pinsHandler.OnClick)
+			icon:SetScript("OnEnter", pinsHandler.OnEnter)
+			icon:SetScript("OnLeave", pinsHandler.OnLeave)
 			local xPos, yPos = floor(coord / 10000) / 10000, (coord % 10000) / 10000
 			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, continent, zone, xPos, yPos)
 			worldmapPins[pluginName][coord] = icon
+			icon.pluginName = pluginName
+			icon.coord = coord
+			icon.mapFile = mapFile
 		end
 	end
+end
+
+function HandyNotes:UpdateMaps(sourcePlugin)
+	self:UpdateWorldMap()
 end
 
 
 ---------------------------------------------------------
 -- Our options table
 
-local options = {
+options = {
 	type = "group",
 	name = L["HandyNotes"],
 	desc = L["HandyNotes"],
 	get = function(info) return db[info.arg] end,
-	set = function(info, v) db[info.arg] = v end,
+	set = function(info, v)
+		db[info.arg] = v
+		HandyNotes:UpdateMaps()
+	end,
 	args = {
 		enabled = {
 			type = "toggle",
@@ -235,6 +261,7 @@ function HandyNotes:OnEnable()
 	end
 	SetMapToCurrentZone()
 	self:RegisterEvent("WORLD_MAP_UPDATE", "UpdateWorldMap")
+	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdateMaps")
 end
 
 function HandyNotes:OnDisable()
