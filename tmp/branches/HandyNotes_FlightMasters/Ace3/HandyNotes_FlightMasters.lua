@@ -14,6 +14,7 @@ local defaults = {
 		icon_scale         = 1.0,
 		icon_alpha         = 1.0,
 		show_both_factions = true,
+		show_on_continent  = true,
 	},
 }
 
@@ -142,6 +143,7 @@ end
 
 do
 	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
+	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
 	local continentMapFile = {
 		["Kalimdor"] = 1,
@@ -182,12 +184,16 @@ do
 		return nil, nil, nil, nil, nil
 	end
 	function HFMHandler:GetNodesForContinent(mapFile)
-		local tbl = next(tablepool) or {}
-		tablepool[tbl] = nil
+		if db.show_on_continent then -- Show on continent maps, so we iterate
+			local tbl = next(tablepool) or {}
+			tablepool[tbl] = nil
 
-		tbl.C = Astrolabe.ContinentList[ continentMapFile[mapFile] ]
-		tbl.Z = 1
-		return iter, tbl, nil
+			tbl.C = Astrolabe.ContinentList[ continentMapFile[mapFile] ]
+			tbl.Z = 1
+			return iter, tbl, nil
+		else -- Don't show, so we return the simplest null iterator
+			return next, emptyTbl, nil
+		end
 	end
 end
 
@@ -231,6 +237,13 @@ local options = {
 			desc = "Show all flightmasters instead of only those that you can use",
 			arg = "show_both_factions",
 			order = 30,
+		},
+		show_on_continent = {
+			type = "toggle",
+			name = "Show on continent maps",
+			desc = "Show flightmasters on continent level maps as well",
+			arg = "show_on_continent",
+			order = 40,
 		},
 	},
 }
