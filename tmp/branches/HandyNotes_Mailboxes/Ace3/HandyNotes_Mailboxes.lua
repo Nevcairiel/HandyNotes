@@ -35,6 +35,10 @@ local icon = "Interface\\Icons\\INV_Letter_15"
 ---------------------------------------------------------
 -- Plugin Handlers to HandyNotes
 local HMBHandler = {}
+local info = {}
+local clickedMailbox = nil
+local clickedMailboxZone = nil
+
 function HMBHandler:OnEnter(mapFile, coord)
 	if ( self:GetCenter() > self:GetParent():GetCenter() ) then -- compare X coordinate
 		WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT")
@@ -43,6 +47,44 @@ function HMBHandler:OnEnter(mapFile, coord)
 	end
 	WorldMapTooltip:SetText("Mailbox")
 	WorldMapTooltip:Show()
+	clickedMailbox = nil
+	clickedMailboxZone = nil
+end
+local function deletePin(mapFile,coord)
+	HMB.db.global.mailboxes[mapFile][coord] = nil
+	HMB:SendMessage("HandyNotes_NotifyUpdate", "Mailboxes")
+end
+
+local function generateMenu(level)
+	if (not level) then return end
+	for k in pairs(info) do info[k] = nil end
+	if (level == 1) then
+		info.disabled     = nil
+		info.isTitle      = nil
+		info.notCheckable = 1		
+		info.text = "Delete"
+		info.func = deletePin
+		info.arg1 = clickedMailboxZone
+		info.arg2 = clickedMailbox
+		UIDropDownMenu_AddButton(info, level);
+		-- Close menu item
+		info.text         = "Close"
+		info.icon         = nil
+		info.func         = CloseDropDownMenus
+		info.arg1         = nil
+		info.notCheckable = 1
+		UIDropDownMenu_AddButton(info, level);
+	end
+end
+
+local HMB_Dropdown = CreateFrame("Frame", "HandyNotes_MailboxesDropdownMenu")
+HMB_Dropdown.displayMode = "MENU"
+HMB_Dropdown.initialize = generateMenu
+
+function HMBHandler:OnClick(mapFile, coord)
+	clickedMailboxZone = mapFile
+	clickedMailbox = coord
+	ToggleDropDownMenu(1, nil, HMB_Dropdown, self:GetName(), 0, 0)
 end
 
 function HMBHandler:OnLeave(mapFile, coord)
