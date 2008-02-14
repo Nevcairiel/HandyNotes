@@ -2,6 +2,7 @@
 -- Addon declaration
 HandyNotes_Mailboxes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Mailboxes","AceEvent-3.0")
 local HMB = HandyNotes_Mailboxes
+local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local Astrolabe = DongleStub("Astrolabe-0.4")
 --local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_Mailboxes", false)
 
@@ -126,8 +127,10 @@ end
 
 function HMB:AddMailBox()
 	local c,z,x,y = Astrolabe:GetCurrentPlayerPosition()
+	if not c then return end
 	local loc = HandyNotes:getCoord(x, y)
-	local mapFile = GetMapInfo()
+	local mapFile = HandyNotes:GetMapFile(c, z)
+	if not mapFile then return end
 	for coord,value in pairs(self.db.global.mailboxes[mapFile]) do
 		if value then
 			local x2,y2 = HandyNotes:getXY(coord)
@@ -137,7 +140,7 @@ function HMB:AddMailBox()
 		end
 	end
 	self.db.global.mailboxes[mapFile][loc] = true
-	HMB:SendMessage("HandyNotes_NotifyUpdate", "Mailboxes")
+	self:SendMessage("HandyNotes_NotifyUpdate", "Mailboxes")
 end
 
 
