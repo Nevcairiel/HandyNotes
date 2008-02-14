@@ -115,9 +115,9 @@ function pinsHandler:OnLeave()
 	local func = HandyNotes.plugins[self.pluginName].OnLeave
 	if type(func) == "function" then func(self, self.mapFile, self.coord) end
 end
-function pinsHandler:OnClick()
+function pinsHandler:OnClick(button)
 	local func = HandyNotes.plugins[self.pluginName].OnClick
-	if type(func) == "function" then func(self, self.mapFile, self.coord) end
+	if type(func) == "function" then func(self, self.mapFile, self.coord, button) end
 end
 
 
