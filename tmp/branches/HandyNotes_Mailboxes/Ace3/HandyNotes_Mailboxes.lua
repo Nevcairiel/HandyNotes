@@ -20,6 +20,8 @@ local defaults = {
 		icon_alpha         = 1.0,
 	},
 }
+
+
 ---------------------------------------------------------
 -- Localize some globals
 local next = next
@@ -29,7 +31,7 @@ local WorldMapTooltip = WorldMapTooltip
 
 ---------------------------------------------------------
 -- Constants
-local icon = "Interface\\Icons\\INV_Letter_15"
+local icon = "Interface\\AddOns\\HandyNotes_Mailboxes\\Mail.tga"
 
 
 ---------------------------------------------------------
@@ -50,6 +52,7 @@ function HMBHandler:OnEnter(mapFile, coord)
 	clickedMailbox = nil
 	clickedMailboxZone = nil
 end
+
 local function deletePin(mapFile,coord)
 	HMB.db.global.mailboxes[mapFile][coord] = nil
 	HMB:SendMessage("HandyNotes_NotifyUpdate", "Mailboxes")
@@ -59,14 +62,23 @@ local function generateMenu(level)
 	if (not level) then return end
 	for k in pairs(info) do info[k] = nil end
 	if (level == 1) then
+		-- Create the title of the menu
+		info.isTitle      = 1
+		info.text         = "HandyNotes - Mailboxes"
+		info.notCheckable = 1
+		UIDropDownMenu_AddButton(info, level)
+
+		-- Delete menu item
 		info.disabled     = nil
 		info.isTitle      = nil
-		info.notCheckable = 1		
-		info.text = "Delete"
+		info.notCheckable = nil
+		info.text = "Delete mailbox"
+		info.icon = icon
 		info.func = deletePin
 		info.arg1 = clickedMailboxZone
 		info.arg2 = clickedMailbox
 		UIDropDownMenu_AddButton(info, level);
+
 		-- Close menu item
 		info.text         = "Close"
 		info.icon         = nil
@@ -76,15 +88,14 @@ local function generateMenu(level)
 		UIDropDownMenu_AddButton(info, level);
 	end
 end
-
 local HMB_Dropdown = CreateFrame("Frame", "HandyNotes_MailboxesDropdownMenu")
 HMB_Dropdown.displayMode = "MENU"
 HMB_Dropdown.initialize = generateMenu
 
-function HMBHandler:OnClick(mapFile, coord)
+function HMBHandler:OnClick(button, mapFile, coord)
 	clickedMailboxZone = mapFile
 	clickedMailbox = coord
-	ToggleDropDownMenu(1, nil, HMB_Dropdown, self:GetName(), 0, 0)
+	ToggleDropDownMenu(1, nil, HMB_Dropdown, self, 0, 0)
 end
 
 function HMBHandler:OnLeave(mapFile, coord)
@@ -109,15 +120,12 @@ do
 	end
 end
 
--- TODO: Add right click menu to delete a mailbox
-
 
 ---------------------------------------------------------
 -- Core functions
 
 function HMB:AddMailBox()
-	SetMapToCurrentZone()
-	local c,z,x, y = Astrolabe:GetCurrentPlayerPosition()
+	local c,z,x,y = Astrolabe:GetCurrentPlayerPosition()
 	local loc = HandyNotes:getCoord(x, y)
 	local mapFile = GetMapInfo()
 	for coord,value in pairs(self.db.global.mailboxes[mapFile]) do
