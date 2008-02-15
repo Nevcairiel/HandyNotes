@@ -214,7 +214,7 @@ function HandyNotes:UpdateWorldMap()
 			worldmapPins[pluginName][C*1e9 + Z*1e8 + coord] = icon
 			icon.pluginName = pluginName
 			icon.coord = coord
-			icon.mapFile = mapFile2
+			icon.mapFile = mapFile2 or mapFile
 		end
 	end
 end
