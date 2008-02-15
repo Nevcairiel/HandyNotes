@@ -58,7 +58,7 @@ do
 	local function iter(t, prestate)
 		if not t then return nil end
 		local state, value = next(t, prestate)
-		return state, icon, db.profile.icon_scale, db.profile.icon_alpha
+		return state, nil, icon, db.profile.icon_scale, db.profile.icon_alpha
 	end
 	function HSHandler:GetNodes(mapFile)
 		return iter, db.factionrealm.nodes[mapFile], nil
