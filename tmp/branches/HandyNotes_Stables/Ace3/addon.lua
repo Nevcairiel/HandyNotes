@@ -1,4 +1,4 @@
-if select(2, UnitClass("player")) ~= "HUNTER" then return end
+﻿if select(2, UnitClass("player")) ~= "HUNTER" then return end
 
 ---------------------------------------------------------
 -- Addon declaration

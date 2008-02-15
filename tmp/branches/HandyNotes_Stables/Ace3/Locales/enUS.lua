@@ -1,4 +1,4 @@
-if select(2, UnitClass("player")) ~= "HUNTER" then return end
+﻿if select(2, UnitClass("player")) ~= "HUNTER" then return end
 
 local L = LibStub("AceLocale-3.0"):NewLocale("HandyNotes_Stables", "enUS", true)
 if L then

@@ -1,4 +1,4 @@
-## Interface: 20300
+﻿## Interface: 20300
 ## Title: HandyNotes_Stables
 ## Notes: Database of Stables locations for HandyNotes
 ## Author: kergoth
