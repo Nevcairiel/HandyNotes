@@ -173,55 +173,64 @@ end
 ---------------------------------------------------------
 -- Core functions
 
--- This function updates all the icons on the world map
-function HandyNotes:UpdateWorldMap()
+-- This function updates all the icons of one plugin on the world map
+function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not WorldMapButton:IsVisible() then return end
 
-	for pluginName, pluginPinTable in pairs(worldmapPins) do
-		clearAllPins(pluginPinTable)
-	end
+	clearAllPins(worldmapPins[pluginName])
 
 	local ourScale, ourAlpha = db.icon_scale, db.icon_alpha
-
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
 	if continent == 0 or continent == -1 then return end
 	local mapFile = self:GetMapFile(continent, zone)
+	local pluginHandler = self.plugins[pluginName]
 
-	for pluginName, pluginHandler in pairs(self.plugins) do
-		for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
-			local icon = getNewPin()
-			icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
-			icon:SetWidth(12 * ourScale * scale)
-			icon:SetAlpha(ourAlpha * alpha)
-			if type(iconpath) == "table" then
-				icon.texture:SetTexture(iconpath.icon)
-				icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
-			else
-				icon.texture:SetTexture(iconpath)
-				icon.texture:SetTexCoord(0, 1, 0, 1)
-			end
-			icon:SetScript("OnClick", pinsHandler.OnClick)
-			icon:SetScript("OnEnter", pinsHandler.OnEnter)
-			icon:SetScript("OnLeave", pinsHandler.OnLeave)
-			local C, Z
-			if mapFile2 then
-				C, Z = self:GetCZ(mapFile2)
-			else
-				C, Z = continent, zone
-			end
-			local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
-			worldmapPins[pluginName][C*1e9 + Z*1e8 + coord] = icon
-			icon.pluginName = pluginName
-			icon.coord = coord
-			icon.mapFile = mapFile2 or mapFile
+	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
+		local icon = getNewPin()
+		icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
+		icon:SetWidth(12 * ourScale * scale)
+		icon:SetAlpha(ourAlpha * alpha)
+		if type(iconpath) == "table" then
+			icon.texture:SetTexture(iconpath.icon)
+			icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+		else
+			icon.texture:SetTexture(iconpath)
+			icon.texture:SetTexCoord(0, 1, 0, 1)
 		end
+		icon:SetScript("OnClick", pinsHandler.OnClick)
+		icon:SetScript("OnEnter", pinsHandler.OnEnter)
+		icon:SetScript("OnLeave", pinsHandler.OnLeave)
+		local C, Z
+		if mapFile2 then
+			C, Z = self:GetCZ(mapFile2)
+		else
+			C, Z = continent, zone
+		end
+		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
+		Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
+		worldmapPins[pluginName][C*1e9 + Z*1e8 + coord] = icon
+		icon.pluginName = pluginName
+		icon.coord = coord
+		icon.mapFile = mapFile2 or mapFile
 	end
 end
 
-function HandyNotes:UpdateMaps(sourcePlugin)
-	-- TODO: implement better update scheme
-	self:UpdateWorldMap()
+-- This function updates all the icons on the world map for every plugin
+function HandyNotes:UpdateWorldMap()
+	if not WorldMapButton:IsVisible() then return end
+
+	for pluginName in pairs(self.plugins) do
+		-- TODO: Wrap this with a safecall()
+		self:UpdateWorldMapPlugin(pluginName)
+	end
+end
+
+-- This function runs when we receive a "HandyNotes_NotifyUpdate"
+-- notification from a plugin that its icons needs to be updated
+function HandyNotes:UpdatePluginMap(message, pluginName)
+	if self.plugins[pluginName] then
+		self:UpdateWorldMapPlugin(pluginName)
+	end
 end
 
 
@@ -235,7 +244,7 @@ options = {
 	get = function(info) return db[info.arg] end,
 	set = function(info, v)
 		db[info.arg] = v
-		HandyNotes:UpdateMaps()
+		HandyNotes:UpdateWorldMap()
 	end,
 	args = {
 		enabled = {
@@ -317,7 +326,7 @@ function HandyNotes:OnEnable()
 	end
 	SetMapToCurrentZone()
 	self:RegisterEvent("WORLD_MAP_UPDATE", "UpdateWorldMap")
-	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdateMaps")
+	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdatePluginMap")
 end
 
 function HandyNotes:OnDisable()
