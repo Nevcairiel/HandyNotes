@@ -110,7 +110,7 @@ do
 		local state, value = next(t, prestate)
 		while state do -- Have we reached the end of this zone?
 			if value then
-				return state, icon, db.icon_scale, db.icon_alpha
+				return state, nil, icon, db.icon_scale, db.icon_alpha
 			end
 			state, value = next(t, state) -- Get next data
 		end
