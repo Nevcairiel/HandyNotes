@@ -9,7 +9,7 @@
 ## X-Embeds: Ace3
 ## OptionalDeps: Ace3
 
-## SavedVariables: HandyNotesDB
+## SavedVariables: HandyNotesDB, HandyNotes_HandyNotesDB
 
 # Library files
 embeds.xml
@@ -19,3 +19,4 @@ Locales.xml
 
 # Core files
 HandyNotes.lua
+HandyNotes_HandyNotes.lua

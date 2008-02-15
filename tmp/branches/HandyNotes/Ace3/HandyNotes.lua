@@ -1,4 +1,4 @@
---[[
+﻿--[[
 HandyNotes
 ]]
 
@@ -168,7 +168,13 @@ function HandyNotes:UpdateWorldMap()
 					icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
 					icon:SetWidth(12 * ourScale * scale)
 					icon:SetAlpha(ourAlpha * alpha)
-					icon.texture:SetTexture(iconpath)
+					if type(iconpath) == "table" then
+						icon.texture:SetTexture(iconpath.icon)
+						icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+					else
+						icon.texture:SetTexture(iconpath)
+						icon.texture:SetTexCoord(0, 1, 0, 1)
+					end
 					icon:SetScript("OnClick", pinsHandler.OnClick)
 					icon:SetScript("OnEnter", pinsHandler.OnEnter)
 					icon:SetScript("OnLeave", pinsHandler.OnLeave)
@@ -187,7 +193,13 @@ function HandyNotes:UpdateWorldMap()
 				icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
 				icon:SetWidth(12 * ourScale * scale)
 				icon:SetAlpha(ourAlpha * alpha)
-				icon.texture:SetTexture(iconpath)
+				if type(iconpath) == "table" then
+					icon.texture:SetTexture(iconpath.icon)
+					icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+				else
+					icon.texture:SetTexture(iconpath)
+					icon.texture:SetTexCoord(0, 1, 0, 1)
+				end
 				icon:SetScript("OnClick", pinsHandler.OnClick)
 				icon:SetScript("OnEnter", pinsHandler.OnEnter)
 				icon:SetScript("OnLeave", pinsHandler.OnLeave)
