@@ -65,7 +65,7 @@ local function getNewPin()
 	local texture = pin:CreateTexture(nil, "OVERLAY")
 	pin.texture = texture
 	texture:SetAllPoints(pin)
-	pin:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+	pin:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	pin:Hide()
 	return pin
 end
@@ -208,7 +208,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
 		Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
-		worldmapPins[pluginName][C*1e9 + Z*1e8 + coord] = icon
+		worldmapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
 		icon.mapFile = mapFile2 or mapFile

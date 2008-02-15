@@ -20,3 +20,4 @@ Locales.xml
 # Core files
 HandyNotes.lua
 HandyNotes_HandyNotes.lua
+HandyNotes_EditFrame.lua
