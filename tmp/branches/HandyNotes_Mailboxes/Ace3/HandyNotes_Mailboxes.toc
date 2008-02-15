@@ -1,4 +1,4 @@
-## Interface: 20300
+﻿## Interface: 20300
 ## Title: HandyNotes_Mailboxes
 ## Notes: Database of Mailbox locations for HandyNotes
 ## Author: Kagaro

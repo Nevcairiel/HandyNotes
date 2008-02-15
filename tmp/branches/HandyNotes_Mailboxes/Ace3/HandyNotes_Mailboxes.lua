@@ -1,4 +1,4 @@
----------------------------------------------------------
+﻿---------------------------------------------------------
 -- Addon declaration
 HandyNotes_Mailboxes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Mailboxes","AceEvent-3.0")
 local HMB = HandyNotes_Mailboxes
