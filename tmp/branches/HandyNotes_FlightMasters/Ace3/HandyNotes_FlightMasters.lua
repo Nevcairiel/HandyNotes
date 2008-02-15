@@ -118,32 +118,6 @@ function HFMHandler:OnLeave(mapFile, coord)
 end
 
 do
-	-- This is a custom iterator we use to iterate over every node in a given zone
-	local function iter(t, prestate)
-		if not t then return nil end
-		local state, value = next(t, prestate)
-		while state do -- Have we reached the end of this zone?
-			if value == playerFaction then
-				-- Same faction flightpoint
-				return state, icons[1], db.icon_scale, db.icon_alpha
-			elseif db.show_both_factions and value + playerFaction == 3 then
-				-- Enemy faction flightpoint
-				return state, icons[2], db.icon_scale, db.icon_alpha
-			elseif value >= 3 then
-				-- Both factions flightpoint
-				return state, icons[3], db.icon_scale, db.icon_alpha
-			end
-			state, value = next(t, state) -- Get next data
-		end
-		return nil, nil, nil, nil
-	end
-	function HFMHandler:GetNodes(mapFile)
-		return iter, HFM_Data[mapFile], nil
-	end
-end
-
-do
-	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
 	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
 	local continentMapFile = {
@@ -151,7 +125,29 @@ do
 		["Azeroth"] = 2,
 		["Expansion01"] = 3,
 	}
+
+	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
+		if not t then return nil end
+		local state, value = next(t, prestate)
+		while state do -- Have we reached the end of this zone?
+			if value == playerFaction then
+				-- Same faction flightpoint
+				return state, nil, icons[1], db.icon_scale, db.icon_alpha
+			elseif db.show_both_factions and value + playerFaction == 3 then
+				-- Enemy faction flightpoint
+				return state, nil, icons[2], db.icon_scale, db.icon_alpha
+			elseif value >= 3 then
+				-- Both factions flightpoint
+				return state, nil, icons[3], db.icon_scale, db.icon_alpha
+			end
+			state, value = next(t, state) -- Get next data
+		end
+		return nil, nil, nil, nil
+	end
+
+	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
+	local function iterCont(t, prestate)
 		if not t then return nil end
 		local zone = t.Z
 		local mapFile = t.C[zone]
@@ -163,13 +159,13 @@ do
 				while state do -- Have we reached the end of this zone?
 					if value == playerFaction then
 						-- Same faction flightpoint
-						return state, zone, icons[1], db.icon_scale, db.icon_alpha
+						return state, mapFile, icons[1], db.icon_scale, db.icon_alpha
 					elseif db.show_both_factions and value + playerFaction == 3 then
 						-- Enemy faction flightpoint
-						return state, zone, icons[2], db.icon_scale, db.icon_alpha
+						return state, mapFile, icons[2], db.icon_scale, db.icon_alpha
 					elseif value >= 3 then
 						-- Both factions flightpoint
-						return state, zone, icons[3], db.icon_scale, db.icon_alpha
+						return state, mapFile, icons[3], db.icon_scale, db.icon_alpha
 					end
 					state, value = next(data, state) -- Get next data
 				end
@@ -184,16 +180,22 @@ do
 		tablepool[t] = true
 		return nil, nil, nil, nil, nil
 	end
-	function HFMHandler:GetNodesForContinent(mapFile)
-		if db.show_on_continent then -- Show on continent maps, so we iterate
-			local tbl = next(tablepool) or {}
-			tablepool[tbl] = nil
 
-			tbl.C = Astrolabe.ContinentList[ continentMapFile[mapFile] ]
-			tbl.Z = 1
-			return iter, tbl, nil
-		else -- Don't show, so we return the simplest null iterator
-			return next, emptyTbl, nil
+	function HFMHandler:GetNodes(mapFile)
+		local C = continentMapFile[mapFile] -- Is this a continent?
+		if C then
+			if db.show_on_continent then -- Show on continent maps, so we iterate
+				local tbl = next(tablepool) or {}
+				tablepool[tbl] = nil
+
+				tbl.C = Astrolabe.ContinentList[ continentMapFile[mapFile] ]
+				tbl.Z = 1
+				return iterCont, tbl, nil
+			else -- Don't show, so we return the simplest null iterator
+				return next, emptyTbl, nil
+			end
+		else -- It is a zone
+			return iter, HFM_Data[mapFile], nil
 		end
 	end
 end
