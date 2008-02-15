@@ -78,20 +78,23 @@ HandyNotes.plugins = {}
 --[[ Documentation:
 HandyNotes.plugins table contains every plugin which we will use to iterate over.
 In this table, the format is:
-	Key   = "Name of plugin"
-	Value = {table containing a set of standard functions, which we'll call pluginHandler}
+	["Name of plugin"] = {table containing a set of standard functions, which we'll call pluginHandler}
 
 Standard functions we require for every plugin:
-	:GetNodes(mapFile)      = This function should return an iterator function. The iterator will loop over and return 4 values
-	                             (coord, iconpath, scale, alpha)
-                              for every node in the requested zone.
+	:GetNodes(mapFile)
+		This function should return an iterator function. The iterator will loop over and return 4 values
+			(coord, mapFile, iconpath, scale, alpha)
+		for every node in the requested zone. If the mapFile return value is nil, we assume it is the
+		same mapFile as the argument passed in. Mainly used for continent mapFile where the map passed
+		in is a continent, and the return values are coords of subzone maps.
+
 Standard functions you can provide optionally:
-	:OnEnter(self)          = Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
-	:OnLeave(self)          = Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
-	:OnClick(self, button)  = Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
-	:GetNodesForContinent(mapFile) = This function should return an iterator function. The iterator should return
-                                         (coord, zone, iconpath, scale, alpha)
-                                     for every node in the requested continent.
+	:OnEnter(self)
+		Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
+	:OnLeave(self)
+		Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
+	:OnClick(self, button)
+		Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
 ]]
 
 function HandyNotes:RegisterPluginDB(pluginName, pluginHandler, optionsTable)
@@ -122,13 +125,29 @@ end
 
 
 ---------------------------------------------------------
--- Core functions
+-- Public functions
 
+-- Public functions for plugins to convert between MapFile <-> C,Z
 local continentMapFile = {
 	[1] = "Kalimdor",
 	[2] = "Azeroth",
 	[3] = "Expansion01",
 }
+local reverseMapFileC = {}
+local reverseMapFileZ = {}
+for C = 1, #Astrolabe.ContinentList do
+	for Z = 1, #Astrolabe.ContinentList[C] do
+		local mapFile = Astrolabe.ContinentList[C][Z]
+		reverseMapFileC[mapFile] = C
+		reverseMapFileZ[mapFile] = Z
+	end
+end
+for C = 1, #continentMapFile do
+	local mapFile = continentMapFile[C]
+	reverseMapFileC[mapFile] = C
+	reverseMapFileZ[mapFile] = 0
+end
+
 function HandyNotes:GetMapFile(C, Z)
 	if C > 0 then
 		if Z == 0 then
@@ -138,6 +157,9 @@ function HandyNotes:GetMapFile(C, Z)
 		end
 	end
 end
+function HandyNotes:GetCZ(mapFile)
+	return reverseMapFileC[mapFile], reverseMapFileZ[mapFile]
+end
 
 -- Public functions for plugins to convert between coords <--> x,y
 function HandyNotes:getCoord(x, y)
@@ -146,6 +168,10 @@ end
 function HandyNotes:getXY(id)
 	return floor(id / 10000) / 10000, (id % 10000) / 10000
 end
+
+
+---------------------------------------------------------
+-- Core functions
 
 -- This function updates all the icons on the world map
 function HandyNotes:UpdateWorldMap()
@@ -158,63 +184,43 @@ function HandyNotes:UpdateWorldMap()
 	local ourScale, ourAlpha = db.icon_scale, db.icon_alpha
 
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
+	if continent == 0 or continent == -1 then return end
 	local mapFile = self:GetMapFile(continent, zone)
+
 	for pluginName, pluginHandler in pairs(self.plugins) do
-		if continent > 0 and zone == 0 then
-			-- We are viewing a continent map, we check for the continent iterator
-			if pluginHandler.GetNodesForContinent then
-				for coord, zone, iconpath, scale, alpha in pluginHandler:GetNodesForContinent(mapFile) do
-					local icon = getNewPin()
-					icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
-					icon:SetWidth(12 * ourScale * scale)
-					icon:SetAlpha(ourAlpha * alpha)
-					if type(iconpath) == "table" then
-						icon.texture:SetTexture(iconpath.icon)
-						icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
-					else
-						icon.texture:SetTexture(iconpath)
-						icon.texture:SetTexCoord(0, 1, 0, 1)
-					end
-					icon:SetScript("OnClick", pinsHandler.OnClick)
-					icon:SetScript("OnEnter", pinsHandler.OnEnter)
-					icon:SetScript("OnLeave", pinsHandler.OnLeave)
-					local xPos, yPos = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-					Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, continent, zone, xPos, yPos)
-					worldmapPins[pluginName][coord] = icon
-					icon.pluginName = pluginName
-					icon.coord = coord
-					icon.mapFile = self:GetMapFile(continent, zone)
-				end
+		for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
+			local icon = getNewPin()
+			icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
+			icon:SetWidth(12 * ourScale * scale)
+			icon:SetAlpha(ourAlpha * alpha)
+			if type(iconpath) == "table" then
+				icon.texture:SetTexture(iconpath.icon)
+				icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+			else
+				icon.texture:SetTexture(iconpath)
+				icon.texture:SetTexCoord(0, 1, 0, 1)
 			end
-		elseif continent > 0 and zone > 0 then
-			-- We are viewing a zone map inside a continent
-			for coord, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
-				local icon = getNewPin()
-				icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
-				icon:SetWidth(12 * ourScale * scale)
-				icon:SetAlpha(ourAlpha * alpha)
-				if type(iconpath) == "table" then
-					icon.texture:SetTexture(iconpath.icon)
-					icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
-				else
-					icon.texture:SetTexture(iconpath)
-					icon.texture:SetTexCoord(0, 1, 0, 1)
-				end
-				icon:SetScript("OnClick", pinsHandler.OnClick)
-				icon:SetScript("OnEnter", pinsHandler.OnEnter)
-				icon:SetScript("OnLeave", pinsHandler.OnLeave)
-				local xPos, yPos = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-				Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, continent, zone, xPos, yPos)
-				worldmapPins[pluginName][coord] = icon
-				icon.pluginName = pluginName
-				icon.coord = coord
-				icon.mapFile = mapFile
+			icon:SetScript("OnClick", pinsHandler.OnClick)
+			icon:SetScript("OnEnter", pinsHandler.OnEnter)
+			icon:SetScript("OnLeave", pinsHandler.OnLeave)
+			local C, Z
+			if mapFile2 then
+				C, Z = self:GetCZ(mapFile2)
+			else
+				C, Z = continent, zone
 			end
+			local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
+			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
+			worldmapPins[pluginName][C*1e9 + Z*1e8 + coord] = icon
+			icon.pluginName = pluginName
+			icon.coord = coord
+			icon.mapFile = mapFile2
 		end
 	end
 end
 
 function HandyNotes:UpdateMaps(sourcePlugin)
+	-- TODO: implement better update scheme
 	self:UpdateWorldMap()
 end
 
