@@ -188,7 +188,7 @@ do
 				local tbl = next(tablepool) or {}
 				tablepool[tbl] = nil
 
-				tbl.C = Astrolabe.ContinentList[ continentMapFile[mapFile] ]
+				tbl.C = Astrolabe.ContinentList[C]
 				tbl.Z = 1
 				return iterCont, tbl, nil
 			else -- Don't show, so we return the simplest null iterator
