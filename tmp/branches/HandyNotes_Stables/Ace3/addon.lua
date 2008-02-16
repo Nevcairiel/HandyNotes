@@ -26,7 +26,7 @@ local defaults = {
 ---------------------------------------------------------
 -- Localize some globals
 local next = next
-local GameTooltip = GameTooltip
+local WorldMapTooltip = WorldMapTooltip
 local HandyNotes = HandyNotes
 
 
@@ -40,17 +40,17 @@ local icon = "Interface\\Icons\\Ability_Hunter_BeastTaming"
 local HSHandler = {}
 function HSHandler:OnEnter(mapFile, coord)
 	if ( self:GetCenter() > self:GetParent():GetCenter() ) then -- compare X coordinate
-		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+		WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	GameTooltip:AddLine(db.factionrealm.nodes[mapFile][coord])
-	GameTooltip:AddLine(L["Stable Master"])
-	GameTooltip:Show()
+	WorldMapTooltip:AddLine(db.factionrealm.nodes[mapFile][coord])
+	WorldMapTooltip:AddLine(L["Stable Master"])
+	WorldMapTooltip:Show()
 end
 
 function HSHandler:OnLeave(mapFile, coord)
-	GameTooltip:Hide()
+	WorldMapTooltip:Hide()
 end
 
 do
@@ -115,23 +115,29 @@ function HS:OnInitialize()
 	HandyNotes:RegisterPluginDB("Stables", HSHandler, options)
 end
 
-local thres = 5 -- in yards
 function HS:OnEnable()
-	self:RegisterEvent("PET_STABLE_SHOW", function()
-		local stableName = UnitName("target")
-		local continent, zone, x, y = Astrolabe:GetCurrentPlayerPosition()
-		local coord = HandyNotes:getCoord(x, y)
-		local map = HandyNotes:GetMapFile(continent, zone)
-		if map then
-			for coords, name in pairs(db.factionrealm.nodes[map]) do
-				local cx, cy = HandyNotes:getXY(coords)
-				local dist = Astrolabe:ComputeDistance(continent, zone, x, y, continent, zone, cx, cy)
-				if dist <= thres then -- Node already exists here
-					return
-				end
+	self:RegisterEvent("PET_STABLE_SHOW")
+end
+
+local thres = 5 -- in yards
+function HS:PET_STABLE_SHOW()
+	local stableName = UnitName("target")
+	local continent, zone, x, y = Astrolabe:GetCurrentPlayerPosition()
+	if not stableName or not continent then
+		return
+	end
+
+	local coord = HandyNotes:getCoord(x, y)
+	local map = HandyNotes:GetMapFile(continent, zone)
+	if map then
+		for coords, name in pairs(db.factionrealm.nodes[map]) do
+			local cx, cy = HandyNotes:getXY(coords)
+			local dist = Astrolabe:ComputeDistance(continent, zone, x, y, continent, zone, cx, cy)
+			if dist <= thres then -- Node already exists here
+				return
 			end
-			db.factionrealm.nodes[map][coord] = stableName
-			self:SendMessage("HandyNotes_NotifyUpdate", "Stables")
 		end
-	end)
+		db.factionrealm.nodes[map][coord] = stableName
+		self:SendMessage("HandyNotes_NotifyUpdate", "Stables")
+	end
 end
