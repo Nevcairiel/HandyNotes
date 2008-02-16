@@ -40,6 +40,7 @@ local icons = {
 	[7] = UnitPopupButtons.RAID_TARGET_7,
 	[8] = UnitPopupButtons.RAID_TARGET_8,
 }
+HandyNotes.icons = icons
 
 
 ---------------------------------------------------------
