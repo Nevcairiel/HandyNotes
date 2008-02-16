@@ -146,7 +146,7 @@ HNEditFrame.icondropdown.texture:SetPoint("RIGHT", HNEditFrame.icondropdown, -41
 HNEditFrame.icondropdown.text = HandyNotes_IconDropDownText
 HNEditFrame.icondropdown.text:SetPoint("RIGHT", HNEditFrame.icondropdown.texture, "LEFT", -3, 0)
 HNEditFrame.icondropdown.OnClick = function(value)
-	local t = HandyNotes.icons[value]
+	local t = HN.icons[value]
 	HNEditFrame.icondropdown.selectedValue = value
 	HNEditFrame.icondropdown.texture:SetTexture(t.icon)
 	if t.tCoordLeft then
@@ -164,8 +164,8 @@ HNEditFrame.icondropdown.OnClick = function(value)
 end
 local info = {}
 HNEditFrame.icondropdown.initialize = function(level)
-	for i = 1, #HandyNotes.icons do
-		local t = HandyNotes.icons[i]
+	for i = 1, #HN.icons do
+		local t = HN.icons[i]
 		info.text = t.text
 		info.icon = t.icon
 		local color = t.color
@@ -183,7 +183,6 @@ HNEditFrame.icondropdown.initialize = function(level)
 		UIDropDownMenu_AddButton(info)
 	end
 end
-HNEditFrame.icondropdown.OnClick(1)
 
 -- Create the Show on Continent checkbox
 HNEditFrame.continentcheckbox = CreateFrame("CheckButton", nil, HNEditFrame, "UICheckButtonTemplate")
@@ -229,4 +228,48 @@ HNEditFrame.titleinputbox:SetScript("OnTabPressed", function(self)
 end)
 HNEditFrame.descinputbox:SetScript("OnTabPressed", function(self)
 	HNEditFrame.titleinputbox:SetFocus()
+end)
+
+
+---------------------------------------------------------
+-- OnShow function to show a note for adding or editing
+
+HNEditFrame:SetScript("OnShow", function(self)
+	local data = HN.db.global[self.mapFile][self.coord]
+	if data then
+		HNEditFrame.title:SetText("Edit Handy Note")
+		HNEditFrame.titleinputbox:SetText(data.title)
+		HNEditFrame.descinputbox:SetText(data.desc)
+		HNEditFrame.icondropdown.OnClick(data.icon)
+		HNEditFrame.continentcheckbox:SetChecked(data.cont)
+	else
+		HNEditFrame.title:SetText("Add Handy Note")
+		HNEditFrame.titleinputbox:SetText("")
+		HNEditFrame.descinputbox:SetText("")
+		HNEditFrame.icondropdown.OnClick(1)
+		HNEditFrame.continentcheckbox:SetChecked(nil)
+	end
+end)
+
+
+---------------------------------------------------------
+-- OnClick function to accept the changes for a new/edited note
+
+HNEditFrame.okbutton:SetScript("OnClick", function(self)
+	local data = HN.db.global[HNEditFrame.mapFile][HNEditFrame.coord]
+	if data then
+		data.title = HNEditFrame.titleinputbox:GetText()
+		data.desc = HNEditFrame.descinputbox:GetText()
+		data.icon = HNEditFrame.icondropdown.selectedValue
+		data.cont = HNEditFrame.continentcheckbox:GetChecked()
+	else
+		HN.db.global[HNEditFrame.mapFile][HNEditFrame.coord] = {
+			title = HNEditFrame.titleinputbox:GetText(),
+			desc = HNEditFrame.descinputbox:GetText(),
+			icon = HNEditFrame.icondropdown.selectedValue,
+			cont = HNEditFrame.continentcheckbox:GetChecked(),
+		}
+	end
+	HNEditFrame:Hide()
+	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 end)

@@ -40,7 +40,7 @@ local icons = {
 	[7] = UnitPopupButtons.RAID_TARGET_7,
 	[8] = UnitPopupButtons.RAID_TARGET_8,
 }
-HandyNotes.icons = icons
+HN.icons = icons
 
 
 ---------------------------------------------------------
@@ -54,7 +54,8 @@ function HNHandler:OnEnter(mapFile, coord)
 	else
 		WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	--WorldMapTooltip:SetText(HFM_DataType[ HFM_Data[mapFile][coord] ])
+	WorldMapTooltip:SetText(dbdata[mapFile][coord].title)
+	WorldMapTooltip:AddLine(dbdata[mapFile][coord].desc)
 	WorldMapTooltip:Show()
 end
 
@@ -63,21 +64,6 @@ function HNHandler:OnLeave(mapFile, coord)
 end
 
 do
-	-- This is a custom iterator we use to iterate over every node in a given zone
-	local function iter(t, prestate)
-		if not t then return nil end
-		local state, value = next(t, prestate)
-		if value then
-			return state, icons[value.icon], db.icon_scale, db.icon_alpha
-		end
-	end
-	function HNHandler:GetNodes(mapFile)
-		return iter, dbdata[mapFile], nil
-	end
-end
-
---[[do
-	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
 	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
 	local continentMapFile = {
@@ -85,25 +71,29 @@ end
 		["Azeroth"] = 2,
 		["Expansion01"] = 3,
 	}
+
+	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
+		if not t then return nil end
+		local state, value = next(t, prestate)
+		if value then
+			return state, nil, icons[value.icon], db.icon_scale, db.icon_alpha
+		end
+	end
+
+	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
+	local function iterCont(t, prestate)
 		if not t then return nil end
 		local zone = t.Z
 		local mapFile = t.C[zone]
-		local data = HFM_Data[mapFile]
+		local data = dbdata[mapFile]
 		local state, value
 		while mapFile do
 			if data then -- Only if there is data for this zone
 				state, value = next(data, prestate)
 				while state do -- Have we reached the end of this zone?
-					if value == playerFaction then
-						-- Same faction flightpoint
-						return state, zone, icons[1], db.icon_scale, db.icon_alpha
-					elseif db.show_both_factions and value + playerFaction == 3 then
-						-- Enemy faction flightpoint
-						return state, zone, icons[2], db.icon_scale, db.icon_alpha
-					elseif value >= 3 then
-						-- Both factions flightpoint
-						return state, zone, icons[3], db.icon_scale, db.icon_alpha
+					if value.cont then -- Show on continent?
+						return state, mapFile, icons[value.icon], db.icon_scale, db.icon_alpha
 					end
 					state, value = next(data, state) -- Get next data
 				end
@@ -112,26 +102,58 @@ end
 			t.Z = t.Z + 1
 			zone = zone + 1
 			mapFile = t.C[zone]
-			data = HFM_Data[mapFile]
+			data = dbdata[mapFile]
 			prestate = nil
 		end
 		tablepool[t] = true
 		return nil, nil, nil, nil, nil
 	end
-	function HNHandler:GetNodesForContinent(mapFile)
-		if db.show_on_continent then -- Show on continent maps, so we iterate
+
+	function HNHandler:GetNodes(mapFile)
+		local C = continentMapFile[mapFile] -- Is this a continent?
+		if C then
 			local tbl = next(tablepool) or {}
 			tablepool[tbl] = nil
 
-			tbl.C = Astrolabe.ContinentList[ continentMapFile[mapFile] ]
+			tbl.C = Astrolabe.ContinentList[C]
 			tbl.Z = 1
-			return iter, tbl, nil
-		else -- Don't show, so we return the simplest null iterator
-			return next, emptyTbl, nil
+			return iterCont, tbl, nil
+		else -- It is a zone
+			return iter, dbdata[mapFile], nil
 		end
 	end
-end]]
+end
 
+
+---------------------------------------------------------
+-- HandyNotes core
+
+-- Hooked function on clicking the world map
+function HN:WorldMapButton_OnClick(mouseButton, button, ...)
+	if mouseButton == "RightButton" and IsControlKeyDown() and not IsAltKeyDown() and not IsShiftKeyDown() then
+		local mapFile = GetMapInfo()
+		if not mapFile then return end
+
+		-- Get the coordinate clicked on
+		button = button or this
+		local x, y = GetCursorPosition()
+		local scale = button:GetEffectiveScale()
+		x = (x/scale - button:GetLeft()) / button:GetWidth()
+		y = (button:GetTop() - y/scale) / button:GetHeight()
+		local coord = HandyNotes:getCoord(x, y)
+		x, y = HandyNotes:getXY(coord)
+
+		-- Pass the data to the edit note frame
+		local HNEditFrame = self.HNEditFrame
+		HNEditFrame.x = x
+		HNEditFrame.y = y
+		HNEditFrame.coord = coord
+		HNEditFrame.mapFile = mapFile 
+		HNEditFrame:Show()
+	else
+		return self.hooks.WorldMapButton_OnClick(mouseButton, button, ...)
+	end
+end
 
 ---------------------------------------------------------
 -- Options table
@@ -184,6 +206,7 @@ function HN:OnInitialize()
 end
 
 function HN:OnEnable()
+	self:RawHook("WorldMapButton_OnClick", true)
 end
 
 function HN:OnDisable()

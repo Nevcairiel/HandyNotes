@@ -182,7 +182,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	local ourScale, ourAlpha = db.icon_scale, db.icon_alpha
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
 	if continent == 0 or continent == -1 then return end
-	local mapFile = self:GetMapFile(continent, zone)
+	local mapFile = GetMapInfo() --self:GetMapFile(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
