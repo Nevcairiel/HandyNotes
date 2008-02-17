@@ -63,6 +63,76 @@ function HNHandler:OnLeave(mapFile, coord)
 	WorldMapTooltip:Hide()
 end
 
+local function deletePin(mapFile, coord)
+	dbdata[mapFile][coord] = nil
+	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
+end
+
+local function editPin(mapFile, coord)
+	local HNEditFrame = HN.HNEditFrame
+	HNEditFrame.x, HNEditFrame.y = HandyNotes:getXY(coord)
+	HNEditFrame.coord = coord
+	HNEditFrame.mapFile = mapFile 
+	HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
+	HNEditFrame:Show()
+end
+
+do
+	local info = {}
+	local clickedMapFile = nil
+	local clickedZone = nil
+
+	local function generateMenu(level)
+		if (not level) then return end
+		for k in pairs(info) do info[k] = nil end
+		if (level == 1) then
+			-- Create the title of the menu
+			info.isTitle      = 1
+			info.text         = "HandyNotes"
+			info.notCheckable = 1
+			UIDropDownMenu_AddButton(info, level)
+
+			-- Edit menu item
+			info.disabled     = nil
+			info.isTitle      = nil
+			info.notCheckable = nil
+			info.text = "Edit Handy Note"
+			info.icon = icon
+			info.func = editPin
+			info.arg1 = clickedMapFile
+			info.arg2 = clickedCoord
+			UIDropDownMenu_AddButton(info, level)
+
+			-- Delete menu item
+			info.text = "Delete Handy Note"
+			info.icon = icon
+			info.func = deletePin
+			info.arg1 = clickedMapFile
+			info.arg2 = clickedCoord
+			UIDropDownMenu_AddButton(info, level)
+
+			-- Close menu item
+			info.text         = "Close"
+			info.icon         = nil
+			info.func         = CloseDropDownMenus
+			info.arg1         = nil
+			info.notCheckable = 1
+			UIDropDownMenu_AddButton(info, level)
+		end
+	end
+	local HandyNotes_HandyNotesDropdownMenu = CreateFrame("Frame", "HandyNotes_HandyNotesDropdownMenu")
+	HandyNotes_HandyNotesDropdownMenu.displayMode = "MENU"
+	HandyNotes_HandyNotesDropdownMenu.initialize = generateMenu
+
+	function HNHandler:OnClick(button, mapFile, coord)
+		if button == "RightButton" then
+			clickedMapFile = mapFile
+			clickedCoord = coord
+			ToggleDropDownMenu(1, nil, HandyNotes_HandyNotesDropdownMenu, self, 0, 0)
+		end
+	end
+end
+
 do
 	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
@@ -148,7 +218,8 @@ function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 		HNEditFrame.x = x
 		HNEditFrame.y = y
 		HNEditFrame.coord = coord
-		HNEditFrame.mapFile = mapFile 
+		HNEditFrame.mapFile = mapFile
+		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
 		return self.hooks.WorldMapButton_OnClick(mouseButton, button, ...)
