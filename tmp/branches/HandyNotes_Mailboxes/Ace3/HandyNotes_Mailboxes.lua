@@ -93,10 +93,12 @@ local HMB_Dropdown = CreateFrame("Frame", "HandyNotes_MailboxesDropdownMenu")
 HMB_Dropdown.displayMode = "MENU"
 HMB_Dropdown.initialize = generateMenu
 
-function HMBHandler:OnClick(button, mapFile, coord)
-	clickedMailboxZone = mapFile
-	clickedMailbox = coord
-	ToggleDropDownMenu(1, nil, HMB_Dropdown, self, 0, 0)
+function HMBHandler:OnClick(button, down, mapFile, coord)
+	if button == "RightButton" and not down then
+		clickedMailboxZone = mapFile
+		clickedMailbox = coord
+		ToggleDropDownMenu(1, nil, HMB_Dropdown, self, 0, 0)
+	end
 end
 
 function HMBHandler:OnLeave(mapFile, coord)
