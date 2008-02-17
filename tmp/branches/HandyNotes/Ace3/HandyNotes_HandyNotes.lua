@@ -201,18 +201,26 @@ do
 		end
 	end
 
-	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
+	-- This is a funky custom iterator we use to iterate over every zone's nodes
+	-- in a given continent + the continent itself
 	local function iterCont(t, prestate)
 		if not t then return nil end
 		local zone = t.Z
-		local mapFile = t.C[zone]
+		local mapFile
+		if type(zone) == "string" then -- Handle continent case
+			mapFile = zone
+			t.Z = 0
+			zone = 0
+		else
+			mapFile = t.C[zone]
+		end
 		local data = dbdata[mapFile]
 		local state, value
 		while mapFile do
 			if data then -- Only if there is data for this zone
 				state, value = next(data, prestate)
 				while state do -- Have we reached the end of this zone?
-					if value.cont then -- Show on continent?
+					if value.cont or zone == 0 then -- Show on continent?
 						return state, mapFile, icons[value.icon], db.icon_scale, db.icon_alpha
 					end
 					state, value = next(data, state) -- Get next data
@@ -236,7 +244,7 @@ do
 			tablepool[tbl] = nil
 
 			tbl.C = Astrolabe.ContinentList[C]
-			tbl.Z = 1
+			tbl.Z = mapFile
 			return iterCont, tbl, nil
 		else -- It is a zone
 			return iter, dbdata[mapFile], nil
