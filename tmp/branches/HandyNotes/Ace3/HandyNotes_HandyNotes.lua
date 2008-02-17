@@ -82,10 +82,10 @@ local function editPin(mapFile, coord)
 end
 
 do
+	local isMoving = false
 	local info = {}
 	local clickedMapFile = nil
 	local clickedZone = nil
-
 	local function generateMenu(level)
 		if (not level) then return end
 		for k in pairs(info) do info[k] = nil end
@@ -122,17 +122,63 @@ do
 			info.arg1         = nil
 			info.notCheckable = 1
 			UIDropDownMenu_AddButton(info, level)
+
+			-- Add the dragging hint
+			info.isTitle      = 1
+			info.text         = "|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"
+			info.notCheckable = 1
+			UIDropDownMenu_AddButton(info, level)
 		end
 	end
 	local HandyNotes_HandyNotesDropdownMenu = CreateFrame("Frame", "HandyNotes_HandyNotesDropdownMenu")
 	HandyNotes_HandyNotesDropdownMenu.displayMode = "MENU"
 	HandyNotes_HandyNotesDropdownMenu.initialize = generateMenu
 
-	function HNHandler:OnClick(button, mapFile, coord)
-		if button == "RightButton" then
+	function HNHandler:OnClick(button, down, mapFile, coord)
+		if button == "RightButton" and not down then
 			clickedMapFile = mapFile
 			clickedCoord = coord
 			ToggleDropDownMenu(1, nil, HandyNotes_HandyNotesDropdownMenu, self, 0, 0)
+		elseif button == "LeftButton" and down and IsControlKeyDown() and IsShiftKeyDown() then
+			-- Only move if we're viewing the same map as the icon's map
+			if mapFile == GetMapInfo() then
+				isMoving = true
+				self:StartMoving()
+			end
+		elseif isMoving and not down then
+			isMoving = false
+			self:StopMovingOrSizing()
+			-- Get the new coordinate
+			local x, y = self:GetCenter()
+			x = (x - WorldMapButton:GetLeft()) / WorldMapButton:GetWidth()
+			y = (WorldMapButton:GetTop() - y) / WorldMapButton:GetHeight()
+			-- Move the button back into the map if it was dragged outside
+			if x < 0.001 then x = 0.001 end
+			if x > 0.999 then x = 0.999 end
+			if y < 0.001 then y = 0.001 end
+			if y > 0.999 then y = 0.999 end
+			local newCoord = HandyNotes:getCoord(x, y)
+			-- Search in 4 directions till we find an unused coord
+			local count = 0
+			local zoneData = dbdata[mapFile]
+			while true do
+				if not zoneData[newCoord + count] then
+					zoneData[newCoord + count] = zoneData[coord]
+					break
+				elseif not zoneData[newCoord - count] then
+					zoneData[newCoord - count] = zoneData[coord]
+					break
+				elseif not zoneData[newCoord + count * 10000] then
+					zoneData[newCoord + count*10000] = zoneData[coord]
+					break
+				elseif not zoneData[newCoord - count * 10000] then
+					zoneData[newCoord - count*10000] = zoneData[coord]
+					break
+				end
+				count = count + 1
+			end
+			dbdata[mapFile][coord] = nil
+			HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 		end
 	end
 end

@@ -65,7 +65,8 @@ local function getNewPin()
 	local texture = pin:CreateTexture(nil, "OVERLAY")
 	pin.texture = texture
 	texture:SetAllPoints(pin)
-	pin:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	pin:RegisterForClicks("LeftButtonDown", "LeftButtonUp", "RightButtonDown", "RightButtonUp")
+	pin:SetMovable(true)
 	pin:Hide()
 	return pin
 end
@@ -110,17 +111,17 @@ end
 
 
 local pinsHandler = {}
-function pinsHandler:OnEnter()
+function pinsHandler:OnEnter(motion)
 	local func = HandyNotes.plugins[self.pluginName].OnEnter
 	if type(func) == "function" then func(self, self.mapFile, self.coord) end
 end
-function pinsHandler:OnLeave()
+function pinsHandler:OnLeave(motion)
 	local func = HandyNotes.plugins[self.pluginName].OnLeave
 	if type(func) == "function" then func(self, self.mapFile, self.coord) end
 end
-function pinsHandler:OnClick(button)
+function pinsHandler:OnClick(button, down)
 	local func = HandyNotes.plugins[self.pluginName].OnClick
-	if type(func) == "function" then func(self, button, self.mapFile, self.coord) end
+	if type(func) == "function" then func(self, button, down, self.mapFile, self.coord) end
 end
 
 
