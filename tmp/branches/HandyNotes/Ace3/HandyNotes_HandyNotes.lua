@@ -64,6 +64,10 @@ function HNHandler:OnLeave(mapFile, coord)
 end
 
 local function deletePin(mapFile, coord)
+	local HNEditFrame = HN.HNEditFrame
+	if HNEditFrame.coord == coord and HNEditFrame.mapFile == mapFile then
+		HNEditFrame:Hide()
+	end
 	dbdata[mapFile][coord] = nil
 	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 end
