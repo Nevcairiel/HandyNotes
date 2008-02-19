@@ -19,6 +19,8 @@ local defaults = {
 		enabled       = true,
 		icon_scale    = 1.0,
 		icon_alpha    = 1.0,
+		icon_scale_minimap = 1.0,
+		icon_alpha_minimap = 1.0,
 	}
 }
 
@@ -94,7 +96,7 @@ Standard functions you can provide optionally:
 		Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
 	:OnLeave(self)
 		Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
-	:OnClick(self, button)
+	:OnClick(self, button, down)
 		Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
 ]]
 
@@ -180,7 +182,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 
 	clearAllPins(worldmapPins[pluginName])
 
-	local ourScale, ourAlpha = db.icon_scale, db.icon_alpha
+	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
 	if continent == 0 or continent == -1 then return end
 	local mapFile = GetMapInfo() --self:GetMapFile(continent, zone)
@@ -188,8 +190,9 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
 		local icon = getNewPin()
-		icon:SetHeight(12 * ourScale * scale) -- Can't use :SetScale as that changes our positioning scaling as well
-		icon:SetWidth(12 * ourScale * scale)
+		scale = ourScale * scale
+		icon:SetHeight(scale) -- Can't use :SetScale as that changes our positioning scaling as well
+		icon:SetWidth(scale)
 		icon:SetAlpha(ourAlpha * alpha)
 		if type(iconpath) == "table" then
 			icon.texture:SetTexture(iconpath.icon)
@@ -208,6 +211,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 			C, Z = continent, zone
 		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
+		icon:SetParent(WorldMapButton)
 		Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
 		worldmapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
@@ -220,9 +224,67 @@ end
 function HandyNotes:UpdateWorldMap()
 	if not WorldMapButton:IsVisible() then return end
 
-	for pluginName in pairs(self.plugins) do
+	for pluginName, pluginHandler in pairs(self.plugins) do
 		-- TODO: Wrap this with a safecall()
 		self:UpdateWorldMapPlugin(pluginName)
+	end
+end
+
+
+-- This function updates all the icons of one plugin on the world map
+function HandyNotes:UpdateMinimapPlugin(pluginName)
+	if not Minimap:IsVisible() then return end
+
+	for coordID, icon in pairs(minimapPins[pluginName]) do
+		Astrolabe:RemoveIconFromMinimap(icon)
+	end
+	clearAllPins(minimapPins[pluginName])
+
+	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
+	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
+	if continent == 0 or continent == -1 then return end
+	local mapFile = GetMapInfo() --self:GetMapFile(continent, zone)
+	local pluginHandler = self.plugins[pluginName]
+
+	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
+		local icon = getNewPin()
+		scale = ourScale * scale
+		icon:SetHeight(scale) -- Can't use :SetScale as that changes our positioning scaling as well
+		icon:SetWidth(scale)
+		icon:SetAlpha(ourAlpha * alpha)
+		if type(iconpath) == "table" then
+			icon.texture:SetTexture(iconpath.icon)
+			icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+		else
+			icon.texture:SetTexture(iconpath)
+			icon.texture:SetTexCoord(0, 1, 0, 1)
+		end
+		icon:SetScript("OnClick", pinsHandler.OnClick)
+		icon:SetScript("OnEnter", pinsHandler.OnEnter)
+		icon:SetScript("OnLeave", pinsHandler.OnLeave)
+		local C, Z
+		if mapFile2 then
+			C, Z = self:GetCZ(mapFile2)
+		else
+			C, Z = continent, zone
+		end
+		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
+		icon:SetParent(Minimap)
+		Astrolabe:PlaceIconOnMinimap(icon, C, Z, x, y)
+		minimapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
+		icon.pluginName = pluginName
+		icon.coord = coord
+		icon.mapFile = mapFile2 or mapFile
+	end
+end
+
+-- This function updates all the icons on the minimap for every plugin
+function HandyNotes:UpdateMinimap()
+	if not Minimap:IsVisible() then return end
+
+	for pluginName, pluginHandler in pairs(self.plugins) do
+		-- TODO: Wrap this with a safecall()
+		self:UpdateMinimapPlugin(pluginName)
 	end
 end
 
@@ -231,6 +293,7 @@ end
 function HandyNotes:UpdatePluginMap(message, pluginName)
 	if self.plugins[pluginName] then
 		self:UpdateWorldMapPlugin(pluginName)
+		self:UpdateMinimapPlugin(pluginName)
 	end
 end
 
@@ -244,8 +307,13 @@ options = {
 	desc = L["HandyNotes"],
 	get = function(info) return db[info.arg] end,
 	set = function(info, v)
-		db[info.arg] = v
-		HandyNotes:UpdateWorldMap()
+		local arg = info.arg
+		db[arg] = v
+		if arg == "icon_scale" or arg == "icon_alpha" then
+			HandyNotes:UpdateWorldMap()
+		else
+			HandyNotes:UpdateMinimap()
+		end
 	end,
 	args = {
 		enabled = {
@@ -274,19 +342,35 @@ options = {
 				},
 				icon_scale = {
 					type = "range",
-					name = "Overall Icon Scale",
-					desc = "The overall scale of the icons",
+					name = "World Map Icon Scale",
+					desc = "The overall scale of the icons on the World Map",
 					min = 0.25, max = 2, step = 0.01,
 					arg = "icon_scale",
 					order = 10,
 				},
 				icon_alpha = {
 					type = "range",
-					name = "Overall Icon Alpha",
-					desc = "The overall alpha transparency of the icons",
+					name = "World Map Icon Alpha",
+					desc = "The overall alpha transparency of the icons on the World Map",
 					min = 0, max = 1, step = 0.01,
 					arg = "icon_alpha",
 					order = 20,
+				},
+				icon_scale_minimap = {
+					type = "range",
+					name = "Minimap Icon Scale",
+					desc = "The overall scale of the icons on the Minimap",
+					min = 0.25, max = 2, step = 0.01,
+					arg = "icon_scale_minimap",
+					order = 30,
+				},
+				icon_alpha_minimap = {
+					type = "range",
+					name = "Minimap Icon Alpha",
+					desc = "The overall alpha transparency of the icons on the Minimap",
+					min = 0, max = 1, step = 0.01,
+					arg = "icon_alpha_minimap",
+					order = 40,
 				},
 			},
 		},
@@ -327,13 +411,19 @@ function HandyNotes:OnEnable()
 	end
 	SetMapToCurrentZone()
 	self:RegisterEvent("WORLD_MAP_UPDATE", "UpdateWorldMap")
+	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateMinimap")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateMinimap")
 	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdatePluginMap")
 end
 
 function HandyNotes:OnDisable()
-	-- Remove all the world map pins
-	for pluginName, pluginPinTable in pairs(worldmapPins) do
-		clearAllPins(pluginPinTable)
+	-- Remove all the pins
+	for pluginName, pluginHandler in pairs(self.plugins) do
+		for coordID, icon in pairs(minimapPins[pluginName]) do
+			Astrolabe:RemoveIconFromMinimap(icon)
+		end
+		clearAllPins(worldmapPins[pluginName])
+		clearAllPins(minimapPins[pluginName])
 	end
 end
 
