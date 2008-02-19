@@ -259,7 +259,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 			icon.texture:SetTexture(iconpath)
 			icon.texture:SetTexCoord(0, 1, 0, 1)
 		end
-		icon:SetScript("OnClick", pinsHandler.OnClick)
+		icon:SetScript("OnClick", nil)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
 		icon:SetScript("OnLeave", pinsHandler.OnLeave)
 		local C, Z
@@ -294,6 +294,19 @@ function HandyNotes:UpdatePluginMap(message, pluginName)
 	if self.plugins[pluginName] then
 		self:UpdateWorldMapPlugin(pluginName)
 		self:UpdateMinimapPlugin(pluginName)
+	end
+end
+
+-- This function is called by Astrolabe whenever a note changes its OnEdge status
+function HandyNotes.AstrolabeEdgeCallback()
+	for pluginName, pluginHandler in pairs(HandyNotes.plugins) do
+		for coordID, icon in pairs(minimapPins[pluginName]) do
+			if Astrolabe.IconsOnEdge[icon] then
+				icon:Hide()
+			else
+				icon:Show()
+			end
+		end
 	end
 end
 
@@ -414,6 +427,7 @@ function HandyNotes:OnEnable()
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateMinimap")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateMinimap")
 	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdatePluginMap")
+	Astrolabe:Register_OnEdgeChanged_Callback(self.AstrolabeEdgeCallback, true)
 end
 
 function HandyNotes:OnDisable()
@@ -425,6 +439,7 @@ function HandyNotes:OnDisable()
 		clearAllPins(worldmapPins[pluginName])
 		clearAllPins(minimapPins[pluginName])
 	end
+	Astrolabe:Register_OnEdgeChanged_Callback(self.AstrolabeEdgeCallback)
 end
 
 -- vim: ts=4 noexpandtab
