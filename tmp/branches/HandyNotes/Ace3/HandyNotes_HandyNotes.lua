@@ -120,13 +120,14 @@ do
 			info.icon         = nil
 			info.func         = CloseDropDownMenus
 			info.arg1         = nil
+			info.arg2         = nil
 			info.notCheckable = 1
 			UIDropDownMenu_AddButton(info, level)
 
 			-- Add the dragging hint
 			info.isTitle      = 1
+			info.func         = nil
 			info.text         = "|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"
-			info.notCheckable = 1
 			UIDropDownMenu_AddButton(info, level)
 		end
 	end
