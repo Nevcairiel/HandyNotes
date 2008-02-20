@@ -28,6 +28,7 @@ local defaults = {
 local next = next
 local GameTooltip = GameTooltip
 local WorldMapTooltip = WorldMapTooltip
+local HandyNotes = HandyNotes
 
 
 ---------------------------------------------------------
@@ -43,13 +44,14 @@ local clickedMailbox = nil
 local clickedMailboxZone = nil
 
 function HMBHandler:OnEnter(mapFile, coord)
-	if ( self:GetCenter() > self:GetParent():GetCenter() ) then -- compare X coordinate
-		WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT")
+	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
+	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
+		tooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
-		WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	WorldMapTooltip:SetText("Mailbox")
-	WorldMapTooltip:Show()
+	tooltip:SetText("Mailbox")
+	tooltip:Show()
 	clickedMailbox = nil
 	clickedMailboxZone = nil
 end
@@ -102,7 +104,11 @@ function HMBHandler:OnClick(button, down, mapFile, coord)
 end
 
 function HMBHandler:OnLeave(mapFile, coord)
-	WorldMapTooltip:Hide()
+	if self:GetParent() == WorldMapButton then
+		WorldMapTooltip:Hide()
+	else
+		GameTooltip:Hide()
+	end
 end
 
 do
