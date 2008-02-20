@@ -26,6 +26,7 @@ local defaults = {
 ---------------------------------------------------------
 -- Localize some globals
 local next = next
+local GameTooltip = GameTooltip
 local WorldMapTooltip = WorldMapTooltip
 local HandyNotes = HandyNotes
 
@@ -34,23 +35,29 @@ local HandyNotes = HandyNotes
 -- Constants
 local icon = "Interface\\Icons\\Ability_Hunter_BeastTaming"
 
+
 ---------------------------------------------------------
 -- Plugin Handlers to HandyNotes
 
 local HSHandler = {}
 function HSHandler:OnEnter(mapFile, coord)
-	if ( self:GetCenter() > self:GetParent():GetCenter() ) then -- compare X coordinate
-		WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT")
+	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
+	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
+		tooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
-		WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	WorldMapTooltip:AddLine(db.factionrealm.nodes[mapFile][coord])
-	WorldMapTooltip:AddLine(L["Stable Master"])
-	WorldMapTooltip:Show()
+	tooltip:AddLine(db.factionrealm.nodes[mapFile][coord])
+	tooltip:AddLine(L["Stable Master"])
+	tooltip:Show()
 end
 
 function HSHandler:OnLeave(mapFile, coord)
-	WorldMapTooltip:Hide()
+	if self:GetParent() == WorldMapButton then
+		WorldMapTooltip:Hide()
+	else
+		GameTooltip:Hide()
+	end
 end
 
 do
