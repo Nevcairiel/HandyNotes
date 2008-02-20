@@ -104,17 +104,22 @@ local playerFaction = UnitFactionGroup("player") == "Alliance" and 1 or 2
 local HFMHandler = {}
 
 function HFMHandler:OnEnter(mapFile, coord)
-	if ( self:GetCenter() > self:GetParent():GetCenter() ) then -- compare X coordinate
-		WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT")
+	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
+	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
+		tooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
-		WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	WorldMapTooltip:SetText(HFM_DataType[ HFM_Data[mapFile][coord] ])
-	WorldMapTooltip:Show()
+	tooltip:SetText(HFM_DataType[ HFM_Data[mapFile][coord] ])
+	tooltip:Show()
 end
 
 function HFMHandler:OnLeave(mapFile, coord)
-	WorldMapTooltip:Hide()
+	if self:GetParent() == WorldMapButton then
+		WorldMapTooltip:Hide()
+	else
+		GameTooltip:Hide()
+	end
 end
 
 do
