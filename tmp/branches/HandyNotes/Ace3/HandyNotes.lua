@@ -240,6 +240,9 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	end
 	clearAllPins(minimapPins[pluginName])
 
+	local playerX, playerY = GetPlayerMapPosition("player")
+	if playerX == 0 and playerY == 0 then return end -- we are in an instance
+
 	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
 	if continent == 0 or continent == -1 then return end
@@ -282,6 +285,7 @@ end
 function HandyNotes:UpdateMinimap()
 	if not Minimap:IsVisible() then return end
 
+	SetMapToCurrentZone()
 	for pluginName, pluginHandler in pairs(self.plugins) do
 		-- TODO: Wrap this with a safecall()
 		self:UpdateMinimapPlugin(pluginName)
