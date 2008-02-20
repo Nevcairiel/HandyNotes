@@ -187,6 +187,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if continent == 0 or continent == -1 then return end
 	local mapFile = GetMapInfo() --self:GetMapFile(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
+	local frameLevel = WorldMapButton:GetFrameLevel() + 5
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
 		local icon = getNewPin()
@@ -212,6 +213,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
 		icon:SetParent(WorldMapButton)
+		icon:SetFrameLevel(frameLevel)
 		Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
 		worldmapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
@@ -248,6 +250,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	if continent == 0 or continent == -1 then return end
 	local mapFile = GetMapInfo() --self:GetMapFile(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
+	local frameLevel = Minimap:GetFrameLevel() + 5
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
 		local icon = getNewPin()
@@ -273,6 +276,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
 		icon:SetParent(Minimap)
+		icon:SetFrameLevel(frameLevel)
 		Astrolabe:PlaceIconOnMinimap(icon, C, Z, x, y)
 		minimapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
