@@ -57,52 +57,52 @@ local HFM_DataType = {
 
 -- Packed data in strings, which we unpack on demand. Format as follows:
 -- [mapFile] = {
---      [coord] = "type|mapFile,coord|mapFile,coord" -- Flight path links
---      [coord] = "type|mapFile,coord|mapFile,coord"
+--      [coord] = "type|mapFile,coord,type|mapFile,coord,type" -- Flight path links
+--      [coord] = "type|mapFile,coord,type|mapFile,coord,type"
 -- }
 local HFM_Data = {
 	-- Eastern Kingdoms
 	["Arathi"] = {
-		[73103260] = 2,
-		[45804610] = "1|Hinterlands,11104610,1|Hilsbrad,49405220,1|Wetlands,9505970,1|Ironforge,55704770,1|LochModan,33905080,1",},
-	["Badlands"] = {[4104490] = 2,},
+		[73103260] = "2|Undercity,63404850,2|Hilsbrad,60201870,2|Hinterlands,81708180,2|Badlands,4104490,2",
+		[45804610] = "1|Hinterlands,11104610,1|Hilsbrad,49405220,1|Wetlands,9505970,1|Ironforge,55704770,1|LochModan,33945096,1",},
+	["Badlands"] = {[4104490] = "2|Undercity,63404850,2|Arathi,73103260,2|SearingGorge,34803080,2|BurningSteppes,65602410,2|SwampOfSorrows,46105470,2|Stranglethorn,32502930,2|Stranglethorn,26867709,2",},
 	["BlastedLands"] = {[65502440] = "1|BurningSteppes,84406830,1|Stormwind,66406220,1|Duskwood,77504430,1",},
 	["BurningSteppes"] = {
-		[65602410] = 2,
+		[65602410] = "2|SearingGorge,34803080,2|Badlands,4104490,2|SwampOfSorrows,46105470,2",
 		[84406830] = "1|SearingGorge,37903070,1|Stormwind,66406220,1|BlastedLands,65502440,1|Redridge,30705930,1",},
 	["Duskwood"] = {[77504430] = "1|Stormwind,66406220,1|Redridge,30705930,1|BlastedLands,65502440,1|Stranglethorn,27507780,1|Stranglethorn,38230404,1|Westfall,56605270,1",},
 	["EasternPlaguelands"] = {
-		[22003200] = 5,
-		[80205710] = 2,
+		[22323146] = "5|EasternPlaguelands,66075039,4|EasternPlaguelands,54242676,4|EasternPlaguelands,38067525,4",
+		[80225700] = "2|Ghostlands,45423052,2|Undercity,63404850,2|Hinterlands,81708180,2",
 		[81605930] = "1|Ironforge,55704770,1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Ghostlands,74766715,1",},
-	["EversongWoods"] = {[54355073] = 2,},
+	["EversongWoods"] = {[54355073] = "2|Ghostlands,45423052,2",},
 	["Ghostlands"] = {
-		[45423052] = 2,
+		[45423052] = "2|EversongWoods,54355073,2|EasternPlaguelands,80225700,2",
 		[74766715] = "1|EasternPlaguelands,81605930,1",},
 	["Hilsbrad"] = {
-		[60201870] = 2,
+		[60201870] = "2|Undercity,63404850,2|Hinterlands,81708180,2|Arathi,73103260,2|Silverpine,45504250,2",
 		[49405220] = "1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Arathi,45804610,1|Wetlands,9505970,1|Ironforge,55704770,1",},
 	["Hinterlands"] = {
-		[81708180] = 2,
+		[81708180] = "2|EasternPlaguelands,80225700,2|Undercity,63404850,2|Hilsbrad,60201870,2|Arathi,73103260,2",
 		[11104610] = "1|WesternPlaguelands,42908490,1|EasternPlaguelands,81605930,1|Ironforge,55704770,1|Arathi,45804610,1|Hilsbrad,49405220,1",},
-	["Ironforge"] = {[55704770] = "1|EasternPlaguelands,81605930,1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Hilsbrad,49405220,1|Arathi,45804610,1|Wetlands,9505970,1|LochModan,33905080,1|SearingGorge,37903070,1|Stormwind,66406220,1",},
-	["LochModan"] = {[33905080] = "1|Arathi,45804610,1|Wetlands,9505970,1|Ironforge,55704770,1",},
+	["Ironforge"] = {[55704770] = "1|EasternPlaguelands,81605930,1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Hilsbrad,49405220,1|Arathi,45804610,1|Wetlands,9505970,1|LochModan,33945096,1|SearingGorge,37903070,1|Stormwind,66406220,1",},
+	["LochModan"] = {[33945096] = "1|Arathi,45804610,1|Wetlands,9505970,1|Ironforge,55704770,1|SearingGorge,37903070,1",},
 	["Redridge"] = {[30705930] = "1|Stormwind,66406220,1|Westfall,56605270,1|Duskwood,77504430,1|BurningSteppes,84406830,1",},
 	["SearingGorge"] = {
-		[34803080] = 2,
-		[37903070] = "1|Ironforge,55704770,1|BurningSteppes,84406830,1",},
-	["Silverpine"] = {[45504250] = 2,},
+		[34803080] = "2|Badlands,4104490,2|BurningSteppes,65602410,2",
+		[37903070] = "1|Ironforge,55704770,1|BurningSteppes,84406830,1|LochModan,33945096,1",},
+	["Silverpine"] = {[45504250] = "2|Undercity,63404850,2|Hilsbrad,60201870,2",},
 	["Stormwind"] = {[66406220] = "1|Ironforge,55704770,1|BurningSteppes,84406830,1|Redridge,30705930,1|BlastedLands,65502440,1|Stranglethorn,27507780,1|Stranglethorn,38230404,1|Westfall,56605270,1|Duskwood,77504430,1",},
 	["Stranglethorn"] = {
-		[32502930] = 2,
-		[26867709] = 2,
+		[32502930] = "2|Stranglethorn,26867709,2|Badlands,4104490,2|SwampOfSorrows,46105470,2",
+		[26867709] = "2|Stranglethorn,32502930,2|Badlands,4104490,2|SwampOfSorrows,46105470,2",
 		[27507780] = "1|Stormwind,66406220,1|Westfall,56605270,1|Duskwood,77504430,1|Stranglethorn,38230404,1",
 		[38230404] = "1|Stormwind,66406220,1|Westfall,56605270,1|Duskwood,77504430,1|Stranglethorn,27507780,1",},
-	["SwampOfSorrows"] = {[46105470] = 2,},
-	["Undercity"] = {[63404850] = 2,},
+	["SwampOfSorrows"] = {[46105470] = "2|Badlands,4104490,2|BurningSteppes,65602410,2|Stranglethorn,32502930,2|Stranglethorn,26867709,2",},
+	["Undercity"] = {[63404850] = "2|Hinterlands,81708180,2|Arathi,73103260,2|Silverpine,45504250,2|EasternPlaguelands,80225700,2|Hilsbrad,60201870,2|Badlands,4104490,2",},
 	["WesternPlaguelands"] = {[42908490] = "1|Hinterlands,11104610,1|EasternPlaguelands,81605930,1|Ironforge,55704770,1|Hilsbrad,49405220,1",},
 	["Westfall"] = {[56605270] = "1|Stormwind,66406220,1|Redridge,30705930,1|Duskwood,77504430,1|Stranglethorn,27507780,1|Stranglethorn,38230404,1",},
-	["Wetlands"] = {[9505970] = "1|Arathi,45804610,1|Hilsbrad,49405220,1|LochModan,33905080,1|Ironforge,55704770,1",},
+	["Wetlands"] = {[9505970] = "1|Arathi,45804610,1|Hilsbrad,49405220,1|LochModan,33945096,1|Ironforge,55704770,1",},
 	-- Kalimdor
 	["Ashenvale"] = {
 		[34404800] = "1|Darkshore,36404560,1|Felwood,51538222,1|Ashenvale,85094345,1|Aszhara,11907760,1|Dustwallow,67505120,1|Barrens,63003700,1|StonetalonMountains,36500720,1",
