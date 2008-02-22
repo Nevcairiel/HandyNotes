@@ -106,55 +106,55 @@ local HFM_Data = {
 	-- Kalimdor
 	["Ashenvale"] = {
 		[34404800] = "1|Darkshore,36404560,1|Felwood,51538222,1|Ashenvale,85094345,1|Aszhara,11907760,1|Dustwallow,67505120,1|Barrens,63003700,1|StonetalonMountains,36500720,1",
-		[73206152] = 2,
-		[12203380] = 2,
+		[73206152] = "2|Ashenvale,12203380,2|Felwood,51538222,2|Aszhara,22004970,2|Barrens,51503040,2|Ogrimmar,45306400,2",
+		[12203380] = "2|Ashenvale,73206152,2|Felwood,51538222,2|Felwood,34405380,2|StonetalonMountains,45105990,2|Barrens,51503040,2",
 		[85094345] = "1|Aszhara,11907760,1|Felwood,51538222,1|Ashenvale,34404800,1",},
 	["Aszhara"] = {
-		[22004970] = 2,
+		[22004970] = "2|Winterspring,60503630,2|Felwood,34405380,2|Ashenvale,73206152,2|ThunderBluff,46905000,2|Barrens,51503040,2|Ogrimmar,45306400,2",
 		[11907760] = "1|Darkshore,36404560,1|Felwood,62502420,1|Winterspring,62303660,1|Dustwallow,67505120,1|Barrens,63003700,1|Ashenvale,34404800,1|Ashenvale,85094345,1",},
 	["Barrens"] = {
-		[44005900] = 2,
-		[51503040] = 2,
-		[63003700] = "3|Aszhara,11907760,1|Ashenvale,34404800,1|Dustwallow,67505120,1|Tanaris,51002930,1",},
+		[44005900] = "2|Barrens,51503040,2|ThousandNeedles,45104920,2|ThunderBluff,46905000,2",
+		[51503040] = "2|Barrens,44005900,2|StonetalonMountains,45105990,2|Ashenvale,73206152,2|Ashenvale,12203380,2|Felwood,34405380,2|Aszhara,22004970,2|Ogrimmar,45306400,2|Barrens,63003700,2|Dustwallow,35603180,2|Tanaris,51602550,2|ThousandNeedles,45104920,2|ThunderBluff,46905000,2|Feralas,75404430,2",
+		[63003700] = "3|Aszhara,11907760,1|Ashenvale,34404800,1|Dustwallow,67505120,1|Tanaris,51002930,1|Barrens,51503040,2",},
 	["BloodmystIsle"] = {
 		[57685388] = "1|TheExodar,68446370,1",},
 	["Darkshore"] = {
 		[36404560] = "1|Teldrassil,58409390,1|Moonglade,48006730,1|Felwood,62502420,1|Aszhara,11907760,1|Dustwallow,67505120,1|Ashenvale,34404800,1|Desolace,64701040,1|StonetalonMountains,36500720,1|Feralas,30244324,1",},
 	["Desolace"] = {
-		[21607400] = 2,
+		[21607400] = "2|StonetalonMountains,45105990,2|ThunderBluff,46905000,2|Feralas,75404430,2",
 		[64701040] = "1|StonetalonMountains,36500720,1|Feralas,30244324,1|Darkshore,36404560,1|Dustwallow,67505120,1",},
 	["Dustwallow"] = {
-		[35603180] = 2,
+		[35603180] = "2|ThunderBluff,46905000,2|Ogrimmar,45306400,2|Barrens,51503040,2|Tanaris,51602550,2",
 		[67505120] = "1|Aszhara,11907760,1|Darkshore,36404560,1|Ashenvale,34404800,1|Barrens,63003700,1|Desolace,64701040,1|Feralas,89504590,1|Tanaris,51002930,1",},
 	["Felwood"] = {
-		[51538222] = "3|Felwood,62502420,1|Ashenvale,34404800,1|Ashenvale,85094345,1",
-		[34405380] = 2,
+		[51538222] = "3|Felwood,62502420,1|Ashenvale,34404800,1|Ashenvale,85094345,1|Felwood,34405380,2|Ashenvale,12203380,2|Ashenvale,73206152,2",
+		[34405380] = "2|Moonglade,32206630,2|Winterspring,60503630,2|Aszhara,22004970,2|Ogrimmar,45306400,2|Barrens,51503040,2|Ashenvale,12203380,2|Felwood,51538222,2",
 		[62502420] = "1|Darkshore,36404560,1|Moonglade,48006730,1|Winterspring,62303660,1|Felwood,51538222,1|Aszhara,11907760,1",},
 	["Feralas"] = {
 		[30244324] = "1|Darkshore,36404560,1|Desolace,64701040,1|Feralas,89504590,1|Silithus,50603440,1",
-		[75404430] = 2,
+		[75404430] = "2|Desolace,21607400,2|ThunderBluff,46905000,2|Barrens,51503040,2|Tanaris,51602550,2|ThousandNeedles,45104920,2|Silithus,48703670,2",
 		[89504590] = "1|Dustwallow,67505120,1|Feralas,30244324,1|Tanaris,51002930,1",},
 	["Moonglade"] = {
 		[44004500] = "4|Teldrassil,58409390,4|ThunderBluff,46905000,4",
-		[32206630] = 2,
+		[32206630] = "2|Felwood,34405380,2|Winterspring,60503630,2",
 		[48006730] = "1|Darkshore,36404560,1|Felwood,62502420,1|Winterspring,62303660,1",},
-	["Ogrimmar"] = {[45306400] = 2,},
+	["Ogrimmar"] = {[45306400] = "2|Felwood,34405380,2|Winterspring,60503630,2|Aszhara,22004970,2|Ashenvale,73206152,2|ThunderBluff,46905000,2|Barrens,51503040,2|Dustwallow,35603180,2|Tanaris,51602550,2",},
 	["Silithus"] = {
-		[48703670] = 2,
+		[48703670] = "2|Feralas,75404430,2|UngoroCrater,45000600,2|Tanaris,51602550,2",
 		[50603440] = "1|Feralas,30244324,1|UngoroCrater,45000600,1|Tanaris,51002930,1",},
 	["StonetalonMountains"] = {
-		[45105990] = 2,
+		[45105990] = "2|Ashenvale,12203380,2|Barrens,51503040,2|ThunderBluff,46905000,2|Desolace,21607400,2",
 		[36500720] = "1|Darkshore,36404560,1|Ashenvale,34404800,1|Desolace,64701040,1",},
 	["Tanaris"] = {
-		[51602550] = 2,
-		[51002930] = "1|Silithus,50603440,1|UngoroCrater,45000600,1|Feralas,89504590,1|Dustwallow,67505120,1|Barrens,63003700,1",},
+		[51602550] = "2|Silithus,48703670,2|UngoroCrater,45000600,2|Feralas,75404430,2|ThousandNeedles,45104920,2|ThunderBluff,46905000,2|Ogrimmar,45306400,2|Barrens,51503040,2|Dustwallow,35603180,2",
+		[51002930] = "1|Silithus,50603440,1|UngoroCrater,45000600,1|Feralas,89504590,1|Dustwallow,67505120,1|Barrens,51503040,1",},
 	["Teldrassil"] = {[58409390] = "1|Darkshore,36404560,1|Moonglade,44004500,4",},
 	["TheExodar"] = {[68446370] = "1|BloodmystIsle,57685388,1",},
-	["ThousandNeedles"] = {[45104920] = 2,},
-	["ThunderBluff"] = {[46905000] = 2,},
-	["UngoroCrater"] = {[45000600] = "3|Tanaris,51002930,1|Silithus,50603440,1",},
+	["ThousandNeedles"] = {[45104920] = "2|Tanaris,51602550,2|Feralas,75404430,2|ThunderBluff,46905000,2|Barrens,51503040,2|Barrens,44005900,2",},
+	["ThunderBluff"] = {[46905000] = "2|Desolace,21607400,2|StonetalonMountains,45105990,2|Aszhara,22004970,2|Ogrimmar,45306400,2|Barrens,51503040,2|Barrens,44005900,2|Dustwallow,35603180,2|Tanaris,51602550,2|ThousandNeedles,45104920,2|Feralas,75404430,2|Moonglade,44004500,4",},
+	["UngoroCrater"] = {[45000600] = "3|Tanaris,51002930,1|Silithus,50603440,1|Silithus,48703670,2|Tanaris,51602550,2",},
 	["Winterspring"] = {
-		[60503630] = 2,
+		[60503630] = "2|Moonglade,32206630,2|Felwood,34405380,2|Aszhara,22004970,2|Ogrimmar,45306400,2",
 		[62303660] = "1|Moonglade,48006730,1|Felwood,62502420,1|Aszhara,11907760,1",},
 	-- Outlands
 	["BladesEdgeMountains"] = {
