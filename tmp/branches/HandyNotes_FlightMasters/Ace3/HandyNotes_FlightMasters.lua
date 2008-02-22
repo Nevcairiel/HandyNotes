@@ -245,7 +245,12 @@ local function drawline(C1, Z1, x1, y1, mapFile2, coord2, color)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 0, 0, 1, 0)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 0, 1, 1, 1)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 1, 0, 1, 1)
-	color = (color + playerFaction == 3) and 2 or tonumber(color)
+	color = tonumber(color)
+	if color == playerFaction then
+		color = 1
+	elseif color + playerFaction == 3 then
+		color = 2
+	end
 	local w, h = WorldMapButton:GetWidth(), WorldMapButton:GetHeight()
 	G:DrawLine(WorldMapButton, x1*w, (1-y1)*h, x2*w, (1-y2)*h, 25, colors[color], "OVERLAY")
 	--ChatFrame1:AddMessage(strjoin(",", mapFile, coord, mapFile2, coord2))
