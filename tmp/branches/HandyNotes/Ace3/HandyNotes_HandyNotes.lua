@@ -142,7 +142,7 @@ do
 			ToggleDropDownMenu(1, nil, HandyNotes_HandyNotesDropdownMenu, self, 0, 0)
 		elseif button == "LeftButton" and down and IsControlKeyDown() and IsShiftKeyDown() then
 			-- Only move if we're viewing the same map as the icon's map
-			if mapFile == GetMapInfo() then
+			if mapFile == GetMapInfo() or mapFile == "World" or mapFile == "Cosmic" then
 				isMoving = true
 				self:StartMoving()
 			end
@@ -188,14 +188,17 @@ do
 	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
 	local continentMapFile = {
-		["Kalimdor"] = 1,
-		["Azeroth"] = 2,
-		["Expansion01"] = 3,
+		["Kalimdor"]    = {[0] = "Kalimdor",    __index = Astrolabe.ContinentList[1]},
+		["Azeroth"]     = {[0] = "Azeroth",     __index = Astrolabe.ContinentList[2]},
+		["Expansion01"] = {[0] = "Expansion01", __index = Astrolabe.ContinentList[3]},
 	}
+	for k, v in pairs(continentMapFile) do
+		setmetatable(v, v)
+	end
 
 	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
-		if not t then return nil end
+		if not t then return end
 		local state, value = next(t, prestate)
 		if value then
 			return state, nil, icons[value.icon], db.icon_scale, db.icon_alpha
@@ -205,16 +208,9 @@ do
 	-- This is a funky custom iterator we use to iterate over every zone's nodes
 	-- in a given continent + the continent itself
 	local function iterCont(t, prestate)
-		if not t then return nil end
+		if not t then return end
 		local zone = t.Z
-		local mapFile
-		if type(zone) == "string" then -- Handle continent case
-			mapFile = zone
-			t.Z = 0
-			zone = 0
-		else
-			mapFile = t.C[zone]
-		end
+		local mapFile = t.C[zone]
 		local data = dbdata[mapFile]
 		local state, value
 		while mapFile do
@@ -228,14 +224,13 @@ do
 				end
 			end
 			-- Get next zone
-			t.Z = t.Z + 1
 			zone = zone + 1
+			t.Z = zone
 			mapFile = t.C[zone]
 			data = dbdata[mapFile]
 			prestate = nil
 		end
 		tablepool[t] = true
-		return nil, nil, nil, nil, nil
 	end
 
 	function HNHandler:GetNodes(mapFile)
@@ -243,9 +238,8 @@ do
 		if C then
 			local tbl = next(tablepool) or {}
 			tablepool[tbl] = nil
-
-			tbl.C = Astrolabe.ContinentList[C]
-			tbl.Z = mapFile
+			tbl.C = C
+			tbl.Z = 0
 			return iterCont, tbl, nil
 		else -- It is a zone
 			return iter, dbdata[mapFile], nil
@@ -260,8 +254,8 @@ end
 -- Hooked function on clicking the world map
 function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 	if mouseButton == "RightButton" and IsControlKeyDown() and not IsAltKeyDown() and not IsShiftKeyDown() then
-		local mapFile = GetMapInfo()
-		if not mapFile then return end
+		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
+		local mapFile = HandyNotes:GetMapFile(C, Z)
 
 		-- Get the coordinate clicked on
 		button = button or this

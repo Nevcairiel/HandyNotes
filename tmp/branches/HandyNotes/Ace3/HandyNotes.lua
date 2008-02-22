@@ -84,19 +84,24 @@ In this table, the format is:
 	["Name of plugin"] = {table containing a set of standard functions, which we'll call pluginHandler}
 
 Standard functions we require for every plugin:
-	:GetNodes(mapFile)
-		This function should return an iterator function. The iterator will loop over and return 4 values
+	iter, state, value = pluginHandler:GetNodes(mapFile, minimap)
+		Parameters
+		- mapFile: The zone we want data for
+		- minimap: Optional argument indicating that we want to get nodes to display for the minimap
+		Returns:
+		- iter: An iterator function that will loop over and return 5 values
 			(coord, mapFile, iconpath, scale, alpha)
-		for every node in the requested zone. If the mapFile return value is nil, we assume it is the
-		same mapFile as the argument passed in. Mainly used for continent mapFile where the map passed
-		in is a continent, and the return values are coords of subzone maps.
+			for every node in the requested zone. If the mapFile return value is nil, we assume it is the
+			same mapFile as the argument passed in. Mainly used for continent mapFile where the map passed
+			in is a continent, and the return values are coords of subzone maps.
+		- state, value: First 2 args to pass into iter() on the initial iteration
 
 Standard functions you can provide optionally:
-	:OnEnter(self)
+	pluginHandler:OnEnter(mapFile, coord)
 		Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
-	:OnLeave(self)
+	pluginHandler:OnLeave(mapFile, coord)
 		Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
-	:OnClick(self, button, down)
+	pluginHandler:OnClick(button, down, mapFile, coord)
 		Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
 ]]
 
@@ -150,6 +155,8 @@ for C = 1, #continentMapFile do
 	reverseMapFileC[mapFile] = C
 	reverseMapFileZ[mapFile] = 0
 end
+reverseMapFileC["Cosmic"], reverseMapFileZ["Cosmic"] = WORLDMAP_COSMIC_ID, 0 -- That constant is -1
+reverseMapFileC["World"], reverseMapFileZ["World"] = 0, 0
 
 function HandyNotes:GetMapFile(C, Z)
 	if C > 0 then
@@ -158,6 +165,10 @@ function HandyNotes:GetMapFile(C, Z)
 		else
 			return Astrolabe.ContinentList[C][Z]
 		end
+	elseif C == WORLDMAP_COSMIC_ID then
+		return "Cosmic" -- Yes these are the real mapFile names
+	else
+		return "World"  -- World Map of Azeroth
 	end
 end
 function HandyNotes:GetCZ(mapFile)
@@ -184,8 +195,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 
 	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
-	if continent == 0 or continent == -1 then return end
-	local mapFile = GetMapInfo() --self:GetMapFile(continent, zone)
+	local mapFile = self:GetMapFile(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = WorldMapButton:GetFrameLevel() + 5
 	local frameStrata = WorldMapButton:GetFrameStrata()
@@ -216,7 +226,13 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		icon:SetParent(WorldMapButton)
 		icon:SetFrameStrata(frameStrata)
 		icon:SetFrameLevel(frameLevel)
-		Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
+		if C == WORLDMAP_COSMIC_ID then
+			icon:ClearAllPoints()
+			icon:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x*WorldMapButton:GetWidth(), -y*WorldMapButton:GetHeight())
+			icon:Show()
+		else
+			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
+		end
 		worldmapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
@@ -249,13 +265,12 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 
 	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
-	if continent == 0 or continent == -1 then return end
-	local mapFile = GetMapInfo() --self:GetMapFile(continent, zone)
+	local mapFile = self:GetMapFile(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = Minimap:GetFrameLevel() + 5
 	local frameStrata = Minimap:GetFrameStrata()
 
-	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
+	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, true) do
 		local icon = getNewPin()
 		scale = ourScale * scale
 		icon:SetHeight(scale) -- Can't use :SetScale as that changes our positioning scaling as well
@@ -291,7 +306,7 @@ end
 
 -- This function updates all the icons on the minimap for every plugin
 function HandyNotes:UpdateMinimap()
-	if not Minimap:IsVisible() then return end
+	--if not Minimap:IsVisible() then return end
 
 	SetMapToCurrentZone()
 	for pluginName, pluginHandler in pairs(self.plugins) do

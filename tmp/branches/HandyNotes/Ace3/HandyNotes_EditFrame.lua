@@ -12,7 +12,8 @@ local backdrop2 = {
 }
 
 -- Create the main frame
-local HNEditFrame = CreateFrame("Frame", "HNEditFrame", UIParent) -- global the frame until i finish testing it.
+-- For jncl (Skinner), this frame is accessed by LibStub("AceAddon-3.0"):GetAddon("HandyNotes"):GetModule("HandyNotes").HNEditFrame
+local HNEditFrame = CreateFrame("Frame", nil, UIParent)
 HN.HNEditFrame = HNEditFrame
 HNEditFrame:Hide()
 HNEditFrame:SetWidth(350)
