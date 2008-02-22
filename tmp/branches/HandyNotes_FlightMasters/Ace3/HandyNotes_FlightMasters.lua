@@ -33,16 +33,16 @@ local WorldMapTooltip = WorldMapTooltip
 local playerFaction = UnitFactionGroup("player") == "Alliance" and 1 or 2
 
 local icons = {
-	"Interface\\TaxiFrame\\UI-Taxi-Icon-Green",  -- Your faction  [1]
-	"Interface\\TaxiFrame\\UI-Taxi-Icon-Red",    -- Enemy faction [2]
-	"Interface\\TaxiFrame\\UI-Taxi-Icon-Yellow", -- Both factions [3]
+	"Interface\\TaxiFrame\\UI-Taxi-Icon-Green",  -- Your faction  [1] Green
+	"Interface\\TaxiFrame\\UI-Taxi-Icon-Red",    -- Enemy faction [2] Red
+	"Interface\\TaxiFrame\\UI-Taxi-Icon-Yellow", -- Both factions [3] Orange
 }
 
 local colors = {
-	{0, 1, 0, 1},    -- Your faction  [1]
-	{1, 0, 0, 1},    -- Enemy faction [2]
-	{1, 0.5, 0, 1},  -- Both factions [3]
-	{1, 1, 0, 1},    -- Special       [4]
+	{0, 1, 0, 1},    -- Your faction  [1] Green
+	{1, 0, 0, 1},    -- Enemy faction [2] Red
+	{1, 0.5, 0, 1},  -- Both factions [3] Orange
+	{1, 1, 0, 1},    -- Special       [4] Yellow
 }
 
 local HFM_DataType = {
@@ -198,6 +198,18 @@ local HFM_Data = {
 		[67835146] = "1|Hellfire,25193723,1|ShattrathCity,64064111,1|Nagrand,54177506,1|Zangarmarsh,41292899,1|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61157044,1",},
 }
 
+-- This table will contain a list of every zone in Kalimdor and Eastern Kingdom for the World Map of Azeroth
+local AzerothZoneList = {}
+do
+	local t = Astrolabe.ContinentList
+	for i = 1, #t[1] do -- Kalimdor
+		tinsert(AzerothZoneList, t[1][i])
+	end
+	for i = 1, #t[2] do -- Azeroth
+		tinsert(AzerothZoneList, t[2][i])
+	end
+end
+
 
 ---------------------------------------------------------
 -- Function to get the intersection point of 2 lines (x1,y1)-(x2,y2) and (sx,sy)-(ex,ey)
@@ -294,11 +306,6 @@ end
 do
 	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
-	local continentMapFile = {
-		["Kalimdor"] = 1,
-		["Azeroth"] = 2,
-		["Expansion01"] = 3,
-	}
 
 	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
@@ -324,6 +331,7 @@ do
 	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
 	local function iterCont(t, prestate)
 		if not t then return nil end
+		local C, Z = t.mapC, t.mapZ
 		local zone = t.Z
 		local mapFile = t.C[zone]
 		local data = HFM_Data[mapFile]
@@ -333,15 +341,20 @@ do
 				state, value = next(data, prestate)
 				while state do -- Have we reached the end of this zone?
 					if type(value) == "string" then value = tonumber((strsplit("|", value))) end
-					if value == playerFaction then
-						-- Same faction flightpoint
-						return state, mapFile, icons[1], db.icon_scale, db.icon_alpha
-					elseif db.show_both_factions and value + playerFaction == 3 then
-						-- Enemy faction flightpoint
-						return state, mapFile, icons[2], db.icon_scale, db.icon_alpha
-					elseif value >= 3 then
-						-- Both factions flightpoint
-						return state, mapFile, icons[3], db.icon_scale, db.icon_alpha
+					local x, y = HandyNotes:getXY(state)
+					local c1, z1 = HandyNotes:GetCZ(mapFile)
+					local x, y = Astrolabe:TranslateWorldMapPosition(c1, z1, x, y, C, Z)
+					if x > 0 and x < 1 and y > 0 and y < 1 then
+						if value == playerFaction then
+							-- Same faction flightpoint
+							return state, mapFile, icons[1], db.icon_scale, db.icon_alpha
+						elseif db.show_both_factions and value + playerFaction == 3 then
+							-- Enemy faction flightpoint
+							return state, mapFile, icons[2], db.icon_scale, db.icon_alpha
+						elseif value >= 3 then
+							-- Both factions flightpoint
+							return state, mapFile, icons[3], db.icon_scale, db.icon_alpha
+						end
 					end
 					state, value = next(data, state) -- Get next data
 				end
@@ -357,22 +370,23 @@ do
 		return nil, nil, nil, nil, nil
 	end
 
-	function HFMHandler:GetNodes(mapFile)
-		local C = continentMapFile[mapFile] -- Is this a continent?
-		if C then
-			if db.show_on_continent then -- Show on continent maps, so we iterate
+	function HFMHandler:GetNodes(mapFile, minimap)
+		local C, Z = HandyNotes:GetCZ(mapFile)
+		if minimap then -- Return only the requested zone's data for the minimap
+			return iter, HFM_Data[mapFile], nil
+		elseif C >= 0 then -- Not minimap, so whatever map it is, we return the entire continent of nodes
+			if Z > 0 or (Z == 0 and db.show_on_continent) then
 				local tbl = next(tablepool) or {}
 				tablepool[tbl] = nil
 
-				tbl.C = Astrolabe.ContinentList[C]
+				tbl.C = C == 0 and AzerothZoneList or Astrolabe.ContinentList[C]
 				tbl.Z = 1
+				tbl.mapC = C
+				tbl.mapZ = Z
 				return iterCont, tbl, nil
-			else -- Don't show, so we return the simplest null iterator
-				return next, emptyTbl, nil
 			end
-		else -- It is a zone
-			return iter, HFM_Data[mapFile], nil
 		end
+		return next, emptyTbl, nil
 	end
 end
 
