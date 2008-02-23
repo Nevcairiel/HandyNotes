@@ -16,6 +16,8 @@ local defaults = {
 		icon_alpha         = 1.0,
 		show_both_factions = true,
 		show_on_continent  = true,
+		show_lines         = true,
+		show_lines_zone    = true,
 	},
 }
 
@@ -226,18 +228,15 @@ local function GetIntersection(x1, y1, x2, y2, sx, sy, ex, ey)
 	local numer = dx*(sy-y1) - dy*(sx-x1)
 	local demon = dx*(sy-ey) + dy*(ex-sx)
 	if demon == 0 or dx == 0 then
-		return x2, y2
-		--return false
+		return x2, y2 --return false
 	else
 		local u = numer / demon
 		local t = (sx + (ex-sx)*u - x1)/dx
 		if u >= 0 and u <= 1 and t >= 0 and t <= 1 then
-			return sx + (ex-sx)*u, sy + (ey-sy)*u
-			--return true
+			return sx + (ex-sx)*u, sy + (ey-sy)*u --return true
 		end
 	end
-	return x2, y2
-	--return false
+	return x2, y2 --return false
 end
 
 -- Function to draw a line between 2 coordinates
@@ -253,6 +252,8 @@ local function drawline(C1, Z1, x1, y1, mapFile2, coord2, color)
 		color = 4
 	end
 	local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
+	if Z > 0 and not db.show_lines_zone then return end
+
 	local C2, Z2 = HandyNotes:GetCZ(mapFile2)
 	local x2, y2 = HandyNotes:getXY(coord2)
 	x1, y1 = Astrolabe:TranslateWorldMapPosition(C1, Z1, x1, y1, C, Z)
@@ -263,16 +264,16 @@ local function drawline(C1, Z1, x1, y1, mapFile2, coord2, color)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 1, 0, 1, 1)
 	local w, h = WorldMapButton:GetWidth(), WorldMapButton:GetHeight()
 	G:DrawLine(WorldMapButton, x1*w, (1-y1)*h, x2*w, (1-y2)*h, 25, colors[color], "OVERLAY")
-	--ChatFrame1:AddMessage(strjoin(",", mapFile, coord, mapFile2, coord2))
-	--ChatFrame1:AddMessage(strjoin(",", x1*w, (1-y1)*h, x2*w, (1-y2)*h))
 end
 
 -- Function to draw all lines from the given flightmaster
 local function drawlines(mapFile, coord, fpType, ...)
-	for i = 1, select("#", ...) do
-		local C1, Z1 = HandyNotes:GetCZ(mapFile)
-		local x1, y1 = HandyNotes:getXY(coord)
-		drawline(C1, Z1, x1, y1, strsplit(",", (select(i, ...))))
+	if db.show_lines then
+		for i = 1, select("#", ...) do
+			local C1, Z1 = HandyNotes:GetCZ(mapFile)
+			local x1, y1 = HandyNotes:getXY(coord)
+			drawline(C1, Z1, x1, y1, strsplit(",", (select(i, ...))))
+		end
 	end
 	return fpType
 end
@@ -287,21 +288,13 @@ function HFMHandler:OnEnter(mapFile, coord)
 	local tooltip, fpType
 	if self:GetParent() == WorldMapButton then
 		tooltip = WorldMapTooltip
-		if type(HFM_Data[mapFile][coord]) == "string" then
-			fpType = tonumber(drawlines(mapFile, coord, strsplit("|", HFM_Data[mapFile][coord])))
-		else
-			fpType = HFM_Data[mapFile][coord]
-		end
+		fpType = tonumber(drawlines(mapFile, coord, strsplit("|", HFM_Data[mapFile][coord])))
 		-- compare X coordinate
 		tooltip:SetOwner(self, "ANCHOR_NONE")
 		tooltip:SetPoint("BOTTOMRIGHT", WorldMapButton)
 	else
 		tooltip = GameTooltip
-		if type(HFM_Data[mapFile][coord]) == "string" then
-			fpType = tonumber((strsplit("|", HFM_Data[mapFile][coord])))
-		else
-			fpType = HFM_Data[mapFile][coord]
-		end
+		fpType = tonumber((strsplit("|", HFM_Data[mapFile][coord])))
 		-- compare X coordinate
 		tooltip:SetOwner(self, self:GetCenter() > UIParent:GetCenter() and "ANCHOR_LEFT" or "ANCHOR_RIGHT")
 	end
@@ -327,7 +320,7 @@ do
 		if not t then return nil end
 		local state, value = next(t, prestate)
 		while state do -- Have we reached the end of this zone?
-			if type(value) == "string" then value = tonumber((strsplit("|", value))) end
+			value = tonumber((strsplit("|", value)))
 			if value == playerFaction then
 				-- Same faction flightpoint
 				return state, nil, icons[1], db.icon_scale, db.icon_alpha
@@ -355,7 +348,7 @@ do
 			if data then -- Only if there is data for this zone
 				state, value = next(data, prestate)
 				while state do -- Have we reached the end of this zone?
-					if type(value) == "string" then value = tonumber((strsplit("|", value))) end
+					value = tonumber((strsplit("|", value)))
 					local x, y = HandyNotes:getXY(state)
 					local c1, z1 = HandyNotes:GetCZ(mapFile)
 					local x, y = Astrolabe:TranslateWorldMapPosition(c1, z1, x, y, C, Z)
@@ -423,35 +416,68 @@ local options = {
 			type = "description",
 			order = 0,
 		},
-		icon_scale = {
-			type = "range",
-			name = "Icon Scale",
-			desc = "The scale of the icons",
-			min = 0.25, max = 2, step = 0.01,
-			arg = "icon_scale",
-			order = 10,
-		},
-		icon_alpha = {
-			type = "range",
-			name = "Icon Alpha",
-			desc = "The alpha transparency of the icons",
-			min = 0, max = 1, step = 0.01,
-			arg = "icon_alpha",
+		flight_icons = {
+			type = "group",
+			name = "FlightMaster Icons",
+			desc = "FlightMaster Icons",
 			order = 20,
+			inline = true,
+			args = {
+				icon_scale = {
+					type = "range",
+					name = "Icon Scale",
+					desc = "The scale of the icons",
+					min = 0.25, max = 2, step = 0.01,
+					arg = "icon_scale",
+					order = 10,
+				},
+				icon_alpha = {
+					type = "range",
+					name = "Icon Alpha",
+					desc = "The alpha transparency of the icons",
+					min = 0, max = 1, step = 0.01,
+					arg = "icon_alpha",
+					order = 20,
+				},
+				show_both_factions = {
+					type = "toggle",
+					name = "Show both factions",
+					desc = "Show all flightmasters instead of only those that you can use",
+					arg = "show_both_factions",
+					order = 30,
+				},
+				show_on_continent = {
+					type = "toggle",
+					name = "Show on continent maps",
+					desc = "Show flightmasters on continent level maps as well",
+					arg = "show_on_continent",
+					order = 40,
+				},
+			},
 		},
-		show_both_factions = {
-			type = "toggle",
-			name = "Show both factions",
-			desc = "Show all flightmasters instead of only those that you can use",
-			arg = "show_both_factions",
-			order = 30,
-		},
-		show_on_continent = {
-			type = "toggle",
-			name = "Show on continent maps",
-			desc = "Show flightmasters on continent level maps as well",
-			arg = "show_on_continent",
-			order = 40,
+		flight_lines = {
+			type = "group",
+			name = "Flight path lines",
+			desc = "Flight path lines",
+			order = 50,
+			inline = true,
+			args = {
+				show_lines = {
+					type = "toggle",
+					name = "Show flight path lines",
+					desc = "Show flight path lines on the world map",
+					arg = "show_lines",
+					order = 50,
+				},
+				show_lines_zone = {
+					type = "toggle",
+					name = "Show in zones",
+					desc = "Show flight path lines on the zone maps as well",
+					arg = "show_lines_zone",
+					order = 50,
+					disabled = function() return not db.show_lines end,
+				},
+			},
 		},
 	},
 }
