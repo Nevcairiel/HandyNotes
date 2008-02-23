@@ -3,7 +3,7 @@
 HandyNotes_FlightMasters = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_FlightMasters", "AceEvent-3.0")
 local HFM = HandyNotes_FlightMasters
 local Astrolabe = DongleStub("Astrolabe-0.4")
---local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_FlightMasters", false)
+local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_FlightMasters", false)
 local G = {}
 
 
@@ -50,13 +50,13 @@ colors[5] = colors[4] -- Special, Horde     [5] Yellow
 colors[6] = colors[5] -- Special, Neutral   [6] Yellow
 
 local HFM_DataType = {
-	[1] = "Alliance FlightMaster",
-	[2] = "Horde FlightMaster",
-	[3] = "Neutral FlightMaster",
-	[4] = "Druid FlightMaster",
-	[5] = "PvP FlightMaster",
-	[6] = "Aldor FlightMaster",
-	[7] = "Scryer FlightMaster",
+	[1] = L["Alliance FlightMaster"],
+	[2] = L["Horde FlightMaster"],
+	[3] = L["Neutral FlightMaster"],
+	[4] = L["Druid FlightMaster"],
+	[5] = L["PvP FlightMaster"],
+	[6] = L["Aldor FlightMaster"],
+	[7] = L["Scryer FlightMaster"],
 }
 
 -- Packed data in strings, which we unpack on demand. Format as follows:
@@ -220,6 +220,8 @@ end
 
 
 ---------------------------------------------------------
+-- Line drawing helper functions
+
 -- Function to get the intersection point of 2 lines (x1,y1)-(x2,y2) and (sx,sy)-(ex,ey)
 -- If there is no intersection point, it returns (x2, y2)
 local function GetIntersection(x1, y1, x2, y2, sx, sy, ex, ey)
@@ -227,9 +229,7 @@ local function GetIntersection(x1, y1, x2, y2, sx, sy, ex, ey)
 	local dy = y2-y1
 	local numer = dx*(sy-y1) - dy*(sx-x1)
 	local demon = dx*(sy-ey) + dy*(ex-sx)
-	if demon == 0 or dx == 0 then
-		return x2, y2 --return false
-	else
+	if demon ~= 0 and dx ~= 0 then
 		local u = numer / demon
 		local t = (sx + (ex-sx)*u - x1)/dx
 		if u >= 0 and u <= 1 and t >= 0 and t <= 1 then
@@ -239,24 +239,21 @@ local function GetIntersection(x1, y1, x2, y2, sx, sy, ex, ey)
 	return x2, y2 --return false
 end
 
--- Function to draw a line between 2 coordinates
-local function drawline(C1, Z1, x1, y1, mapFile2, coord2, color)
+-- Function to draw a line between 2 coordinates on map (C,Z)
+-- (x1,y1) is already translated to map (C,Z)
+local function drawline(C, Z, x1, y1, mapFile2, coord2, color)
 	color = tonumber(color)
-	if color == playerFaction then
+	if color == playerFaction then -- Same faction
 		color = 1
-	elseif color + playerFaction == 3 then
+	elseif color + playerFaction == 3 then -- Different faction
 		if not db.show_both_factions then return end
 		color = 2
-	elseif color + playerFaction == 6 then
+	elseif color + playerFaction == 6 then -- Different faction, but special
 		if not db.show_both_factions then return end
 		color = 4
 	end
-	local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
-	if Z > 0 and not db.show_lines_zone then return end
-
 	local C2, Z2 = HandyNotes:GetCZ(mapFile2)
 	local x2, y2 = HandyNotes:getXY(coord2)
-	x1, y1 = Astrolabe:TranslateWorldMapPosition(C1, Z1, x1, y1, C, Z)
 	x2, y2 = Astrolabe:TranslateWorldMapPosition(C2, Z2, x2, y2, C, Z)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 0, 0, 0, 1)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 0, 0, 1, 0)
@@ -269,10 +266,13 @@ end
 -- Function to draw all lines from the given flightmaster
 local function drawlines(mapFile, coord, fpType, ...)
 	if db.show_lines then
+		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
+		if Z > 0 and not db.show_lines_zone then return end
+		local C1, Z1 = HandyNotes:GetCZ(mapFile)
+		local x1, y1 = HandyNotes:getXY(coord)
+		x1, y1 = Astrolabe:TranslateWorldMapPosition(C1, Z1, x1, y1, C, Z)
 		for i = 1, select("#", ...) do
-			local C1, Z1 = HandyNotes:GetCZ(mapFile)
-			local x1, y1 = HandyNotes:getXY(coord)
-			drawline(C1, Z1, x1, y1, strsplit(",", (select(i, ...))))
+			drawline(C, Z, x1, y1, strsplit(",", (select(i, ...))))
 		end
 	end
 	return fpType
@@ -289,7 +289,6 @@ function HFMHandler:OnEnter(mapFile, coord)
 	if self:GetParent() == WorldMapButton then
 		tooltip = WorldMapTooltip
 		fpType = tonumber(drawlines(mapFile, coord, strsplit("|", HFM_Data[mapFile][coord])))
-		-- compare X coordinate
 		tooltip:SetOwner(self, "ANCHOR_NONE")
 		tooltip:SetPoint("BOTTOMRIGHT", WorldMapButton)
 	else
@@ -317,7 +316,7 @@ do
 
 	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
-		if not t then return nil end
+		if not t then return end
 		local state, value = next(t, prestate)
 		while state do -- Have we reached the end of this zone?
 			value = tonumber((strsplit("|", value)))
@@ -333,12 +332,11 @@ do
 			end
 			state, value = next(t, state) -- Get next data
 		end
-		return nil, nil, nil, nil
 	end
 
 	-- This is a funky custom iterator we use to iterate over every zone's nodes in a given continent
 	local function iterCont(t, prestate)
-		if not t then return nil end
+		if not t then return end
 		local C, Z = t.mapC, t.mapZ
 		local zone = t.Z
 		local mapFile = t.C[zone]
@@ -375,7 +373,6 @@ do
 			prestate = nil
 		end
 		tablepool[t] = true
-		return nil, nil, nil, nil, nil
 	end
 
 	function HFMHandler:GetNodes(mapFile, minimap)
@@ -386,7 +383,6 @@ do
 			if Z > 0 or (Z == 0 and db.show_on_continent) then
 				local tbl = next(tablepool) or {}
 				tablepool[tbl] = nil
-
 				tbl.C = C == 0 and AzerothZoneList or Astrolabe.ContinentList[C]
 				tbl.Z = 1
 				tbl.mapC = C
@@ -403,8 +399,8 @@ end
 -- Options table
 local options = {
 	type = "group",
-	name = "FlightMasters",
-	desc = "FlightMasters",
+	name = L["FlightMasters"],
+	desc = L["FlightMasters"],
 	get = function(info) return db[info.arg] end,
 	set = function(info, v)
 		db[info.arg] = v
@@ -412,44 +408,44 @@ local options = {
 	end,
 	args = {
 		desc = {
-			name = "These settings control the look and feel of the FlightMaster icons.",
+			name = L["These settings control the look and feel of the FlightMaster icons."],
 			type = "description",
 			order = 0,
 		},
 		flight_icons = {
 			type = "group",
-			name = "FlightMaster Icons",
-			desc = "FlightMaster Icons",
+			name = L["FlightMaster Icons"],
+			desc = L["FlightMaster Icons"],
 			order = 20,
 			inline = true,
 			args = {
 				icon_scale = {
 					type = "range",
-					name = "Icon Scale",
-					desc = "The scale of the icons",
+					name = L["Icon Scale"],
+					desc = L["The scale of the icons"],
 					min = 0.25, max = 2, step = 0.01,
 					arg = "icon_scale",
 					order = 10,
 				},
 				icon_alpha = {
 					type = "range",
-					name = "Icon Alpha",
-					desc = "The alpha transparency of the icons",
+					name = L["Icon Alpha"],
+					desc = L["The alpha transparency of the icons"],
 					min = 0, max = 1, step = 0.01,
 					arg = "icon_alpha",
 					order = 20,
 				},
 				show_both_factions = {
 					type = "toggle",
-					name = "Show both factions",
-					desc = "Show all flightmasters instead of only those that you can use",
+					name = L["Show both factions"],
+					desc = L["Show all flightmasters instead of only those that you can use"],
 					arg = "show_both_factions",
 					order = 30,
 				},
 				show_on_continent = {
 					type = "toggle",
-					name = "Show on continent maps",
-					desc = "Show flightmasters on continent level maps as well",
+					name = L["Show on continent maps"],
+					desc = L["Show flightmasters on continent level maps as well"],
 					arg = "show_on_continent",
 					order = 40,
 				},
@@ -457,22 +453,22 @@ local options = {
 		},
 		flight_lines = {
 			type = "group",
-			name = "Flight path lines",
-			desc = "Flight path lines",
+			name = L["Flight path lines"],
+			desc = L["Flight path lines"],
 			order = 50,
 			inline = true,
 			args = {
 				show_lines = {
 					type = "toggle",
-					name = "Show flight path lines",
-					desc = "Show flight path lines on the world map",
+					name = L["Show flight path lines"],
+					desc = L["Show flight path lines on the world map"],
 					arg = "show_lines",
 					order = 50,
 				},
 				show_lines_zone = {
 					type = "toggle",
-					name = "Show in zones",
-					desc = "Show flight path lines on the zone maps as well",
+					name = L["Show in zones"],
+					desc = L["Show flight path lines on the zone maps as well"],
 					arg = "show_lines_zone",
 					order = 50,
 					disabled = function() return not db.show_lines end,

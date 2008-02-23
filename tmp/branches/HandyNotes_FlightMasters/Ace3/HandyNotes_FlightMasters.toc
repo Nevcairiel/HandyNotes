@@ -9,4 +9,5 @@
 ## SavedVariables: HandyNotes_FlightMastersDB
 ## RequiredDeps: HandyNotes
 
+Locales.xml
 HandyNotes_FlightMasters.lua
