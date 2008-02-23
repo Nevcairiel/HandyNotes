@@ -39,11 +39,13 @@ local icons = {
 }
 
 local colors = {
-	{0, 1, 0, 1},    -- Your faction  [1] Green
-	{1, 0, 0, 1},    -- Enemy faction [2] Red
-	{1, 0.5, 0, 1},  -- Both factions [3] Orange
-	{1, 1, 0, 1},    -- Special       [4] Yellow
+	{0, 1, 0, 1},     -- Your faction       [1] Green
+	{1, 0, 0, 1},     -- Enemy faction      [2] Red
+	{1, 0.5, 0, 1},   -- Both factions      [3] Orange
+	{1, 1, 0, 1},     -- Special, Alliance  [4] Yellow
 }
+colors[5] = colors[4] -- Special, Horde     [5] Yellow
+colors[6] = colors[5] -- Special, Neutral   [6] Yellow
 
 local HFM_DataType = {
 	[1] = "Alliance FlightMaster",
@@ -72,13 +74,15 @@ local HFM_Data = {
 		[84406830] = "1|SearingGorge,37903070,1|Stormwind,66406220,1|BlastedLands,65502440,1|Redridge,30705930,1",},
 	["Duskwood"] = {[77504430] = "1|Stormwind,66406220,1|Redridge,30705930,1|BlastedLands,65502440,1|Stranglethorn,27507780,1|Stranglethorn,38230404,1|Westfall,56605270,1",},
 	["EasternPlaguelands"] = {
-		[22323146] = "5|EasternPlaguelands,66075039,4|EasternPlaguelands,54242676,4|EasternPlaguelands,38067525,4",
-		[80225700] = "2|Ghostlands,45423052,2|Undercity,63404850,2|Hinterlands,81708180,2",
+		[22323146] = "5|EasternPlaguelands,66075039,6|EasternPlaguelands,54242676,6|EasternPlaguelands,38067525,6",
+		[80225700] = "2|Ghostlands,45413053,2|Undercity,63404850,2|Hinterlands,81708180,2",
 		[81605930] = "1|Ironforge,55704770,1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Ghostlands,74766715,1",},
-	["EversongWoods"] = {[54355073] = "2|Ghostlands,45423052,2",},
+	["EversongWoods"] = {[54365071] = "2|Ghostlands,45413053,2",},
+	--["EversongWoods"] = {[54365071] = "2|Ghostlands,45413053,2|Sunwell,48452514,2",},
 	["Ghostlands"] = {
-		[45423052] = "2|EversongWoods,54355073,2|EasternPlaguelands,80225700,2",
-		[74766715] = "1|EasternPlaguelands,81605930,1",},
+		[45413053] = "2|EversongWoods,54365071,2|EasternPlaguelands,80225700,2|Ghostlands,74766715,2",
+		[74766715] = "3|EasternPlaguelands,81605930,1|Ghostlands,45413053,2",},
+		--[74766715] = "3|EasternPlaguelands,81605930,1|Ghostlands,45413053,2|Sunwell,48452514,2",},
 	["Hilsbrad"] = {
 		[60201870] = "2|Undercity,63404850,2|Hinterlands,81708180,2|Arathi,73103260,2|Silverpine,45504250,2",
 		[49405220] = "1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Arathi,45804610,1|Wetlands,9505970,1|Ironforge,55704770,1",},
@@ -98,6 +102,8 @@ local HFM_Data = {
 		[26867709] = "2|Stranglethorn,32502930,2|Badlands,4104490,2|SwampOfSorrows,46105470,2",
 		[27507780] = "1|Stormwind,66406220,1|Westfall,56605270,1|Duskwood,77504430,1|Stranglethorn,38230404,1",
 		[38230404] = "1|Stormwind,66406220,1|Westfall,56605270,1|Duskwood,77504430,1|Stranglethorn,27507780,1",},
+	--["Sunwell"] = {
+	--	[48452514] = "3|Ghostlands,74766715,2|EversongWoods,54365071,2",},
 	["SwampOfSorrows"] = {[46105470] = "2|Badlands,4104490,2|BurningSteppes,65602410,2|Stranglethorn,32502930,2|Stranglethorn,26867709,2",},
 	["Undercity"] = {[63404850] = "2|Hinterlands,81708180,2|Arathi,73103260,2|Silverpine,45504250,2|EasternPlaguelands,80225700,2|Hilsbrad,60201870,2|Badlands,4104490,2",},
 	["WesternPlaguelands"] = {[42908490] = "1|Hinterlands,11104610,1|EasternPlaguelands,81605930,1|Ironforge,55704770,1|Hilsbrad,49405220,1",},
@@ -135,7 +141,7 @@ local HFM_Data = {
 		[75404430] = "2|Desolace,21607400,2|ThunderBluff,46905000,2|Barrens,51503040,2|Tanaris,51602550,2|ThousandNeedles,45104920,2|Silithus,48703670,2",
 		[89504590] = "1|Dustwallow,67505120,1|Feralas,30244324,1|Tanaris,51002930,1",},
 	["Moonglade"] = {
-		[44004500] = "4|Teldrassil,58409390,4|ThunderBluff,46905000,4",
+		[44004500] = "4|Teldrassil,58409390,4|ThunderBluff,46905000,5",
 		[32206630] = "2|Felwood,34405380,2|Winterspring,60503630,2",
 		[48006730] = "1|Darkshore,36404560,1|Felwood,62502420,1|Winterspring,62303660,1",},
 	["Ogrimmar"] = {[45306400] = "2|Felwood,34405380,2|Winterspring,60503630,2|Aszhara,22004970,2|Ashenvale,73206152,2|ThunderBluff,46905000,2|Barrens,51503040,2|Dustwallow,35603180,2|Tanaris,51602550,2",},
@@ -151,7 +157,7 @@ local HFM_Data = {
 	["Teldrassil"] = {[58409390] = "1|Darkshore,36404560,1|Moonglade,44004500,4",},
 	["TheExodar"] = {[68446370] = "1|BloodmystIsle,57685388,1",},
 	["ThousandNeedles"] = {[45104920] = "2|Tanaris,51602550,2|Feralas,75404430,2|ThunderBluff,46905000,2|Barrens,51503040,2|Barrens,44005900,2",},
-	["ThunderBluff"] = {[46905000] = "2|Desolace,21607400,2|StonetalonMountains,45105990,2|Aszhara,22004970,2|Ogrimmar,45306400,2|Barrens,51503040,2|Barrens,44005900,2|Dustwallow,35603180,2|Tanaris,51602550,2|ThousandNeedles,45104920,2|Feralas,75404430,2|Moonglade,44004500,4",},
+	["ThunderBluff"] = {[46905000] = "2|Desolace,21607400,2|StonetalonMountains,45105990,2|Aszhara,22004970,2|Ogrimmar,45306400,2|Barrens,51503040,2|Barrens,44005900,2|Dustwallow,35603180,2|Tanaris,51602550,2|ThousandNeedles,45104920,2|Feralas,75404430,2|Moonglade,44004500,5",},
 	["UngoroCrater"] = {[45000600] = "3|Tanaris,51002930,1|Silithus,50603440,1|Silithus,48703670,2|Tanaris,51602550,2",},
 	["Winterspring"] = {
 		[60503630] = "2|Moonglade,32206630,2|Felwood,34405380,2|Aszhara,22004970,2|Ogrimmar,45306400,2",
@@ -159,42 +165,42 @@ local HFM_Data = {
 	-- Outlands
 	["BladesEdgeMountains"] = {
 		[37826140] = "1|Zangarmarsh,41292899,1|Zangarmarsh,67835146,1|BladesEdgeMountains,61157044,1|BladesEdgeMountains,61683962,1|Netherstorm,33746399,1|Netherstorm,45313487,1",
-		[76406590] = 2,
+		[76376593] = "2|Zangarmarsh,84765511,2|BladesEdgeMountains,52055412,2|Netherstorm,33746399,2",
 		[61157044] = "1|Zangarmarsh,67835146,1|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61683962,1|Netherstorm,33746399,1",
-		[61683962] = "3|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61157044,1|Netherstorm,33746399,3",
-		[52105420] = 2,},
+		[61683962] = "3|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61157044,1|Netherstorm,33746399,3|BladesEdgeMountains,52055412,2",
+		[52055412] = "2|Zangarmarsh,84765511,2|Zangarmarsh,33075107,2|BladesEdgeMountains,76376593,2|BladesEdgeMountains,61683962,2|Netherstorm,45313487,2|Netherstorm,33746399,2",},
 	["Hellfire"] = {
-		[56303630] = 2,
-		[61608120] = 2,
+		[56293624] = "2|Hellfire,87354813,2|Hellfire,61668119,2|Hellfire,27795997,2|TerokkarForest,49194342,2",
+		[61668119] = "2|Hellfire,56293624,2",
 		[78263445] = "1|Hellfire,68662823,1",
 		[87365241] = "1|Hellfire,54686235,1|Hellfire,78413490,1|Hellfire,25193723,1",
 		[78413490] = "1|Hellfire,54686235,1|Hellfire,87365241,1",
-		[87354813] = 2,
+		[87354813] = "2|Hellfire,56293624,2|Hellfire,27795997,2",
 		[54686235] = "1|TerokkarForest,59455543,1|ShattrathCity,64064111,1|Hellfire,87365241,1|Hellfire,78413490,1|Hellfire,25193723,1",
 		[71416248] = "1|Hellfire,78413490,1",
 		[68662823] = "1|Hellfire,78263445,1",
 		[25193723] = "1|Hellfire,54686235,1|Zangarmarsh,67835146,1",
-		[27866003] = 2,},
+		[27795997] = "2|Hellfire,56293624,2|Zangarmarsh,84765511,2|Zangarmarsh,33075107,2|ShattrathCity,64064111,2|Nagrand,57193524,2",},
 	["Nagrand"] = {
-		[57203530] = 2,
+		[57193524] = "2|Zangarmarsh,33075107,2|ShattrathCity,64064111,2|Hellfire,27795997,2",
 		[54177506] = "1|ShattrathCity,64064111,1|Zangarmarsh,67835146,1|TerokkarForest,59455543,1",},
 	["Netherstorm"] = {
-		[45313487] = "3|Netherstorm,33746399,3|Netherstorm,65206681,3|BladesEdgeMountains,37826140,1",
-		[33746399] = "3|Netherstorm,45313487,3|Netherstorm,65206681,3|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61157044,1|BladesEdgeMountains,61683962,3",
+		[45313487] = "3|Netherstorm,33746399,3|Netherstorm,65206681,3|BladesEdgeMountains,37826140,1|BladesEdgeMountains,52055412,2",
+		[33746399] = "3|Netherstorm,45313487,3|Netherstorm,65206681,3|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61157044,1|BladesEdgeMountains,61683962,3|BladesEdgeMountains,52055412,2|BladesEdgeMountains,76376593,2",
 		[65206681] = "3|Netherstorm,45313487,3|Netherstorm,33746399,3",},
 	["ShadowmoonValley"] = {
-		[63333040] = "6|ShadowmoonValley,37615545,4|ShadowmoonValley,30302920,4",
-		[30302920] = 2,
-		[37615545] = "1|TerokkarForest,59455543,1|ShadowmoonValley,56325781,4|ShadowmoonValley,63333040,4",
-		[56325781] = "7|ShadowmoonValley,37615545,4|ShadowmoonValley,30302920,4",},
-	["ShattrathCity"] = {[64064111] = "3|Zangarmarsh,67835146,1|Nagrand,54177506,1|TerokkarForest,59455543,1|Hellfire,54686235,1",},
+		[63333039] = "6|ShadowmoonValley,37615545,4|ShadowmoonValley,30342919,5",
+		[30342919] = "2|TerokkarForest,49194342,2|ShadowmoonValley,56325781,5|ShadowmoonValley,63333039,5",
+		[37615545] = "1|TerokkarForest,59455543,1|ShadowmoonValley,56325781,4|ShadowmoonValley,63333039,4",
+		[56325781] = "7|ShadowmoonValley,37615545,4|ShadowmoonValley,30342919,5",},
+	["ShattrathCity"] = {[64064111] = "3|Zangarmarsh,67835146,1|Nagrand,54177506,1|TerokkarForest,59455543,1|Hellfire,54686235,1|TerokkarForest,49194342,2|Nagrand,57193524,2|Zangarmarsh,84765511,2|Zangarmarsh,33075107,2|Hellfire,27795997,2",},
 	["TerokkarForest"] = {
-		[49214346] = 2,
+		[49194342] = "2|ShattrathCity,64064111,2|ShadowmoonValley,30342919,2|Hellfire,56293624,2",
 		[59455543] = "1|ShattrathCity,64064111,1|Hellfire,54686235,1|ShadowmoonValley,37615545,1|Nagrand,54177506,1",},
 	["Zangarmarsh"] = {
 		[41292899] = "1|Zangarmarsh,67835146,1|BladesEdgeMountains,37826140,1",
-		[84745502] = 2,
-		[33015110] = 2,
+		[84765511] = "2|Zangarmarsh,33075107,2|ShattrathCity,64064111,2|Hellfire,27795997,2|BladesEdgeMountains,52055412,2|BladesEdgeMountains,76376593,2",
+		[33075107] = "2|Zangarmarsh,84765511,2|ShattrathCity,64064111,2|Nagrand,57193524,2|Hellfire,27795997,2|BladesEdgeMountains,52055412,2",
 		[67835146] = "1|Hellfire,25193723,1|ShattrathCity,64064111,1|Nagrand,54177506,1|Zangarmarsh,41292899,1|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61157044,1",},
 }
 
@@ -236,6 +242,16 @@ end
 
 -- Function to draw a line between 2 coordinates
 local function drawline(C1, Z1, x1, y1, mapFile2, coord2, color)
+	color = tonumber(color)
+	if color == playerFaction then
+		color = 1
+	elseif color + playerFaction == 3 then
+		if not db.show_both_factions then return end
+		color = 2
+	elseif color + playerFaction == 6 then
+		if not db.show_both_factions then return end
+		color = 4
+	end
 	local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
 	local C2, Z2 = HandyNotes:GetCZ(mapFile2)
 	local x2, y2 = HandyNotes:getXY(coord2)
@@ -245,12 +261,6 @@ local function drawline(C1, Z1, x1, y1, mapFile2, coord2, color)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 0, 0, 1, 0)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 0, 1, 1, 1)
 	x2, y2 = GetIntersection(x1, y1, x2, y2, 1, 0, 1, 1)
-	color = tonumber(color)
-	if color == playerFaction then
-		color = 1
-	elseif color + playerFaction == 3 then
-		color = 2
-	end
 	local w, h = WorldMapButton:GetWidth(), WorldMapButton:GetHeight()
 	G:DrawLine(WorldMapButton, x1*w, (1-y1)*h, x2*w, (1-y2)*h, 25, colors[color], "OVERLAY")
 	--ChatFrame1:AddMessage(strjoin(",", mapFile, coord, mapFile2, coord2))
