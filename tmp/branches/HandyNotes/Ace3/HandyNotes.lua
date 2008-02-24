@@ -28,7 +28,62 @@ local defaults = {
 ---------------------------------------------------------
 -- Localize some globals
 local floor = floor
-local WorldMapButton = WorldMapButton
+local tconcat = table.concat
+local pairs, next, type = pairs, next, type
+local CreateFrame = CreateFrame
+local GetCurrentMapContinent, GetCurrentMapZone = GetCurrentMapContinent, GetCurrentMapZone
+local SetMapToCurrentZone = SetMapToCurrentZone
+local WorldMapButton, Minimap = WorldMapButton, Minimap
+
+
+---------------------------------------------------------
+-- xpcall safecall implementation, copied from AceAddon-3.0.lua
+-- (included in distribution), with permission from nevcairiel
+local xpcall = xpcall
+
+local function errorhandler(err)
+	return geterrorhandler()(err)
+end
+
+local function CreateDispatcher(argCount)
+	local code = [[
+		local xpcall, eh = ...
+		local method, ARGS
+		local function call() return method(ARGS) end
+	
+		local function dispatch(func, ...)
+			 method = func
+			 if not method then return end
+			 ARGS = ...
+			 return xpcall(call, eh)
+		end
+	
+		return dispatch
+	]]
+	
+	local ARGS = {}
+	for i = 1, argCount do ARGS[i] = "arg"..i end
+	code = code:gsub("ARGS", tconcat(ARGS, ", "))
+	return assert(loadstring(code, "safecall Dispatcher["..argCount.."]"))(xpcall, errorhandler)
+end
+
+local Dispatchers = setmetatable({}, {__index=function(self, argCount)
+	local dispatcher = CreateDispatcher(argCount)
+	rawset(self, argCount, dispatcher)
+	return dispatcher
+end})
+Dispatchers[0] = function(func)
+	return xpcall(func, errorhandler)
+end
+
+local function safecall(func, ...)
+	-- we check to see if the func is passed is actually a function here and don't error when it isn't
+	-- this safecall is used for optional functions like OnInitialize OnEnable etc. When they are not
+	-- present execution should continue without hinderance
+	if type(func) == "function" then
+		return Dispatchers[select('#', ...)](func, ...)
+	end
+end
 
 
 ---------------------------------------------------------
@@ -119,16 +174,13 @@ end
 
 local pinsHandler = {}
 function pinsHandler:OnEnter(motion)
-	local func = HandyNotes.plugins[self.pluginName].OnEnter
-	if type(func) == "function" then func(self, self.mapFile, self.coord) end
+	safecall(HandyNotes.plugins[self.pluginName].OnEnter, self, self.mapFile, self.coord)
 end
 function pinsHandler:OnLeave(motion)
-	local func = HandyNotes.plugins[self.pluginName].OnLeave
-	if type(func) == "function" then func(self, self.mapFile, self.coord) end
+	safecall(HandyNotes.plugins[self.pluginName].OnLeave, self, self.mapFile, self.coord)
 end
 function pinsHandler:OnClick(button, down)
-	local func = HandyNotes.plugins[self.pluginName].OnClick
-	if type(func) == "function" then func(self, button, down, self.mapFile, self.coord) end
+	safecall(HandyNotes.plugins[self.pluginName].OnClick, self, button, down, self.mapFile, self.coord)
 end
 
 
@@ -245,8 +297,7 @@ function HandyNotes:UpdateWorldMap()
 	if not WorldMapButton:IsVisible() then return end
 
 	for pluginName, pluginHandler in pairs(self.plugins) do
-		-- TODO: Wrap this with a safecall()
-		self:UpdateWorldMapPlugin(pluginName)
+		safecall(self.UpdateWorldMapPlugin, self, pluginName)
 	end
 end
 
@@ -307,16 +358,15 @@ end
 -- This function updates all the icons on the minimap for every plugin
 function HandyNotes:UpdateMinimap()
 	--if not Minimap:IsVisible() then return end
-
 	SetMapToCurrentZone()
 	for pluginName, pluginHandler in pairs(self.plugins) do
-		-- TODO: Wrap this with a safecall()
-		self:UpdateMinimapPlugin(pluginName)
+		safecall(self.UpdateMinimapPlugin, self, pluginName)
 	end
 end
 
 -- This function runs when we receive a "HandyNotes_NotifyUpdate"
 -- notification from a plugin that its icons needs to be updated
+-- Syntax is plugin:SendMessage("HandyNotes_NotifyUpdate", "pluginName")
 function HandyNotes:UpdatePluginMap(message, pluginName)
 	if self.plugins[pluginName] then
 		self:UpdateWorldMapPlugin(pluginName)
@@ -345,23 +395,13 @@ options = {
 	type = "group",
 	name = L["HandyNotes"],
 	desc = L["HandyNotes"],
-	get = function(info) return db[info.arg] end,
-	set = function(info, v)
-		local arg = info.arg
-		db[arg] = v
-		if arg == "icon_scale" or arg == "icon_alpha" then
-			HandyNotes:UpdateWorldMap()
-		else
-			HandyNotes:UpdateMinimap()
-		end
-	end,
 	args = {
 		enabled = {
 			type = "toggle",
 			name = "Enable HandyNotes",
 			desc = "Enable or disable HandyNotes",
-			arg = "enabled",
 			order = 1,
+			get = function(info) return db.enabled end,
 			set = function(info, v)
 				db.enabled = v
 				if v then HandyNotes:Enable() else HandyNotes:Disable() end
@@ -373,6 +413,16 @@ options = {
 			name = "Overall settings",
 			desc = "Overall settings that affect every database",
 			order = 10,
+			get = function(info) return db[info.arg] end,
+			set = function(info, v)
+				local arg = info.arg
+				db[arg] = v
+				if arg == "icon_scale" or arg == "icon_alpha" then
+					HandyNotes:UpdateWorldMap()
+				else
+					HandyNotes:UpdateMinimap()
+				end
+			end,
 			disabled = function() return not db.enabled end,
 			args = {
 				desc = {
@@ -449,7 +499,8 @@ function HandyNotes:OnEnable()
 		self:Disable()
 		return
 	end
-	SetMapToCurrentZone()
+	self:UpdateMinimap() -- Contains SetMapToCurrentZone(), we call this before registering for WORLD_MAP_UPDATE
+	self:UpdateWorldMap()
 	self:RegisterEvent("WORLD_MAP_UPDATE", "UpdateWorldMap")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateMinimap")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateMinimap")
