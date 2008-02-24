@@ -49,18 +49,23 @@ HN.icons = icons
 local HNHandler = {}
 
 function HNHandler:OnEnter(mapFile, coord)
-	if ( self:GetCenter() > self:GetParent():GetCenter() ) then -- compare X coordinate
-		WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT")
+	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
+	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
+		tooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
-		WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	WorldMapTooltip:SetText(dbdata[mapFile][coord].title)
-	WorldMapTooltip:AddLine(dbdata[mapFile][coord].desc)
-	WorldMapTooltip:Show()
+	tooltip:SetText(dbdata[mapFile][coord].title)
+	tooltip:AddLine(dbdata[mapFile][coord].desc)
+	tooltip:Show()
 end
 
 function HNHandler:OnLeave(mapFile, coord)
-	WorldMapTooltip:Hide()
+	if self:GetParent() == WorldMapButton then
+		WorldMapTooltip:Hide()
+	else
+		GameTooltip:Hide()
+	end
 end
 
 local function deletePin(mapFile, coord)

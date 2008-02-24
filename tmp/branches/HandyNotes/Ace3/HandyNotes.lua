@@ -32,7 +32,7 @@ local tconcat = table.concat
 local pairs, next, type = pairs, next, type
 local CreateFrame = CreateFrame
 local GetCurrentMapContinent, GetCurrentMapZone = GetCurrentMapContinent, GetCurrentMapZone
-local SetMapToCurrentZone = SetMapToCurrentZone
+local GetRealZoneText = GetRealZoneText
 local WorldMapButton, Minimap = WorldMapButton, Minimap
 
 
@@ -189,6 +189,8 @@ end
 
 -- Public functions for plugins to convert between MapFile <-> C,Z
 local continentMapFile = {
+	[WORLDMAP_COSMIC_ID] = "Cosmic", -- That constant is -1
+	[0] = "World",
 	[1] = "Kalimdor",
 	[2] = "Azeroth",
 	[3] = "Expansion01",
@@ -202,25 +204,17 @@ for C = 1, #Astrolabe.ContinentList do
 		reverseMapFileZ[mapFile] = Z
 	end
 end
-for C = 1, #continentMapFile do
+for C = -1, 3 do
 	local mapFile = continentMapFile[C]
 	reverseMapFileC[mapFile] = C
 	reverseMapFileZ[mapFile] = 0
 end
-reverseMapFileC["Cosmic"], reverseMapFileZ["Cosmic"] = WORLDMAP_COSMIC_ID, 0 -- That constant is -1
-reverseMapFileC["World"], reverseMapFileZ["World"] = 0, 0
 
 function HandyNotes:GetMapFile(C, Z)
-	if C > 0 then
-		if Z == 0 then
-			return continentMapFile[C]
-		else
-			return Astrolabe.ContinentList[C][Z]
-		end
-	elseif C == WORLDMAP_COSMIC_ID then
-		return "Cosmic" -- Yes these are the real mapFile names
+	if Z == 0 then
+		return continentMapFile[C]
 	else
-		return "World"  -- World Map of Azeroth
+		return Astrolabe.ContinentList[C][Z]
 	end
 end
 function HandyNotes:GetCZ(mapFile)
@@ -233,6 +227,34 @@ function HandyNotes:getCoord(x, y)
 end
 function HandyNotes:getXY(id)
 	return floor(id / 10000) / 10000, (id % 10000) / 10000
+end
+
+-- Public functions for plugins to convert between GetRealZoneText() <-> C,Z
+-- GetRealZoneText() returns localized strings, so these are also the functions
+-- to get localized display strings.
+local continentList = {GetMapContinents()}
+local zoneList = {}
+local reverseZoneC = {}
+local reverseZoneZ = {}
+for C, cname in pairs(continentList) do
+	reverseZoneC[cname] = C
+	reverseZoneZ[cname] = 0
+	zoneList[C] = {GetMapZones(C)}
+	for Z, zname in pairs(zoneList[C]) do
+		reverseZoneC[zname] = C
+		reverseZoneZ[zname] = Z
+	end
+end
+
+function HandyNotes:GetZoneToCZ(zone)
+	return reverseZoneC[zone], reverseZoneZ[zone]
+end
+function HandyNotes:GetCZToZone(C, Z)
+	if Z == 0 then
+		return continentList[C]
+	else
+		return zoneList[C][Z]
+	end
 end
 
 
@@ -295,7 +317,6 @@ end
 -- This function updates all the icons on the world map for every plugin
 function HandyNotes:UpdateWorldMap()
 	if not WorldMapButton:IsVisible() then return end
-
 	for pluginName, pluginHandler in pairs(self.plugins) do
 		safecall(self.UpdateWorldMapPlugin, self, pluginName)
 	end
@@ -304,18 +325,17 @@ end
 
 -- This function updates all the icons of one plugin on the world map
 function HandyNotes:UpdateMinimapPlugin(pluginName)
-	if not Minimap:IsVisible() then return end
+	--if not Minimap:IsVisible() then return end
 
 	for coordID, icon in pairs(minimapPins[pluginName]) do
 		Astrolabe:RemoveIconFromMinimap(icon)
 	end
 	clearAllPins(minimapPins[pluginName])
 
-	local playerX, playerY = GetPlayerMapPosition("player")
-	if playerX == 0 and playerY == 0 then return end -- we are in an instance
+	local continent, zone = HandyNotes:GetZoneToCZ(GetRealZoneText())
+	if not continent then return end
 
 	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
-	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
 	local mapFile = self:GetMapFile(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = Minimap:GetFrameLevel() + 5
@@ -358,7 +378,6 @@ end
 -- This function updates all the icons on the minimap for every plugin
 function HandyNotes:UpdateMinimap()
 	--if not Minimap:IsVisible() then return end
-	SetMapToCurrentZone()
 	for pluginName, pluginHandler in pairs(self.plugins) do
 		safecall(self.UpdateMinimapPlugin, self, pluginName)
 	end
@@ -385,6 +404,19 @@ function HandyNotes.AstrolabeEdgeCallback()
 			end
 		end
 	end
+end
+
+-- OnUpdate frame we use to update the minimap icons
+local updateFrame = CreateFrame("Frame")
+updateFrame:Hide()
+do
+	local zone
+	updateFrame:SetScript("OnUpdate", function()
+		if zone ~= GetRealZoneText() then
+			zone = GetRealZoneText()
+			HandyNotes:UpdateMinimap()
+		end
+	end)
 end
 
 
@@ -426,7 +458,7 @@ options = {
 			disabled = function() return not db.enabled end,
 			args = {
 				desc = {
-					name = "These settings control the look and feel of every database globally.",
+					name = "These settings control the look and feel of HandyNotes globally. The icon's scale and alpha here are multiplied with the plugin's scale and alpha.",
 					type = "description",
 					order = 0,
 				},
@@ -471,7 +503,7 @@ options = {
 			order = 20,
 			args = {
 				desc = {
-					name = "Configuration for each plugin databases.",
+					name = "Configuration for each individual plugin database.",
 					type = "description",
 					order = 0,
 				},
@@ -499,13 +531,12 @@ function HandyNotes:OnEnable()
 		self:Disable()
 		return
 	end
-	self:UpdateMinimap() -- Contains SetMapToCurrentZone(), we call this before registering for WORLD_MAP_UPDATE
-	self:UpdateWorldMap()
 	self:RegisterEvent("WORLD_MAP_UPDATE", "UpdateWorldMap")
-	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateMinimap")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateMinimap")
 	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdatePluginMap")
 	Astrolabe:Register_OnEdgeChanged_Callback(self.AstrolabeEdgeCallback, true)
+	updateFrame:Show()
+	self:UpdateMinimap()
+	self:UpdateWorldMap()
 end
 
 function HandyNotes:OnDisable()
@@ -518,6 +549,7 @@ function HandyNotes:OnDisable()
 		clearAllPins(minimapPins[pluginName])
 	end
 	Astrolabe:Register_OnEdgeChanged_Callback(self.AstrolabeEdgeCallback)
+	updateFrame:Hide()
 end
 
 -- vim: ts=4 noexpandtab
