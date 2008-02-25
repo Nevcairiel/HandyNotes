@@ -79,12 +79,13 @@ local HFM_Data = {
 		[22323146] = "5|EasternPlaguelands,66075039,6|EasternPlaguelands,54242676,6|EasternPlaguelands,38067525,6",
 		[80225700] = "2|Ghostlands,45413053,2|Undercity,63404850,2|Hinterlands,81708180,2",
 		[81605930] = "1|Ironforge,55704770,1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Ghostlands,74766715,1",},
+		--[81605930] = "1|Ironforge,55704770,1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Ghostlands,74766715,1|Sunwell,48452514,1",},
 	["EversongWoods"] = {[54365071] = "2|Ghostlands,45413053,2",},
 	--["EversongWoods"] = {[54365071] = "2|Ghostlands,45413053,2|Sunwell,48452514,2",},
 	["Ghostlands"] = {
 		[45413053] = "2|EversongWoods,54365071,2|EasternPlaguelands,80225700,2|Ghostlands,74766715,2",
 		[74766715] = "3|EasternPlaguelands,81605930,1|Ghostlands,45413053,2",},
-		--[74766715] = "3|EasternPlaguelands,81605930,1|Ghostlands,45413053,2|Sunwell,48452514,2",},
+		--[74766715] = "3|EasternPlaguelands,81605930,1|Ghostlands,45413053,2|Sunwell,48452514,3",},
 	["Hilsbrad"] = {
 		[60201870] = "2|Undercity,63404850,2|Hinterlands,81708180,2|Arathi,73103260,2|Silverpine,45504250,2",
 		[49405220] = "1|WesternPlaguelands,42908490,1|Hinterlands,11104610,1|Arathi,45804610,1|Wetlands,9505970,1|Ironforge,55704770,1",},
@@ -105,7 +106,7 @@ local HFM_Data = {
 		[27507780] = "1|Stormwind,66406220,1|Westfall,56605270,1|Duskwood,77504430,1|Stranglethorn,38230404,1",
 		[38230404] = "1|Stormwind,66406220,1|Westfall,56605270,1|Duskwood,77504430,1|Stranglethorn,27507780,1",},
 	--["Sunwell"] = {
-	--	[48452514] = "3|Ghostlands,74766715,2|EversongWoods,54365071,2",},
+	--	[48452514] = "3|Ghostlands,74766715,3|EversongWoods,54365071,2|EasternPlaguelands,81605930,1",},
 	["SwampOfSorrows"] = {[46105470] = "2|Badlands,4104490,2|BurningSteppes,65602410,2|Stranglethorn,32502930,2|Stranglethorn,26867709,2",},
 	["Undercity"] = {[63404850] = "2|Hinterlands,81708180,2|Arathi,73103260,2|Silverpine,45504250,2|EasternPlaguelands,80225700,2|Hilsbrad,60201870,2|Badlands,4104490,2",},
 	["WesternPlaguelands"] = {[42908490] = "1|Hinterlands,11104610,1|EasternPlaguelands,81605930,1|Ironforge,55704770,1|Hilsbrad,49405220,1",},
