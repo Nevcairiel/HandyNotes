@@ -14,6 +14,7 @@ L["Druid FlightMaster"] = true
 L["PvP FlightMaster"] = true
 L["Aldor FlightMaster"] = true
 L["Scryer FlightMaster"] = true
+L["Skyguard FlightMaster"] = true
 
 -- Configuration menus
 L["FlightMasters"] = true

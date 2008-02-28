@@ -57,6 +57,7 @@ local HFM_DataType = {
 	[5] = L["PvP FlightMaster"],
 	[6] = L["Aldor FlightMaster"],
 	[7] = L["Scryer FlightMaster"],
+	[8] = L["Skyguard FlightMaster"],
 }
 
 -- Packed data in strings, which we unpack on demand. Format as follows:
@@ -171,7 +172,8 @@ local HFM_Data = {
 		[76376593] = "2|Zangarmarsh,84765511,2|BladesEdgeMountains,52055412,2|Netherstorm,33746399,2",
 		[61157044] = "1|Zangarmarsh,67835146,1|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61683962,1|Netherstorm,33746399,1",
 		[61683962] = "3|BladesEdgeMountains,37826140,1|BladesEdgeMountains,61157044,1|Netherstorm,33746399,3|BladesEdgeMountains,52055412,2",
-		[52055412] = "2|Zangarmarsh,84765511,2|Zangarmarsh,33075107,2|BladesEdgeMountains,76376593,2|BladesEdgeMountains,61683962,2|Netherstorm,45313487,2|Netherstorm,33746399,2",},
+		[52055412] = "2|Zangarmarsh,84765511,2|Zangarmarsh,33075107,2|BladesEdgeMountains,76376593,2|BladesEdgeMountains,61683962,2|Netherstorm,45313487,2|Netherstorm,33746399,2",
+		[28285210] = "8|TerokkarForest,63506582,6",},
 	["Hellfire"] = {
 		[56293624] = "2|Hellfire,87354813,2|Hellfire,61668119,2|Hellfire,27795997,2|TerokkarForest,49194342,2",
 		[61668119] = "2|Hellfire,56293624,2",
@@ -199,7 +201,8 @@ local HFM_Data = {
 	["ShattrathCity"] = {[64064111] = "3|Zangarmarsh,67835146,1|Nagrand,54177506,1|TerokkarForest,59455543,1|Hellfire,54686235,1|TerokkarForest,49194342,2|Nagrand,57193524,2|Zangarmarsh,84765511,2|Zangarmarsh,33075107,2|Hellfire,27795997,2",},
 	["TerokkarForest"] = {
 		[49194342] = "2|ShattrathCity,64064111,2|ShadowmoonValley,30342919,2|Hellfire,56293624,2",
-		[59455543] = "1|ShattrathCity,64064111,1|Hellfire,54686235,1|ShadowmoonValley,37615545,1|Nagrand,54177506,1",},
+		[59455543] = "1|ShattrathCity,64064111,1|Hellfire,54686235,1|ShadowmoonValley,37615545,1|Nagrand,54177506,1",
+		[63506582] = "8|BladesEdgeMountains,28285210,6",},
 	["Zangarmarsh"] = {
 		[41292899] = "1|Zangarmarsh,67835146,1|BladesEdgeMountains,37826140,1",
 		[84765511] = "2|Zangarmarsh,33075107,2|ShattrathCity,64064111,2|Hellfire,27795997,2|BladesEdgeMountains,52055412,2|BladesEdgeMountains,76376593,2",
