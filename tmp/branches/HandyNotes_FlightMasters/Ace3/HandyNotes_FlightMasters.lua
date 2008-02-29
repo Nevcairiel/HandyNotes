@@ -383,7 +383,9 @@ do
 		local C, Z = HandyNotes:GetCZ(mapFile)
 		if minimap then -- Return only the requested zone's data for the minimap
 			return iter, HFM_Data[mapFile], nil
-		elseif C >= 0 then -- Not minimap, so whatever map it is, we return the entire continent of nodes
+		elseif C and Z and C >= 0 then
+			-- Not minimap, so whatever map it is, we return the entire continent of nodes
+			-- C and Z can be nil if we're in a battleground
 			if Z > 0 or (Z == 0 and db.show_on_continent) then
 				local tbl = next(tablepool) or {}
 				tablepool[tbl] = nil
