@@ -211,9 +211,10 @@ for C = -1, 3 do
 end
 
 function HandyNotes:GetMapFile(C, Z)
+	if not C or not Z then return end
 	if Z == 0 then
 		return continentMapFile[C]
-	else
+	elseif C > 0 then
 		return Astrolabe.ContinentList[C][Z]
 	end
 end
@@ -250,9 +251,10 @@ function HandyNotes:GetZoneToCZ(zone)
 	return reverseZoneC[zone], reverseZoneZ[zone]
 end
 function HandyNotes:GetCZToZone(C, Z)
+	if not C or not Z then return end
 	if Z == 0 then
 		return continentList[C]
-	else
+	elseif C > 0 then
 		return zoneList[C][Z]
 	end
 end
@@ -269,7 +271,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 
 	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
-	local mapFile = self:GetMapFile(continent, zone)
+	local mapFile = GetMapInfo() or self:GetMapFile(continent, zone) -- Fallback for "Cosmic" and "World"
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = WorldMapButton:GetFrameLevel() + 5
 	local frameStrata = WorldMapButton:GetFrameStrata()
@@ -300,7 +302,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		icon:SetParent(WorldMapButton)
 		icon:SetFrameStrata(frameStrata)
 		icon:SetFrameLevel(frameLevel)
-		if C == WORLDMAP_COSMIC_ID then
+		if not C or not Z or C == WORLDMAP_COSMIC_ID then
 			icon:ClearAllPoints()
 			icon:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x*WorldMapButton:GetWidth(), -y*WorldMapButton:GetHeight())
 			icon:Show()
@@ -333,10 +335,10 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	clearAllPins(minimapPins[pluginName])
 
 	local continent, zone = HandyNotes:GetZoneToCZ(GetRealZoneText())
-	if not continent then return end
+	local mapFile = self:GetMapFile(continent, zone) -- or GetMapInfo() -- Astrolabe doesn't support BGs
+	if not mapFile then return end
 
 	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
-	local mapFile = self:GetMapFile(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = Minimap:GetFrameLevel() + 5
 	local frameStrata = Minimap:GetFrameStrata()

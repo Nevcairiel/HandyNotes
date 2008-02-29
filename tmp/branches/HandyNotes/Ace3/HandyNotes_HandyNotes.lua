@@ -260,7 +260,7 @@ end
 function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 	if mouseButton == "RightButton" and IsControlKeyDown() and not IsAltKeyDown() and not IsShiftKeyDown() then
 		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
-		local mapFile = HandyNotes:GetMapFile(C, Z)
+		local mapFile = GetMapInfo() or HandyNotes:GetMapFile(C, Z) -- Fallback for "Cosmic" and "World"
 
 		-- Get the coordinate clicked on
 		button = button or this
