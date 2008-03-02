@@ -40,7 +40,7 @@ HNEditFrame.titleTexture:SetPoint("TOP", 0, 12)
 HNEditFrame.titleTexture = temp
 HNEditFrame.title = HNEditFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 HNEditFrame.title:SetPoint("TOP", 0, -3)
-HNEditFrame.title:SetText("Add Handy Note")
+HNEditFrame.title:SetText(L["Add Handy Note"])
 
 -- This creates a transparent textureless draggable frame to move HNEditFrame
 -- It overlaps the above title text and texture (more or less) exactly.
@@ -65,7 +65,7 @@ HNEditFrame.CloseButton:SetHitRectInsets(5, 5, 5, 5)
 -- Create and position the Title text string
 HNEditFrame.titletext = HNEditFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 HNEditFrame.titletext:SetPoint("TOPLEFT", 25, -28)
-HNEditFrame.titletext:SetText("Title")
+HNEditFrame.titletext:SetText(L["Title"])
 
 -- Create the Title Input Box and position it below the text
 HNEditFrame.titleinputframe = CreateFrame("Frame", nil, HNEditFrame)
@@ -87,7 +87,7 @@ HNEditFrame.titleinputbox:SetScript("OnEscapePressed", HNEditFrame.titleinputbox
 -- Create and position the Description text string
 HNEditFrame.desctext = HNEditFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 HNEditFrame.desctext:SetPoint("TOPLEFT", HNEditFrame.titleinputframe, "BOTTOMLEFT", 0, 0)
-HNEditFrame.desctext:SetText("Description/Notes:")
+HNEditFrame.desctext:SetText(L["Description/Notes:"])
 
 -- Create the ScrollFrame for the Description Edit Box
 HNEditFrame.descframe = CreateFrame("Frame", nil, HNEditFrame)
@@ -198,7 +198,7 @@ HNEditFrame.continentcheckbox:SetFontString(HNEditFrame.continentcheckbox.string
 HNEditFrame.continentcheckbox:SetTextFontObject("GameFontNormalSmall")
 HNEditFrame.continentcheckbox:SetHighlightFontObject("GameFontHighlightSmall")
 HNEditFrame.continentcheckbox:SetDisabledFontObject("GameFontDisableSmall")
-HNEditFrame.continentcheckbox:SetText("Show on continent map")
+HNEditFrame.continentcheckbox:SetText(L["Show on continent map"])
 HNEditFrame.continentcheckbox:SetChecked(true)
 HNEditFrame.continentcheckbox:SetHitRectInsets(0, -HNEditFrame.continentcheckbox.string:GetStringWidth(), 0, 0)
 HNEditFrame.continentcheckbox:SetPushedTextOffset(0, 0)
@@ -238,13 +238,13 @@ end)
 HNEditFrame:SetScript("OnShow", function(self)
 	local data = HN.db.global[self.mapFile][self.coord]
 	if data then
-		HNEditFrame.title:SetText("Edit Handy Note")
+		HNEditFrame.title:SetText(L["Edit Handy Note"])
 		HNEditFrame.titleinputbox:SetText(data.title)
 		HNEditFrame.descinputbox:SetText(data.desc)
 		HNEditFrame.icondropdown.OnClick(data.icon)
 		HNEditFrame.continentcheckbox:SetChecked(data.cont)
 	else
-		HNEditFrame.title:SetText("Add Handy Note")
+		HNEditFrame.title:SetText(L["Add Handy Note"])
 		HNEditFrame.titleinputbox:SetText("")
 		HNEditFrame.descinputbox:SetText("")
 		HNEditFrame.icondropdown.OnClick(1)

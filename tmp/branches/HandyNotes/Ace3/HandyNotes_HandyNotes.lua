@@ -109,7 +109,7 @@ do
 		if (level == 1) then
 			-- Create the title of the menu
 			info.isTitle      = 1
-			info.text         = "HandyNotes"
+			info.text         = L["HandyNotes"]
 			info.notCheckable = 1
 			UIDropDownMenu_AddButton(info, level)
 
@@ -117,7 +117,7 @@ do
 			info.disabled     = nil
 			info.isTitle      = nil
 			info.notCheckable = nil
-			info.text = "Edit Handy Note"
+			info.text = L["Edit Handy Note"]
 			info.icon = icon
 			info.func = editPin
 			info.arg1 = clickedMapFile
@@ -125,7 +125,7 @@ do
 			UIDropDownMenu_AddButton(info, level)
 
 			-- Delete menu item
-			info.text = "Delete Handy Note"
+			info.text = L["Delete Handy Note"]
 			info.icon = icon
 			info.func = deletePin
 			info.arg1 = clickedMapFile
@@ -135,7 +135,7 @@ do
 			-- Cartographer_Waypoints menu item
 			if Cartographer and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
 				if HandyNotes:GetCZToZone(HandyNotes:GetCZ(clickedMapFile)) then -- Only if this is in a mapzone
-					info.text = "Add this location to Cartographer_Waypoints"
+					info.text = L["Add this location to Cartographer_Waypoints"]
 					info.icon = nil
 					info.func = addCartWaypoint
 					info.arg1 = clickedMapFile
@@ -145,7 +145,7 @@ do
 			end
 
 			-- Close menu item
-			info.text         = "Close"
+			info.text         = CLOSE
 			info.icon         = nil
 			info.func         = CloseDropDownMenus
 			info.arg1         = nil
@@ -156,7 +156,7 @@ do
 			-- Add the dragging hint
 			info.isTitle      = 1
 			info.func         = nil
-			info.text         = "|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"
+			info.text         = L["|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"]
 			UIDropDownMenu_AddButton(info, level)
 		end
 	end
@@ -321,22 +321,22 @@ local options = {
 	end,
 	args = {
 		desc = {
-			name = "These settings control the look and feel of the HandyNotes icons.",
+			name = L["These settings control the look and feel of the HandyNotes icons."],
 			type = "description",
 			order = 0,
 		},
 		icon_scale = {
 			type = "range",
-			name = "Icon Scale",
-			desc = "The scale of the icons",
+			name = L["Icon Scale"],
+			desc = L["The scale of the icons"],
 			min = 0.25, max = 2, step = 0.01,
 			arg = "icon_scale",
 			order = 10,
 		},
 		icon_alpha = {
 			type = "range",
-			name = "Icon Alpha",
-			desc = "The alpha transparency of the icons",
+			name = L["Icon Alpha"],
+			desc = L["The alpha transparency of the icons"],
 			min = 0, max = 1, step = 0.01,
 			arg = "icon_alpha",
 			order = 20,

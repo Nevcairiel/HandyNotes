@@ -432,8 +432,8 @@ options = {
 	args = {
 		enabled = {
 			type = "toggle",
-			name = "Enable HandyNotes",
-			desc = "Enable or disable HandyNotes",
+			name = L["Enable HandyNotes"],
+			desc = L["Enable or disable HandyNotes"],
 			order = 1,
 			get = function(info) return db.enabled end,
 			set = function(info, v)
@@ -444,8 +444,8 @@ options = {
 		},
 		overall_settings = {
 			type = "group",
-			name = "Overall settings",
-			desc = "Overall settings that affect every database",
+			name = L["Overall settings"],
+			desc = L["Overall settings that affect every database"],
 			order = 10,
 			get = function(info) return db[info.arg] end,
 			set = function(info, v)
@@ -460,38 +460,38 @@ options = {
 			disabled = function() return not db.enabled end,
 			args = {
 				desc = {
-					name = "These settings control the look and feel of HandyNotes globally. The icon's scale and alpha here are multiplied with the plugin's scale and alpha.",
+					name = L["These settings control the look and feel of HandyNotes globally. The icon's scale and alpha here are multiplied with the plugin's scale and alpha."],
 					type = "description",
 					order = 0,
 				},
 				icon_scale = {
 					type = "range",
-					name = "World Map Icon Scale",
-					desc = "The overall scale of the icons on the World Map",
+					name = L["World Map Icon Scale"],
+					desc = L["The overall scale of the icons on the World Map"],
 					min = 0.25, max = 2, step = 0.01,
 					arg = "icon_scale",
 					order = 10,
 				},
 				icon_alpha = {
 					type = "range",
-					name = "World Map Icon Alpha",
-					desc = "The overall alpha transparency of the icons on the World Map",
+					name = L["World Map Icon Alpha"],
+					desc = L["The overall alpha transparency of the icons on the World Map"],
 					min = 0, max = 1, step = 0.01,
 					arg = "icon_alpha",
 					order = 20,
 				},
 				icon_scale_minimap = {
 					type = "range",
-					name = "Minimap Icon Scale",
-					desc = "The overall scale of the icons on the Minimap",
+					name = L["Minimap Icon Scale"],
+					desc = L["The overall scale of the icons on the Minimap"],
 					min = 0.25, max = 2, step = 0.01,
 					arg = "icon_scale_minimap",
 					order = 30,
 				},
 				icon_alpha_minimap = {
 					type = "range",
-					name = "Minimap Icon Alpha",
-					desc = "The overall alpha transparency of the icons on the Minimap",
+					name = L["Minimap Icon Alpha"],
+					desc = L["The overall alpha transparency of the icons on the Minimap"],
 					min = 0, max = 1, step = 0.01,
 					arg = "icon_alpha_minimap",
 					order = 40,
@@ -500,12 +500,12 @@ options = {
 		},
 		plugins = {
 			type = "group",
-			name = "Plugins",
-			desc = "Plugin databases",
+			name = L["Plugins"],
+			desc = L["Plugin databases"],
 			order = 20,
 			args = {
 				desc = {
-					name = "Configuration for each individual plugin database.",
+					name = L["Configuration for each individual plugin database."],
 					type = "description",
 					order = 0,
 				},
