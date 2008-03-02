@@ -111,12 +111,23 @@ do
 			info.isTitle      = 1
 			info.text         = L["HandyNotes"]
 			info.notCheckable = 1
+			local t = icons[dbdata[clickedMapFile][clickedCoord].icon]
+			info.icon         = t.icon
+			info.tCoordLeft   = t.tCoordLeft
+			info.tCoordRight  = t.tCoordRight
+			info.tCoordTop    = t.tCoordTop
+			info.tCoordBottom = t.tCoordBottom
 			UIDropDownMenu_AddButton(info, level)
 
 			-- Edit menu item
 			info.disabled     = nil
 			info.isTitle      = nil
 			info.notCheckable = nil
+			info.icon         = nil
+			info.tCoordLeft   = nil
+			info.tCoordRight  = nil
+			info.tCoordTop    = nil
+			info.tCoordBottom = nil
 			info.text = L["Edit Handy Note"]
 			info.icon = icon
 			info.func = editPin
