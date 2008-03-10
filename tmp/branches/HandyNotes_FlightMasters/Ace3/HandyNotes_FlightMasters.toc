@@ -1,6 +1,7 @@
 ﻿## Interface: 20300
 ## Title: HandyNotes_FlightMasters
 ## Notes: Database of FlightMaster locations for HandyNotes
+## Notes-frFR: Base de données des positions des maîtres de vol pour HandyNotes.
 ## Author: Xinhuan
 ## Version: 1
 ## DefaultState: enabled
