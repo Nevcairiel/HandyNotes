@@ -1,0 +1,13 @@
+## Interface: 20300
+## Title: HandyNotes_Directions
+## Notes: Database of locations that city guards direct you to for HandyNotes
+## Author: Kemayo
+## Version: 1
+## DefaultState: enabled
+## X-Category: Map
+## X-eMail: kemayo @ gmail DOT com
+## X-Credits: I totally copied the structure from HandyNotes_Mailboxes by Kagaro
+## SavedVariables: HandyNotes_DirectionsDB
+## RequiredDeps: HandyNotes
+
+Directions.lua
