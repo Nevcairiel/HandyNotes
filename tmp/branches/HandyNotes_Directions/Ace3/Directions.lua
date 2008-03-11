@@ -22,7 +22,6 @@ local defaults = {
 	},
 }
 
-
 ---------------------------------------------------------
 -- Localize some globals
 local next = next
@@ -144,7 +143,7 @@ end
 
 function HD:CheckForLandmarks()
 	for mark = 1, GetNumMapLandmarks(), 1 do
-		local name, _, tex, x, y = GetMapLandmarkInfo(landmark)
+		local name, _, tex, x, y = GetMapLandmarkInfo(mark)
 		if tex == 6 then
 			self:AddLandmark(x, y, name)
 		end
