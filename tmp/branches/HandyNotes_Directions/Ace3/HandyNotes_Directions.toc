@@ -10,4 +10,6 @@
 ## SavedVariables: HandyNotes_DirectionsDB
 ## RequiredDeps: HandyNotes
 
+enUS.lua
+
 Directions.lua

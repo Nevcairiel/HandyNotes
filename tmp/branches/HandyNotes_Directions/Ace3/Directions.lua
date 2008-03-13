@@ -4,7 +4,7 @@ HandyNotes_Directions = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Directions"
 local HD = HandyNotes_Directions
 local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local Astrolabe = DongleStub("Astrolabe-0.4")
---local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_Directions", false)
+local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_Directions", true)
 
 
 ---------------------------------------------------------
@@ -142,12 +142,14 @@ end
 ---------------------------------------------------------
 -- Core functions
 
+local alreadyAdded = {}
 function HD:CheckForLandmarks()
 	if not lastGossip then return end
 	for mark = 1, GetNumMapLandmarks(), 1 do
 		local name, _, tex, x, y = GetMapLandmarkInfo(mark)
-		if tex == 6 then
-			self:AddLandmark(x, y, name)
+		if tex == 6 and not alreadyAdded[name] then
+			alreadyAdded[name] = true
+			self:AddLandmark(x, y, lastGossip)
 		end
 	end
 end
@@ -159,19 +161,26 @@ function HD:AddLandmark(x, y, name)
 	local mapFile = HandyNotes:GetMapFile(c, z)
 	if not mapFile then return end
 	for coord,value in pairs(self.db.global.landmarks[mapFile]) do
-		if value then
-			local x2,y2 = HandyNotes:getXY(coord)
-			if Astrolabe:ComputeDistance(c,z,x,y,c,z,x2,y2) < 5 then
-				return
-			end
+		if value and value:match("^"..name) then
+			return
 		end
 	end
-	self.db.global.landmarks[mapFile][loc] = ("%s (%s)"):format(name, lastGossip)
+	self.db.global.landmarks[mapFile][loc] = name
 	self:SendMessage("HandyNotes_NotifyUpdate", "Directions")
 end
 
+local replacements = {
+	[L["A profession trainer"]] = L["Trainer: "],
+	[L["A class trainer"]] = L["Class: "],
+}
 function HD:SelectGossipOption(index)
-	lastGossip = select((index * 2) - 1, GetGossipOptions())
+	local selected = select((index * 2) - 1, GetGossipOptions())
+	if replacements[selected] then selected = replacements[selected] end
+	if lastGossip then
+		lastGossip = lastGossip .. selected
+	else
+		lastGossip = selected
+	end
 end
 
 function HD:GOSSIP_CLOSED()
