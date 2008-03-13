@@ -1,6 +1,6 @@
 ---------------------------------------------------------
 -- Addon declaration
-HandyNotes_Directions = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Directions","AceEvent-3.0")
+HandyNotes_Directions = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Directions","AceEvent-3.0","AceHook-3.0")
 local HD = HandyNotes_Directions
 local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local Astrolabe = DongleStub("Astrolabe-0.4")
@@ -50,6 +50,7 @@ local HDHandler = {}
 local info = {}
 local clickedLandmark = nil
 local clickedLandmarkZone = nil
+local lastGossip = nil
 
 function HDHandler:OnEnter(mapFile, coord)
 	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
@@ -58,7 +59,7 @@ function HDHandler:OnEnter(mapFile, coord)
 	else
 		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	tooltip:SetText(HD.db.global.landmarks[mapfile][coord])
+	tooltip:SetText(HD.db.global.landmarks[mapFile][coord])
 	tooltip:Show()
 	clickedLandmark = nil
 	clickedLandmarkZone = nil
@@ -142,6 +143,7 @@ end
 -- Core functions
 
 function HD:CheckForLandmarks()
+	if not lastGossip then return end
 	for mark = 1, GetNumMapLandmarks(), 1 do
 		local name, _, tex, x, y = GetMapLandmarkInfo(mark)
 		if tex == 6 then
@@ -159,15 +161,22 @@ function HD:AddLandmark(x, y, name)
 	for coord,value in pairs(self.db.global.landmarks[mapFile]) do
 		if value then
 			local x2,y2 = HandyNotes:getXY(coord)
-			if Astrolabe:ComputeDistance(c,z,x,y,c,z,x2,y2) < 15 then
-				self.db.global.landmarks[mapFile][coord] = nil
+			if Astrolabe:ComputeDistance(c,z,x,y,c,z,x2,y2) < 5 then
+				return
 			end
 		end
 	end
-	self.db.global.landmarks[mapFile][loc] = name
+	self.db.global.landmarks[mapFile][loc] = ("%s (%s)"):format(name, lastGossip)
 	self:SendMessage("HandyNotes_NotifyUpdate", "Directions")
 end
 
+function HD:SelectGossipOption(index)
+	lastGossip = select((index * 2) - 1, GetGossipOptions())
+end
+
+function HD:GOSSIP_CLOSED()
+	lastGossip = nil
+end
 
 ---------------------------------------------------------
 -- Options table
@@ -219,5 +228,7 @@ end
 
 function HD:OnEnable()
 	self:RegisterEvent("WORLD_MAP_UPDATE", "CheckForLandmarks")
+	self:RegisterEvent("GOSSIP_CLOSED")
+	self:Hook("SelectGossipOption", true)
 end
 
