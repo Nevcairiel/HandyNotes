@@ -1,4 +1,4 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("StatBlocks_Quests", "enUS", true)
+local L = LibStub("AceLocale-3.0"):NewLocale("HandyNotes_Directions", "enUS", true)
 
 L["A profession trainer"] = true
 L["Trainer: "] = true
