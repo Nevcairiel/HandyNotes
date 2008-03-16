@@ -40,6 +40,73 @@ local icon = "Interface\\Icons\\Ability_Hunter_BeastTaming"
 -- Plugin Handlers to HandyNotes
 
 local HSHandler = {}
+
+local function deletePin(mapFile,coord)
+	local x, y = HandyNotes:getXY(coord)
+	db.factionrealm.nodes[mapFile][coord] = nil
+	HMB:SendMessage("HandyNotes_NotifyUpdate", "Stables")
+end
+local function createWaypoint(mapFile,coord)
+	local c, z = HandyNotes:GetCZ(mapFile)
+	local x, y = HandyNotes:getXY(coord)
+	TomTom:AddZWaypoint(c, z, x*100, y*100, L["Stable Master"])
+end
+local clickedStables, clickedStablesZone
+local function generateMenu(level)
+	if (not level) then return end
+	for k in pairs(info) do info[k] = nil end
+	if (level == 1) then
+		-- Create the title of the menu
+		info.isTitle      = 1
+		info.text         = L["Stable Master"]
+		info.notCheckable = 1
+		UIDropDownMenu_AddButton(info, level)
+
+		if TomTom then
+			-- Waypoint menu item
+			info.disabled     = nil
+			info.isTitle      = nil
+			info.notCheckable = nil
+			info.text = L["Create waypoint"]
+			info.icon = nil
+			info.func = createWaypoint
+			info.arg1 = clickedStablesZone
+			info.arg2 = clickedStables
+			UIDropDownMenu_AddButton(info, level);
+		end
+
+		-- Delete menu item
+		info.disabled     = nil
+		info.isTitle      = nil
+		info.notCheckable = nil
+		info.text = L["Delete stables"]
+		info.icon = icon
+		info.func = deletePin
+		info.arg1 = clickedStablesZone
+		info.arg2 = clickedStables
+		UIDropDownMenu_AddButton(info, level);
+
+		-- Close menu item
+		info.text         = L["Close"]
+		info.icon         = nil
+		info.func         = CloseDropDownMenus
+		info.arg1         = nil
+		info.notCheckable = 1
+		UIDropDownMenu_AddButton(info, level);
+	end
+end
+local HS_Dropdown = CreateFrame("Frame", "HandyNotes_StablesDropdownMenu")
+HS_Dropdown.displayMode = "MENU"
+HS_Dropdown.initialize = generateMenu
+
+function HSHandler:OnClick(button, down, mapFile, coord)
+	if button == "RightButton" and not down then
+		clickedStablesZone = mapFile
+		clickedStables = coord
+		ToggleDropDownMenu(1, nil, HS_Dropdown, self, 0, 0)
+	end
+end
+
 function HSHandler:OnEnter(mapFile, coord)
 	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
 	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
@@ -47,7 +114,7 @@ function HSHandler:OnEnter(mapFile, coord)
 	else
 		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	tooltip:AddLine(db.factionrealm.nodes[mapFile][coord])
+	tooltip:AddLine("|cffe0e0e0"..db.factionrealm.nodes[mapFile][coord].."|r")
 	tooltip:AddLine(L["Stable Master"])
 	tooltip:Show()
 end
