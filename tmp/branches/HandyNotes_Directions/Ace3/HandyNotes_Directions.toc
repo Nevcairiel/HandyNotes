@@ -1,4 +1,4 @@
-## Interface: 20300
+﻿## Interface: 20300
 ## Title: HandyNotes_Directions
 ## Notes: Database of locations that city guards direct you to for HandyNotes
 ## Author: Kemayo
@@ -11,5 +11,6 @@
 ## RequiredDeps: HandyNotes
 
 enUS.lua
+koKR.lua
 
 Directions.lua
