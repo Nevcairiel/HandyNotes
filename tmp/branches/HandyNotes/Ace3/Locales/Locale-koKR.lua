@@ -30,7 +30,7 @@ L["Edit Handy Note"] = "노트 수정"
 L["Delete Handy Note"] = "노트 삭제"
 L["Title"] = "이름"
 L["Description/Notes:"] = "설명:"
-L["Show on continent map"] = "대륙지도 보기"
+L["Show on continent map"] = "대륙지도에 표시"
 L["Add this location to Cartographer_Waypoints"] = "Cartographer_Waypoints에 현재 위치를 추가합니다."
 L["|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"] = "|cFF00FF00힌트: |cffeda55fCtrl+Shift+드래그|cFF00FF00하면 노트를 이동할 수 있습니다."
 
