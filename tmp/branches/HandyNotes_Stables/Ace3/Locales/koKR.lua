@@ -7,7 +7,7 @@ if L then
 	L["Icon Scale"] = "아이콘 크기"
 	L["The scale of the icons"] = "아이콘의 크기를 변경합니다."
 	L["Icon Alpha"] = "아이콘 투명도"
-	L["The alpha transparency of the icons"] = "아이콘의 투명도를 변경합니다.
+	L["The alpha transparency of the icons"] = "아이콘의 투명도를 변경합니다."
 	L["Create waypoint"] = "웨이포인트 추가"
 	L["Delete stables"] = "야수 삭제"
 	L["Close"] = "닫기"
