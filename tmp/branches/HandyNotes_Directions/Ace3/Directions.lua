@@ -70,23 +70,14 @@ local function deletePin(mapFile,coord)
 	HD:SendMessage("HandyNotes_NotifyUpdate", "Directions")
 end
 
-local zonenames = {}
-local function populateZoneNames(...)
-	for ci=1,select('#', ...) do
-		zonenames[ci] = {GetMapZones(ci)}
-	end
-end
-populateZoneNames(GetMapContinents())
 local function createWaypoint(mapFile,coord)
-	ChatFrame1:AddMessage(mapFile..", "..coord)
 	local c, z = HandyNotes:GetCZ(mapFile)
 	local x, y = HandyNotes:getXY(coord)
 	local name = HD.db.global.landmarks[mapFile][coord]
 	if TomTom then
 		TomTom:AddZWaypoint(c, z, x*100, y*100, name)
 	elseif Cartographer_Waypoints then
-		local zone = zonenames[c][z]
-		Cartographer_Waypoints:AddWaypoint(NotePoint:new(zone, x, y, name))
+		Cartographer_Waypoints:AddWaypoint(NotePoint:new(HandyNotes:GetCZToZone(c, z), x, y, name))
 	end
 end
 
