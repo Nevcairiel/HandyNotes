@@ -46,10 +46,22 @@ local function deletePin(mapFile,coord)
 	db.factionrealm.nodes[mapFile][coord] = nil
 	HMB:SendMessage("HandyNotes_NotifyUpdate", "Stables")
 end
+local zonenames = {}
+local function populateZoneNames(...)
+	for ci=1,select('#', ...) do
+		zonenames[ci] = {GetMapZones(ci)}
+	end
+end
+populateZoneNames(GetMapContinents())
 local function createWaypoint(mapFile,coord)
 	local c, z = HandyNotes:GetCZ(mapFile)
 	local x, y = HandyNotes:getXY(coord)
-	TomTom:AddZWaypoint(c, z, x*100, y*100, L["Stable Master"])
+	if TomTom then
+		TomTom:AddZWaypoint(c, z, x*100, y*100, L["Stable Master"])
+	elseif Cartographer_Waypoints then
+		local zone = zonenames[c][z]
+		Cartographer_Waypoints:AddWaypoint(NotePoint:new(zone, x, y, L["Stable Master"]))
+	end
 end
 local clickedStables, clickedStablesZone
 local function generateMenu(level)
@@ -62,7 +74,7 @@ local function generateMenu(level)
 		info.notCheckable = 1
 		UIDropDownMenu_AddButton(info, level)
 
-		if TomTom then
+		if TomTom or Cartographer_Waypoints then
 			-- Waypoint menu item
 			info.disabled     = nil
 			info.isTitle      = nil
