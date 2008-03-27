@@ -12,5 +12,6 @@
 
 enUS.lua
 koKR.lua
+zhCN.lua
 
 Directions.lua
