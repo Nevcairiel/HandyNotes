@@ -1,4 +1,4 @@
-﻿## Interface: 20300
+﻿## Interface: 20400
 ## Title: HandyNotes_FlightMasters
 ## Notes: Database of FlightMaster locations for HandyNotes
 ## Notes-frFR: Base de données des positions des maîtres de vol pour HandyNotes.
