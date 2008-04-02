@@ -33,7 +33,8 @@ local HandyNotes = HandyNotes
 
 ---------------------------------------------------------
 -- Constants
-local icon = "Interface\\Icons\\Ability_Hunter_BeastTaming"
+--local icon = "Interface\\Icons\\Ability_Hunter_BeastTaming"
+local icon = "Interface\\Minimap\\Tracking\\StableMaster"
 
 
 ---------------------------------------------------------
@@ -44,7 +45,7 @@ local HSHandler = {}
 local function deletePin(mapFile,coord)
 	local x, y = HandyNotes:getXY(coord)
 	db.factionrealm.nodes[mapFile][coord] = nil
-	HMB:SendMessage("HandyNotes_NotifyUpdate", "Stables")
+	HS:SendMessage("HandyNotes_NotifyUpdate", "Stables")
 end
 local function createWaypoint(mapFile,coord)
 	local c, z = HandyNotes:GetCZ(mapFile)
