@@ -7,7 +7,7 @@ HandyNotes
 HandyNotes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes", "AceConsole-3.0", "AceEvent-3.0")
 local HandyNotes = HandyNotes
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
-local Astrolabe = DongleStub("Astrolabe-0.4")
+local Astrolabe = DongleStub("Astrolabe-0.4-NC")
 
 
 ---------------------------------------------------------
