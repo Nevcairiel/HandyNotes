@@ -61,6 +61,16 @@ local function deletePin(mapFile,coord)
 	HMB:SendMessage("HandyNotes_NotifyUpdate", "Mailboxes")
 end
 
+local function createWaypoint(mapFile,coord)
+	local c, z = HandyNotes:GetCZ(mapFile)
+	local x, y = HandyNotes:getXY(coord)
+	if TomTom then
+		TomTom:AddZWaypoint(c, z, x*100, y*100, "Mailbox")
+	elseif Cartographer_Waypoints then
+		Cartographer_Waypoints:AddWaypoint(NotePoint:new(HandyNotes:GetCZToZone(c, z), x, y, "Mailbox"))
+	end
+end
+
 local function generateMenu(level)
 	if (not level) then return end
 	for k in pairs(info) do info[k] = nil end
@@ -81,6 +91,19 @@ local function generateMenu(level)
 		info.arg1 = clickedMailboxZone
 		info.arg2 = clickedMailbox
 		UIDropDownMenu_AddButton(info, level);
+
+		if TomTom or Cartographer_Waypoints then
+			-- Waypoint menu item
+			info.disabled     = nil
+			info.isTitle      = nil
+			info.notCheckable = nil
+			info.text = "Create waypoint"
+			info.icon = nil
+			info.func = createWaypoint
+			info.arg1 = clickedMailboxZone
+			info.arg2 = clickedMailbox
+			UIDropDownMenu_AddButton(info, level);
+		end
 
 		-- Close menu item
 		info.text         = "Close"
