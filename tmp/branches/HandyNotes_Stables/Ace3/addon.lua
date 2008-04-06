@@ -4,7 +4,7 @@
 -- Addon declaration
 HandyNotes_Stables = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Stables","AceEvent-3.0")
 local HS = HandyNotes_Stables
-local Astrolabe = DongleStub("Astrolabe-0.4")
+local Astrolabe = DongleStub("Astrolabe-0.4-NC")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes_Stables")
 
 ---------------------------------------------------------
