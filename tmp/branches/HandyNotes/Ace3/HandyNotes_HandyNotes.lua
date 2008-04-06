@@ -98,6 +98,14 @@ local function addCartWaypoint(mapFile, coord)
 	end
 end
 
+local function addTomTomWaypoint(mapFile, coord)
+	if TomTom then
+		local c, z = HandyNotes:GetCZ(mapFile)
+		local x, y = GatherMate:getXY(coord)
+		TomTom:AddZWaypoint(c, z, x*100, y*100, dbdata[mapFile][coord].title, nil, true, true)
+	end
+end
+
 do
 	local isMoving = false
 	local info = {}
@@ -153,6 +161,15 @@ do
 					info.arg2 = clickedCoord
 					UIDropDownMenu_AddButton(info, level)
 				end
+			end
+
+			if TomTom then
+				info.text = L["Add this location to TomTom waypoints"]
+				info.icon = nil
+				info.func = addTomTomWaypoint
+				info.arg1 = clickedMapFile
+				info.arg2 = clickedCoord
+				UIDropDownMenu_AddButton(info, level)
 			end
 
 			-- Close menu item

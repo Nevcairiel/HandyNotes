@@ -32,6 +32,7 @@ L["Title"] = true
 L["Description/Notes:"] = true
 L["Show on continent map"] = true
 L["Add this location to Cartographer_Waypoints"] = true
+L["Add this location to TomTom waypoints"] = true
 L["|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"] = true
 
 L["These settings control the look and feel of the HandyNotes icons."] = true
