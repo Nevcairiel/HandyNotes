@@ -41,4 +41,6 @@ L["The scale of the icons"] = true
 L["Icon Alpha"] = true
 L["The alpha transparency of the icons"] = true
 
+L["\nAlt+Right Click To Add a HandyNote"] = true
+
 -- vim: ts=4 noexpandtab

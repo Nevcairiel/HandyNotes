@@ -8,7 +8,7 @@
 ## X-Category: Map
 ## X-eMail: xinhuan @ gmail DOT com
 ## X-Embeds: Ace3
-## OptionalDeps: Ace3
+## OptionalDeps: Ace3, TomTom
 
 ## SavedVariables: HandyNotesDB, HandyNotes_HandyNotesDB
 

@@ -310,7 +310,7 @@ end
 
 -- Hooked function on clicking the world map
 function HN:WorldMapButton_OnClick(mouseButton, button, ...)
-	if mouseButton == "RightButton" and IsControlKeyDown() and not IsAltKeyDown() and not IsShiftKeyDown() then
+	if mouseButton == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
 		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
 		local mapFile = GetMapInfo() or HandyNotes:GetMapFile(C, Z) -- Fallback for "Cosmic" and "World"
 
@@ -384,6 +384,8 @@ function HN:OnInitialize()
 
 	-- Initialize our database with HandyNotes
 	HandyNotes:RegisterPluginDB("HandyNotes", HNHandler, options)
+
+	WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
 end
 
 function HN:OnEnable()
