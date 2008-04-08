@@ -1,0 +1,15 @@
+﻿## Interface: 20300
+## Title: HandyNotes_Stables
+## Notes: Database of Stables locations for HandyNotes
+## Author: kergoth
+## Version: 1
+## DefaultState: Enabled
+## X-Category: Map
+## X-eMail: kergoth at gmail dot com
+## SavedVariables: HandyNotes_StablesDB
+## RequiredDeps: HandyNotes
+## LoadManagers: AddonLoader
+## X-LoadOn-Class: Hunter
+
+Locales.xml
+addon.lua
