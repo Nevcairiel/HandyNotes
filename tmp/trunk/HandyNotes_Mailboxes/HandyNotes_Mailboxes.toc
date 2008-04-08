@@ -1,0 +1,12 @@
+﻿## Interface: 20300
+## Title: HandyNotes_Mailboxes
+## Notes: Database of Mailbox locations for HandyNotes
+## Author: Kagaro
+## Version: 1
+## DefaultState: enabled
+## X-Category: Map
+## X-eMail: sal.scotto @ gmail DOT com
+## SavedVariables: HandyNotes_MailboxesDB
+## RequiredDeps: HandyNotes
+
+HandyNotes_Mailboxes.lua
