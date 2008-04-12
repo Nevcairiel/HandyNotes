@@ -3,7 +3,7 @@
 ## Notes: Handy notes for your maps
 ## Notes-frFR: Notes pratiques pour vos cartes.
 ## Author: Xinhuan
-## Version: 0.1
+## Version: 1.0
 ## DefaultState: enabled
 ## X-Category: Map
 ## X-eMail: xinhuan @ gmail DOT com
@@ -14,6 +14,7 @@
 
 # Library files
 embeds.xml
+Libs\Astrolabe\Load.xml
 
 # Locale files
 Locales.xml
