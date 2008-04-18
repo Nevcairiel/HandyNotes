@@ -194,8 +194,10 @@ function HD:AddLandmark(x, y, name)
 end
 
 local replacements = {
-	[L["A profession trainer"]] = L["Trainer: "],
-	[L["A class trainer"]] = L["Class: "],
+	[L["Profession Trainer"]] = L["Trainer: "],
+	[L["Class Trainer"]] = L["Trainer: "],
+        [L["Alliance Battlemasters"]] = L[": Alliance"],
+        [L["Horde Battlemasters"]] = L[": Horde"],
 }
 function HD:SelectGossipOption(index)
 	local selected = select((index * 2) - 1, GetGossipOptions())
