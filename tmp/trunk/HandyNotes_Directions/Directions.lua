@@ -191,6 +191,7 @@ function HD:AddLandmark(x, y, name)
 	end
 	self.db.global.landmarks[mapFile][loc] = name
 	self:SendMessage("HandyNotes_NotifyUpdate", "Directions")
+        createWaypoint(mapFile, loc)
 end
 
 local replacements = {
