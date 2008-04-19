@@ -34,5 +34,9 @@ L["Show flight path lines on the world map"] = true
 L["Show in zones"] = true
 L["Show flight path lines on the zone maps as well"] = true
 
+-- Menu
+L["HandyNotes - FlightMasters"] = true
+L["Create waypoint"] = true
+
 
 -- vim: ts=4 noexpandtab

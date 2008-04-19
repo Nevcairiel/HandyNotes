@@ -397,6 +397,68 @@ do
 	end
 end
 
+do
+	local clickedFlightPoint = nil
+	local clickedFlightPointZone = nil
+	local info = {}
+
+	local function createWaypoint(mapFile,coord)
+		local c, z = HandyNotes:GetCZ(mapFile)
+		local x, y = HandyNotes:getXY(coord)
+		local name = HFM_DataType[ tonumber((strsplit("|", HFM_Data[mapFile][coord]))) ]
+		if TomTom then
+			TomTom:AddZWaypoint(c, z, x*100, y*100, name)
+		elseif Cartographer_Waypoints then
+			Cartographer_Waypoints:AddWaypoint(NotePoint:new(HandyNotes:GetCZToZone(c, z), x, y, name))
+		end
+	end
+
+	local function generateMenu(level)
+		if (not level) then return end
+		for k in pairs(info) do info[k] = nil end
+		if (level == 1) then
+			-- Create the title of the menu
+			info.isTitle      = 1
+			info.text         = L["HandyNotes - FlightMasters"]
+			info.notCheckable = 1
+			UIDropDownMenu_AddButton(info, level)
+
+			if TomTom or Cartographer_Waypoints then
+				-- Waypoint menu item
+				info.disabled     = nil
+				info.isTitle      = nil
+				info.notCheckable = nil
+				info.text = L["Create waypoint"]
+				info.icon = nil
+				info.func = createWaypoint
+				info.arg1 = clickedFlightPointZone
+				info.arg2 = clickedFlightPoint
+				UIDropDownMenu_AddButton(info, level);
+			end
+
+			-- Close menu item
+			info.text         = CLOSE
+			info.icon         = nil
+			info.func         = CloseDropDownMenus
+			info.arg1         = nil
+			info.notCheckable = 1
+			UIDropDownMenu_AddButton(info, level);
+		end
+	end
+	local HFM_Dropdown = CreateFrame("Frame", "HandyNotes_FlightMastersDropdownMenu")
+	HFM_Dropdown.displayMode = "MENU"
+	HFM_Dropdown.initialize = generateMenu
+
+	function HFMHandler:OnClick(button, down, mapFile, coord)
+		if TomTom or Cartographer_Waypoints then
+			if button == "RightButton" and not down then
+				clickedFlightPointZone = mapFile
+				clickedFlightPoint = coord
+				ToggleDropDownMenu(1, nil, HFM_Dropdown, self, 0, 0)
+			end
+		end
+	end
+end
 
 ---------------------------------------------------------
 -- Options table
