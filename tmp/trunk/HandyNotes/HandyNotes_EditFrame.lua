@@ -203,20 +203,20 @@ HNEditFrame.continentcheckbox:SetChecked(true)
 HNEditFrame.continentcheckbox:SetHitRectInsets(0, -HNEditFrame.continentcheckbox.string:GetStringWidth(), 0, 0)
 HNEditFrame.continentcheckbox:SetPushedTextOffset(0, 0)
 
--- Create the Cancel button
-HNEditFrame.cancelbutton = CreateFrame("Button", nil, HNEditFrame, "OptionsButtonTemplate")
-HNEditFrame.cancelbutton:SetWidth(150)
-HNEditFrame.cancelbutton:SetHeight(22)
-HNEditFrame.cancelbutton:SetPoint("TOPRIGHT", HNEditFrame.icondropdown, "BOTTOMRIGHT", 15, 0)
-HNEditFrame.cancelbutton:SetText(CANCEL)
-HNEditFrame.cancelbutton:SetScript("OnClick", HNEditFrame.CloseButton:GetScript("OnClick"))
-
 -- Create the OK button
 HNEditFrame.okbutton = CreateFrame("Button", nil, HNEditFrame, "OptionsButtonTemplate")
 HNEditFrame.okbutton:SetWidth(150)
 HNEditFrame.okbutton:SetHeight(22)
-HNEditFrame.okbutton:SetPoint("LEFT", HNEditFrame.cancelbutton, "RIGHT", 3, 0)
+HNEditFrame.okbutton:SetPoint("TOPRIGHT", HNEditFrame.icondropdown, "BOTTOMRIGHT", 15, 0)
 HNEditFrame.okbutton:SetText(OKAY)
+
+-- Create the Cancel button
+HNEditFrame.cancelbutton = CreateFrame("Button", nil, HNEditFrame, "OptionsButtonTemplate")
+HNEditFrame.cancelbutton:SetWidth(150)
+HNEditFrame.cancelbutton:SetHeight(22)
+HNEditFrame.cancelbutton:SetPoint("LEFT", HNEditFrame.okbutton, "RIGHT", 3, 0)
+HNEditFrame.cancelbutton:SetText(CANCEL)
+HNEditFrame.cancelbutton:SetScript("OnClick", HNEditFrame.CloseButton:GetScript("OnClick"))
 
 -- Additional Behavior functions
 HNEditFrame:SetScript("OnMouseDown", function(self, button)
