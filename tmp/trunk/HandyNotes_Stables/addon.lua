@@ -57,6 +57,7 @@ local function createWaypoint(mapFile,coord)
 	end
 end
 local clickedStables, clickedStablesZone
+local info = {}
 local function generateMenu(level)
 	if (not level) then return end
 	for k in pairs(info) do info[k] = nil end
