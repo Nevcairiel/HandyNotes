@@ -32,6 +32,7 @@ L["Title"] = "이름"
 L["Description/Notes:"] = "설명:"
 L["Show on continent map"] = "대륙지도에 표시"
 L["Add this location to Cartographer_Waypoints"] = "Cartographer_Waypoints에 현재 위치를 추가합니다."
+L["Add this location to TomTom waypoints"] = "TomTom에 현재 위치를 추가합니다."
 L["|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"] = "|cFF00FF00힌트: |cffeda55fCtrl+Shift+드래그|cFF00FF00하면 노트를 이동할 수 있습니다."
 
 L["These settings control the look and feel of the HandyNotes icons."] = "노트 아이콘의 보기에 관한 설정입니다."
@@ -39,4 +40,7 @@ L["Icon Scale"] = "아이콘 크기"
 L["The scale of the icons"] = "아이콘의 크기를 변경합니다."
 L["Icon Alpha"] = "아이콘 투명도"
 L["The alpha transparency of the icons"] = "아이콘의 투명도를 변경합니다."
+
+L["\nAlt+Right Click To Add a HandyNote"] = "\nAlt+오른쪽 클릭하면 노트를 추가합니다."
+
 -- vim: ts=4 noexpandtab
