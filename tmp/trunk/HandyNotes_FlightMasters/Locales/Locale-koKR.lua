@@ -33,4 +33,10 @@ L["Show flight path lines"] = "비행경로 표시"
 L["Show flight path lines on the world map"] = "월드맵에 비행경로를 표시합니다."
 L["Show in zones"] = "지역맵에 표시"
 L["Show flight path lines on the zone maps as well"] = "지역맵에 비행경로를 표시합니다."
+
+-- Menu
+L["HandyNotes - FlightMasters"] = "HandyNotes - 비행조련사"
+L["Create waypoint"] = "웨이포인트 추가"
+
+
 -- vim: ts=4 noexpandtab
