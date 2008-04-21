@@ -65,17 +65,23 @@ function HDHandler:OnEnter(mapFile, coord)
 	clickedLandmarkZone = nil
 end
 
-local function deletePin(mapFile,coord)
+local function deletePin(mapFile, coord)
 	HD.db.global.landmarks[mapFile][coord] = nil
 	HD:SendMessage("HandyNotes_NotifyUpdate", "Directions")
 end
 
-local function createWaypoint(mapFile,coord)
+local function createWaypoint(mapFile, coord, temporary)
 	local c, z = HandyNotes:GetCZ(mapFile)
 	local x, y = HandyNotes:getXY(coord)
 	local name = HD.db.global.landmarks[mapFile][coord]
 	if TomTom then
-		TomTom:AddZWaypoint(c, z, x*100, y*100, name)
+		local persistent, minimap, world
+		if temporary then
+			persistent = true
+			minimap = false
+			world = false
+		end
+		TomTom:AddZWaypoint(c, z, x*100, y*100, name, persistent, minimap, world)
 	elseif Cartographer_Waypoints then
 		Cartographer_Waypoints:AddWaypoint(NotePoint:new(HandyNotes:GetCZToZone(c, z), x, y, name))
 	end
@@ -191,14 +197,18 @@ function HD:AddLandmark(x, y, name)
 	end
 	self.db.global.landmarks[mapFile][loc] = name
 	self:SendMessage("HandyNotes_NotifyUpdate", "Directions")
-        createWaypoint(mapFile, loc)
+	createWaypoint(mapFile, loc, true)
 end
 
 local replacements = {
 	[L["Profession Trainer"]] = L["Trainer: "],
 	[L["Class Trainer"]] = L["Trainer: "],
-        [L["Alliance Battlemasters"]] = L[": Alliance"],
-        [L["Horde Battlemasters"]] = L[": Horde"],
+	[L["Alliance Battlemasters"]] = L[": Alliance"],
+	[L["Horde Battlemasters"]] = L[": Horde"],
+	[L["To the east."]] = L[": East"],
+	[L["To the west."]] = L[": West"],
+	[L["The east."]] = L[": East"],
+	[L["The west."]] = L[": West"],
 }
 function HD:SelectGossipOption(index)
 	local selected = select((index * 2) - 1, GetGossipOptions())
