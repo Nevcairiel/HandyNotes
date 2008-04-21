@@ -88,7 +88,7 @@ end
 
 local function addCartWaypoint(mapFile, coord)
 	if Cartographer and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
-		local x, y = GatherMate:getXY(coord)
+		local x, y = HandyNotes:getXY(coord)
 		local cartCoordID = floor(x*10000 + 0.5) + floor(y*10000 + 0.5)*10001
 		local BZR = LibStub("LibBabble-Zone-3.0"):GetReverseLookupTable()
 		local zone = HandyNotes:GetCZToZone(HandyNotes:GetCZ(mapFile))
@@ -101,7 +101,7 @@ end
 local function addTomTomWaypoint(mapFile, coord)
 	if TomTom then
 		local c, z = HandyNotes:GetCZ(mapFile)
-		local x, y = GatherMate:getXY(coord)
+		local x, y = HandyNotes:getXY(coord)
 		TomTom:AddZWaypoint(c, z, x*100, y*100, dbdata[mapFile][coord].title, nil, true, true)
 	end
 end
