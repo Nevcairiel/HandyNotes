@@ -1,4 +1,5 @@
 ﻿local L = LibStub("AceLocale-3.0"):NewLocale("HandyNotes_Vendors", "koKR")
+if not L then return end
 
 L["Stable Master"] = true
 L["Icon Scale"] = "아이콘 크기"
