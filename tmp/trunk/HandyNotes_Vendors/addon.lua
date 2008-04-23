@@ -124,7 +124,7 @@ function HVHandler:OnEnter(mapFile, coord)
 	end
 	local vType, vName, vGuild = strsplit(":", db.factionrealm.nodes[mapFile][coord])
 	tooltip:AddLine("|cffe0e0e0"..vName.."|r")
-	tooltip:AddLine(vGuild)
+	if (vGuild ~= "") then tooltip:AddLine(vGuild) end
 --	tooltip:AddLine(L["Vendor"])
 	tooltip:Show()
 end
@@ -222,7 +222,7 @@ local function FigureNPCGuild(unit)
 
 	local left_2 = tt.left[2]:GetText()
 	if not left_2 or left_2:find(LEVEL_start) then
-		return nil
+		return ""
 	end
 
 	return left_2
