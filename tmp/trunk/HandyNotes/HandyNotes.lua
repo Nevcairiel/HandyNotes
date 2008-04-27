@@ -278,16 +278,32 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
 		local icon = getNewPin()
+		icon:SetParent(WorldMapButton)
+		icon:SetFrameStrata(frameStrata)
+		icon:SetFrameLevel(frameLevel)
 		scale = ourScale * scale
 		icon:SetHeight(scale) -- Can't use :SetScale as that changes our positioning scaling as well
 		icon:SetWidth(scale)
 		icon:SetAlpha(ourAlpha * alpha)
+		local t = icon.texture
+		t:ClearAllPoints()
+		t:SetAllPoints(icon) -- Not sure why this is necessary
 		if type(iconpath) == "table" then
-			icon.texture:SetTexture(iconpath.icon)
-			icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+			t:SetTexture(iconpath.icon)
+			if iconpath.tCoordLeft then
+				t:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+			else
+				t:SetTexCoord(0, 1, 0, 1)
+			end
+			if iconpath.r then
+				t:SetVertexColor(iconpath.r, iconpath.g, iconpath.b, iconpath.a)
+			else
+				t:SetVertexColor(1, 1, 1, 1)
+			end
 		else
-			icon.texture:SetTexture(iconpath)
-			icon.texture:SetTexCoord(0, 1, 0, 1)
+			t:SetTexture(iconpath)
+			t:SetTexCoord(0, 1, 0, 1)
+			t:SetVertexColor(1, 1, 1, 1)
 		end
 		icon:SetScript("OnClick", pinsHandler.OnClick)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
@@ -299,9 +315,6 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 			C, Z = continent, zone
 		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-		icon:SetParent(WorldMapButton)
-		icon:SetFrameStrata(frameStrata)
-		icon:SetFrameLevel(frameLevel)
 		if not C or not Z or C == WORLDMAP_COSMIC_ID then
 			icon:ClearAllPoints()
 			icon:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x*WorldMapButton:GetWidth(), -y*WorldMapButton:GetHeight())
@@ -345,16 +358,32 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, true) do
 		local icon = getNewPin()
+		icon:SetParent(Minimap)
+		icon:SetFrameStrata(frameStrata)
+		icon:SetFrameLevel(frameLevel)
 		scale = ourScale * scale
 		icon:SetHeight(scale) -- Can't use :SetScale as that changes our positioning scaling as well
 		icon:SetWidth(scale)
 		icon:SetAlpha(ourAlpha * alpha)
+		local t = icon.texture
+		t:ClearAllPoints()
+		t:SetAllPoints(icon) -- Not sure why this is necessary
 		if type(iconpath) == "table" then
-			icon.texture:SetTexture(iconpath.icon)
-			icon.texture:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+			t:SetTexture(iconpath.icon)
+			if iconpath.tCoordLeft then
+				t:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+			else
+				t:SetTexCoord(0, 1, 0, 1)
+			end
+			if iconpath.r then
+				t:SetVertexColor(iconpath.r, iconpath.g, iconpath.b, iconpath.a)
+			else
+				t:SetVertexColor(1, 1, 1, 1)
+			end
 		else
-			icon.texture:SetTexture(iconpath)
-			icon.texture:SetTexCoord(0, 1, 0, 1)
+			t:SetTexture(iconpath)
+			t:SetTexCoord(0, 1, 0, 1)
+			t:SetVertexColor(1, 1, 1, 1)
 		end
 		icon:SetScript("OnClick", nil)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
@@ -366,9 +395,6 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 			C, Z = continent, zone
 		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-		icon:SetParent(Minimap)
-		icon:SetFrameStrata(frameStrata)
-		icon:SetFrameLevel(frameLevel)
 		Astrolabe:PlaceIconOnMinimap(icon, C, Z, x, y)
 		minimapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
@@ -526,6 +552,9 @@ function HandyNotes:OnInitialize()
 	-- Register options table and slash command
 	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("HandyNotes", options)
 	self:RegisterChatCommand("handynotes", function() LibStub("AceConfigDialog-3.0"):Open("HandyNotes") end)
+
+	-- Make it minimap icons update faster
+	Astrolabe.MinimapUpdateTime = 0.1
 end
 
 function HandyNotes:OnEnable()
