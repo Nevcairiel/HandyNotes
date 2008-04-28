@@ -286,8 +286,6 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		icon:SetWidth(scale)
 		icon:SetAlpha(ourAlpha * alpha)
 		local t = icon.texture
-		t:ClearAllPoints()
-		t:SetAllPoints(icon) -- Not sure why this is necessary
 		if type(iconpath) == "table" then
 			t:SetTexture(iconpath.icon)
 			if iconpath.tCoordLeft then
@@ -322,6 +320,8 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		else
 			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
 		end
+		t:ClearAllPoints()
+		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
 		worldmapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
@@ -366,8 +366,6 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		icon:SetWidth(scale)
 		icon:SetAlpha(ourAlpha * alpha)
 		local t = icon.texture
-		t:ClearAllPoints()
-		t:SetAllPoints(icon) -- Not sure why this is necessary
 		if type(iconpath) == "table" then
 			t:SetTexture(iconpath.icon)
 			if iconpath.tCoordLeft then
@@ -396,6 +394,8 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
 		Astrolabe:PlaceIconOnMinimap(icon, C, Z, x, y)
+		t:ClearAllPoints()
+		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
 		minimapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
