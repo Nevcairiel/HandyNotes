@@ -3,4 +3,7 @@
 
 <Include file="libs\LibGuildPositions-1.0\lib.xml"/>
 
+<Include file="libs\AceTimer-3.0\AceTimer-3.0.xml"/>
+<Include file="libs\AceBucket-3.0\AceBuket-3.0.xml"/>
+
 </Ui>

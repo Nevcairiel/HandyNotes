@@ -1,5 +1,5 @@
 --[[ $Id$ ]]
-local Guild = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Guild", "AceEvent-3.0", "AceHook-3.0")
+local Guild = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Guild", "AceEvent-3.0", "AceBucket-3.0", "AceHook-3.0")
 
 local HandyNotes = HandyNotes
 local LGP = LibStub("LibGuildPositions-1.0")
@@ -39,6 +39,14 @@ do
 			end
 		end
 	})
+end
+
+local playerBlacklist = {}
+
+local function clearBlacklist()
+	for k in pairs(playerBlacklist) do
+		playerBlacklist[k] = nil
+	end
 end
 
 --[[ player storage database - position, icon, zone ]]
@@ -118,8 +126,12 @@ do
 		if not t then return end
 		local state, value = next(t, prestate)
 		prestate = state
-		if state then
-			return value.coord, value.zone, value.icon, scale, alpha
+		while state do
+			if not playerBlacklist[state] then
+				return value.coord, value.zone, value.icon, scale, alpha
+			end
+			state, value = next(t, prestate)
+			prestate = state
 		end
 	end
 
@@ -148,11 +160,14 @@ function Guild:OnEnable()
 	LGP.RegisterCallback(self, "Clear", "UpdateMember")
 	LGP.RegisterCallback(self, "Position", "UpdateMember")
 	
-	self:RegisterEvent("GUILD_ROSTER_UPDATE")
+	self:RegisterBucketEvent("GUILD_ROSTER_UPDATE", 1)
 	if IsInGuild() then
 		GuildRoster()
 	end
 	
+	self:RegisterBucketEvent({"PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE"}, 1, "UpdateParty")
+	
+	self:UpdateParty()
 	self:UpdateAllMembers()
 end
 
@@ -191,6 +206,26 @@ function Guild:GUILD_ROSTER_UPDATE()
 	end
 	if updateNeeded then
 		self:SendMessage("HandyNotes_NotifyUpdate", "Guild")
+	end
+end
+
+local prevNum = 0
+function Guild:UpdateParty()
+	local numRaid, numParty = (GetNumRaidMembers()), (GetNumPartyMembers())
+	if numRaid > 0 and numRaid ~= prevNum then
+		prevNum = numRaid
+		clearBlacklist()
+		for i = 1, numRaid do
+			local name = UnitName(fmt("raid%d", i))
+			playerBlacklist[name] = true
+		end
+	elseif numParty > 0 and numParty ~= prevNum then
+		prevNum = numParty
+		clearBlacklist()
+		for i = 1, numParty do
+			local name = UnitName(fmt("party%d", i))
+			playerBlacklist[name] = true
+		end
 	end
 end
 
