@@ -7,6 +7,7 @@ local LGP = LibStub("LibGuildPositions-1.0")
 local fmt = string.format
 local next, pairs, rawget = next, pairs, rawget
 
+local IsInGuild, GuildRoster = IsInGuild, GuildRoster
 local GetGuildRosterInfo, GetNumGuildMembers = GetGuildRosterInfo, GetNumGuildMembers
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 
