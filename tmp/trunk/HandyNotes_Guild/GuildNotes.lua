@@ -211,6 +211,7 @@ end
 
 local prevNum = 0
 function Guild:UpdateParty()
+	local oldNum = prevNum
 	local numRaid, numParty = (GetNumRaidMembers()), (GetNumPartyMembers())
 	if numRaid > 0 and numRaid ~= prevNum then
 		prevNum = numRaid
@@ -226,6 +227,13 @@ function Guild:UpdateParty()
 			local name = UnitName(fmt("party%d", i))
 			playerBlacklist[name] = true
 		end
+	else
+		prevNum = 0
+		clearBlacklist()
+	end
+	
+	if oldNum ~= prevNum then
+		self:SendMessage("HandyNotes_NotifyUpdate", "Guild")
 	end
 end
 
