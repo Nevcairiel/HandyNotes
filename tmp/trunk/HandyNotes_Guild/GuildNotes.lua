@@ -1,16 +1,18 @@
 --[[ $Id$ ]]
-local HandyNotes_Guild = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Guild", "AceEvent-3.0", "AceHook-3.0")
-local G = HandyNotes_Guild
-local Astrolabe = DongleStub("Astrolabe-0.4-NC")
+local Guild = LibStub("AceAddon-3.0"):NewAddon("HandyNotes_Guild", "AceEvent-3.0", "AceHook-3.0")
 
+local HandyNotes = HandyNotes
 local LGP = LibStub("LibGuildPositions-1.0")
+
+local fmt = string.format
+local next, pairs, rawget = next, pairs, rawget
+
+local GetGuildRosterInfo, GetNumGuildMembers = GetGuildRosterInfo, GetNumGuildMembers
+local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 
 local defaults = nil
 local options = nil
-
-local icon = "Interface\\AddOns\\Mapster\\Artwork\\Normal"
-
-local fmt = string.format
+local icon = "Interface\\AddOns\\HandyNotes_Guild\\Normal"
 
 --[[
 	------------------------------
@@ -29,7 +31,7 @@ do
 		__index = function(t, name)
 			local class = playerClass[name]
 			if class then
-				rawset(t, name, RAID_CLASS_COLORS[class])
+				t[name] = RAID_CLASS_COLORS[class]
 				return t[name]
 			else
 				return greyTbl
@@ -81,9 +83,9 @@ end
 	HandyNotes Plugin Handler
 	------------------------------
 ]]
-local GHandler = {}
+local GuildHandler = {}
 
-function GHandler:OnEnter(mapFile, coord)
+function GuildHandler:OnEnter(mapFile, coord)
 	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
 	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
 		tooltip:SetOwner(self, "ANCHOR_LEFT")
@@ -98,7 +100,7 @@ function GHandler:OnEnter(mapFile, coord)
 	tooltip:Show()
 end
 
-function GHandler:OnLeave(mapFile, coord)
+function GuildHandler:OnLeave(mapFile, coord)
 	if self:GetParent() == WorldMapButton then
 		WorldMapTooltip:Hide()
 	else
@@ -120,7 +122,7 @@ do
 		end
 	end
 
-	function GHandler:GetNodes(mapFile, minimap)
+	function GuildHandler:GetNodes(mapFile, minimap)
 		prestate = nil
 		if minimap then
 			return iter, emptyTbl, nil
@@ -133,15 +135,15 @@ end
 ---------------------------------------------------------
 -- Addon initialization, enabling and disabling
 
-function G:OnInitialize()
+function Guild:OnInitialize()
 	-- Set up our database
 	self.db = LibStub("AceDB-3.0"):New("HandyNotes_GuildDB", defaults)
 	
 	-- Initialize our database with HandyNotes
-	HandyNotes:RegisterPluginDB("Guild", GHandler, options)
+	HandyNotes:RegisterPluginDB("Guild", GuildHandler, options)
 end
 
-function G:OnEnable()
+function Guild:OnEnable()
 	LGP.RegisterCallback(self, "Clear", "UpdateMember")
 	LGP.RegisterCallback(self, "Position", "UpdateMember")
 	
@@ -153,7 +155,7 @@ function G:OnEnable()
 	self:UpdateAllMembers()
 end
 
-function G:OnDisable()
+function Guild:OnDisable()
 	LGP.UnregisterAllCallbacks(self)
 	for k,v in pairs(database) do
 		recycle(v)
@@ -162,7 +164,7 @@ function G:OnDisable()
 end
 
 -- Event Handler to update the guild roster
-function G:GUILD_ROSTER_UPDATE()
+function Guild:GUILD_ROSTER_UPDATE()
 	local updateNeeded = false
 	if IsInGuild() then
 		local numPlayersTotal = GetNumGuildMembers(true)
@@ -192,7 +194,7 @@ function G:GUILD_ROSTER_UPDATE()
 end
 
 -- LGP Callback for updating member positions
-function G:UpdateMember(event, sender, x, y, zone)
+function Guild:UpdateMember(event, sender, x, y, zone)
 	if event == "Clear" then
 		recycle(database[sender])
 		database[sender] = nil
@@ -204,7 +206,7 @@ function G:UpdateMember(event, sender, x, y, zone)
 end
 
 -- Poll LGP for all members in its database (right now only called once on initialization)
-function G:UpdateAllMembers()
+function Guild:UpdateAllMembers()
 	for name, x, y, zone in LGP:IterateGuildMembers() do
 		database[name].coord = HandyNotes:getCoord(x,y)
 		database[name].zone = zone
