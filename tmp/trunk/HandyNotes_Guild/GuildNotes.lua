@@ -227,7 +227,7 @@ function Guild:UpdateParty()
 			local name = UnitName(fmt("party%d", i))
 			playerBlacklist[name] = true
 		end
-	else
+	elseif numRaid == 0 and numParty == 0 then
 		prevNum = 0
 		clearBlacklist()
 	end
