@@ -21,7 +21,7 @@ local icon = "Interface\\AddOns\\HandyNotes_Guild\\Normal"
 ]]
 
 --[[ player data - class and color tables ]]
-local playerClass, playerColor, playerLevel
+local playerClass, playerClassLocalized, playerColor, playerLevel
 do
 	local greyTbl = { r = 0.8, g = 0.8, b = 0.8 }
 	playerClass = {}
@@ -62,7 +62,7 @@ do
 			local c = playerColor[k]
 			new.icon.r, new.icon.g, new.icon.b, new.icon.a = c.r, c.g, c.b, 1
 			
-			rawset(t, k, new)
+			t[k] = new
 			return new
 		end
 	})
