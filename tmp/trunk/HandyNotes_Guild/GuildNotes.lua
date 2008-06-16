@@ -41,14 +41,6 @@ do
 	})
 end
 
-local playerBlacklist = {}
-
-local function clearBlacklist()
-	for k in pairs(playerBlacklist) do
-		playerBlacklist[k] = nil
-	end
-end
-
 --[[ player storage database - position, icon, zone ]]
 local database, nameLookup, recycle
 do
@@ -126,12 +118,8 @@ do
 		if not t then return end
 		local state, value = next(t, prestate)
 		prestate = state
-		while state do
-			if not playerBlacklist[state] then
-				return value.coord, value.zone, value.icon, scale, alpha
-			end
-			state, value = next(t, prestate)
-			prestate = state
+		if state then
+			return value.coord, value.zone, value.icon, scale, alpha
 		end
 	end
 
@@ -165,9 +153,6 @@ function Guild:OnEnable()
 		GuildRoster()
 	end
 	
-	self:RegisterBucketEvent({"PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE"}, 1, "UpdateParty")
-	
-	self:UpdateParty()
 	self:UpdateAllMembers()
 end
 
@@ -205,34 +190,6 @@ function Guild:GUILD_ROSTER_UPDATE()
 		end
 	end
 	if updateNeeded then
-		self:SendMessage("HandyNotes_NotifyUpdate", "Guild")
-	end
-end
-
-local prevNum = 0
-function Guild:UpdateParty()
-	local oldNum = prevNum
-	local numRaid, numParty = (GetNumRaidMembers()), (GetNumPartyMembers())
-	if numRaid > 0 and numRaid ~= prevNum then
-		prevNum = numRaid
-		clearBlacklist()
-		for i = 1, numRaid do
-			local name = UnitName(fmt("raid%d", i))
-			playerBlacklist[name] = true
-		end
-	elseif numRaid == 0 and numParty > 0 and numParty ~= prevNum then
-		prevNum = numParty
-		clearBlacklist()
-		for i = 1, numParty do
-			local name = UnitName(fmt("party%d", i))
-			playerBlacklist[name] = true
-		end
-	elseif numRaid == 0 and numParty == 0 then
-		prevNum = 0
-		clearBlacklist()
-	end
-	
-	if oldNum ~= prevNum then
 		self:SendMessage("HandyNotes_NotifyUpdate", "Guild")
 	end
 end
