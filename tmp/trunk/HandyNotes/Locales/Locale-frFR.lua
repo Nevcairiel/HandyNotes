@@ -32,6 +32,7 @@ L["Title"] = "Titre"
 L["Description/Notes:"] = "Description/Notes :"
 L["Show on continent map"] = "Afficher sur la carte des continents"
 L["Add this location to Cartographer_Waypoints"] = "Ajouter cette position à Cartographer_Waypoints"
+L["Add this location to TomTom waypoints"] = "Ajouter cette position aux points de naviguation de TomTom"
 L["|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"] = "|cFF00FF00Astuce : |cffeda55fCtrl+Shift+SaisirGauche|cFF00FF00 pour déplacer une note"
 
 L["These settings control the look and feel of the HandyNotes icons."] = "Ces paramètres contrôlent l'apparence des icônes de HandyNotes."
@@ -40,5 +41,6 @@ L["The scale of the icons"] = "Définit l'échelle des icônes."
 L["Icon Alpha"] = "Transparence des icônes"
 L["The alpha transparency of the icons"] = "Définit la transparence des icônes."
 
+L["\nAlt+Right Click To Add a HandyNote"] = "\nAlt+clic droit pour ajouter une note pratique"
 
 -- vim: ts=4 noexpandtab
