@@ -4,7 +4,7 @@ local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:NewModule("HandyNotes", "AceEvent-3.0", "AceHook-3.0")
 local Astrolabe = DongleStub("Astrolabe-0.4-NC")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
-
+local GameVersion = select(4, GetBuildInfo())
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
@@ -68,7 +68,11 @@ function HNHandler:OnLeave(mapFile, coord)
 	end
 end
 
-local function deletePin(mapFile, coord)
+local function deletePin(button, mapFile, coord)
+	if GameVersion < 30000 then
+		coord = mapFile
+		mapFile = button
+	end
 	local HNEditFrame = HN.HNEditFrame
 	if HNEditFrame.coord == coord and HNEditFrame.mapFile == mapFile then
 		HNEditFrame:Hide()
@@ -77,7 +81,11 @@ local function deletePin(mapFile, coord)
 	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 end
 
-local function editPin(mapFile, coord)
+local function editPin(button, mapFile, coord)
+	if GameVersion < 30000 then
+		coord = mapFile
+		mapFile = button
+	end
 	local HNEditFrame = HN.HNEditFrame
 	HNEditFrame.x, HNEditFrame.y = HandyNotes:getXY(coord)
 	HNEditFrame.coord = coord
@@ -86,7 +94,11 @@ local function editPin(mapFile, coord)
 	HNEditFrame:Show()
 end
 
-local function addCartWaypoint(mapFile, coord)
+local function addCartWaypoint(button, mapFile, coord)
+	if GameVersion < 30000 then
+		coord = mapFile
+		mapFile = button
+	end
 	if Cartographer and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
 		local x, y = HandyNotes:getXY(coord)
 		local cartCoordID = floor(x*10000 + 0.5) + floor(y*10000 + 0.5)*10001
@@ -98,7 +110,11 @@ local function addCartWaypoint(mapFile, coord)
 	end
 end
 
-local function addTomTomWaypoint(mapFile, coord)
+local function addTomTomWaypoint(button, mapFile, coord)
+	if GameVersion < 30000 then
+		coord = mapFile
+		mapFile = button
+	end
 	if TomTom then
 		local c, z = HandyNotes:GetCZ(mapFile)
 		local x, y = HandyNotes:getXY(coord)
@@ -111,7 +127,10 @@ do
 	local info = {}
 	local clickedMapFile = nil
 	local clickedZone = nil
-	local function generateMenu(level)
+	local function generateMenu(button, level)
+		if GameVersion < 30000 then
+			level = button
+		end
 		if (not level) then return end
 		for k in pairs(info) do info[k] = nil end
 		if (level == 1) then
@@ -310,6 +329,9 @@ end
 
 -- Hooked function on clicking the world map
 function HN:WorldMapButton_OnClick(mouseButton, button, ...)
+	if GameVersion >= 30000 then
+		mouseButton, button = button, mouseButton
+	end
 	if mouseButton == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
 		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
 		local mapFile = GetMapInfo() or HandyNotes:GetMapFile(C, Z) -- Fallback for "Cosmic" and "World"
@@ -332,6 +354,9 @@ function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
+		if GameVersion >= 30000 then
+			mouseButton, button = button, mouseButton
+		end
 		return self.hooks.WorldMapButton_OnClick(mouseButton, button, ...)
 	end
 end

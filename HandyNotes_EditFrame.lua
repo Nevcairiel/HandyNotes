@@ -3,6 +3,7 @@
 local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:GetModule("HandyNotes")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
+local GameVersion = select(4, GetBuildInfo())
 
 local backdrop2 = {
 	bgFile = nil,
@@ -137,7 +138,11 @@ HNEditFrame.descscrollframe:SetScrollChild(HNEditFrame.descinputbox)
 HNEditFrame.icondropdown = CreateFrame("Frame", "HandyNotes_IconDropDown", HNEditFrame, "UIDropDownMenuTemplate")
 HNEditFrame.icondropdown:SetPoint("TOPLEFT", HNEditFrame.descframe, "BOTTOMLEFT", -17, 0)
 HNEditFrame.icondropdown:SetHitRectInsets(16, 16, 0, 0)
-UIDropDownMenu_SetWidth(100, HNEditFrame.icondropdown)
+if GameVersion >= 30000 then
+	UIDropDownMenu_SetWidth(HNEditFrame.icondropdown,100)
+else
+	UIDropDownMenu_SetWidth(100, HNEditFrame.icondropdown)
+end
 UIDropDownMenu_EnableDropDown(HNEditFrame.icondropdown)
 HNEditFrame.icondropdown.displayMode = "MENU"
 HNEditFrame.icondropdown.texture = HNEditFrame.icondropdown:CreateTexture(nil, "OVERLAY")
@@ -146,7 +151,14 @@ HNEditFrame.icondropdown.texture:SetHeight(12)
 HNEditFrame.icondropdown.texture:SetPoint("RIGHT", HNEditFrame.icondropdown, -41, 2)
 HNEditFrame.icondropdown.text = HandyNotes_IconDropDownText
 HNEditFrame.icondropdown.text:SetPoint("RIGHT", HNEditFrame.icondropdown.texture, "LEFT", -3, 0)
-HNEditFrame.icondropdown.OnClick = function(value)
+HNEditFrame.icondropdown.OnClick = function(button,value)
+	if GameVersion >= 30000 then
+		if type(button) ~= "table" then
+			value = button
+		end
+	else
+		value = button
+	end
 	local t = HN.icons[value]
 	HNEditFrame.icondropdown.selectedValue = value
 	HNEditFrame.icondropdown.texture:SetTexture(t.icon)
@@ -195,7 +207,11 @@ HNEditFrame.continentcheckbox.string:SetWidth(200)
 HNEditFrame.continentcheckbox.string:SetJustifyH("LEFT")
 HNEditFrame.continentcheckbox.string:SetPoint("LEFT", 24, 1)
 HNEditFrame.continentcheckbox:SetFontString(HNEditFrame.continentcheckbox.string)
-HNEditFrame.continentcheckbox:SetTextFontObject("GameFontNormalSmall")
+if GameVersion >= 30000 then
+	HNEditFrame.continentcheckbox:SetNormalFontObject("GameFontNormalSmall")
+else
+	HNEditFrame.continentcheckbox:SetTextFontObject("GameFontNormalSmall")
+end
 HNEditFrame.continentcheckbox:SetHighlightFontObject("GameFontHighlightSmall")
 HNEditFrame.continentcheckbox:SetDisabledFontObject("GameFontDisableSmall")
 HNEditFrame.continentcheckbox:SetText(L["Show on continent map"])
