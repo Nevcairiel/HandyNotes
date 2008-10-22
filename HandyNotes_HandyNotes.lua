@@ -194,7 +194,7 @@ do
 			-- Close menu item
 			info.text         = CLOSE
 			info.icon         = nil
-			info.func         = CloseDropDownMenus
+			info.func         = function() CloseDropDownMenus() end
 			info.arg1         = nil
 			info.arg2         = nil
 			info.notCheckable = 1
