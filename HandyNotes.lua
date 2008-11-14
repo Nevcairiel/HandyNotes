@@ -194,6 +194,7 @@ local continentMapFile = {
 	[1] = "Kalimdor",
 	[2] = "Azeroth",
 	[3] = "Expansion01",
+	[4] = "Northrend",
 }
 local reverseMapFileC = {}
 local reverseMapFileZ = {}
@@ -204,7 +205,7 @@ for C = 1, #Astrolabe.ContinentList do
 		reverseMapFileZ[mapFile] = Z
 	end
 end
-for C = -1, 3 do
+for C = -1, 4 do
 	local mapFile = continentMapFile[C]
 	reverseMapFileC[mapFile] = C
 	reverseMapFileZ[mapFile] = 0
