@@ -278,6 +278,8 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	local frameStrata = WorldMapButton:GetFrameStrata()
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
+		-- Scarlet Enclave check, only do stuff if we're on that map, since we have no zone translation for it yet in Astrolabe
+		if mapFile2 ~= "ScarletEnclave" or mapFile2 == mapFile then
 		local icon = getNewPin()
 		icon:SetParent(WorldMapButton)
 		icon:SetFrameStrata(frameStrata)
@@ -323,10 +325,11 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		end
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
-		worldmapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
+		worldmapPins[pluginName][(C or 0)*1e10 + (Z or 0)*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
 		icon.mapFile = mapFile2 or mapFile
+		end
 	end
 end
 
@@ -397,7 +400,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		Astrolabe:PlaceIconOnMinimap(icon, C, Z, x, y)
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
-		minimapPins[pluginName][C*1e10 + Z*1e8 + coord] = icon
+		minimapPins[pluginName][(C or 0)*1e10 + (Z or 0)*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
 		icon.mapFile = mapFile2 or mapFile
