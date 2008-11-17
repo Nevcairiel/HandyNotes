@@ -32,6 +32,7 @@ L["Title"] = "标题"
 L["Description/Notes:"] = "说明/注释："
 L["Show on continent map"] = "在大陆地图上显示"
 L["Add this location to Cartographer_Waypoints"] = "将这个位置添加到Cartographer_Waypoints插件去"
+L["Add this location to TomTom waypoints"] = "将这个位置添加到TomTom插件去"
 L["|cFF00FF00Hint: |cffeda55fCtrl+Shift+LeftDrag|cFF00FF00 to move a note"] = "|cFF00FF00提示：|cffeda55fCtrl+Shift+左键拖拽|cFF00FF00可以移动一个标记"
 
 L["These settings control the look and feel of the HandyNotes icons."] = "这些设置控制HandyNotes图标的外观及风格。"
@@ -39,5 +40,8 @@ L["Icon Scale"] = "图标缩放"
 L["The scale of the icons"] = "图标的缩放值"
 L["Icon Alpha"] = "图标透明度"
 L["The alpha transparency of the icons"] = "图标的透明度"
+
+L["\nAlt+Right Click To Add a HandyNote"] = true
+L["ERROR_CREATE_NOTE1"] = "HandyNotes cannot create a note here as it is unable to obtain your current location. Usually this is because there is no map for the zone you are in."
 
 -- vim: ts=4 noexpandtab

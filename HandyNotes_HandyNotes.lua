@@ -1,7 +1,7 @@
 ﻿---------------------------------------------------------
 -- Module declaration
 local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
-local HN = HandyNotes:NewModule("HandyNotes", "AceEvent-3.0", "AceHook-3.0")
+local HN = HandyNotes:NewModule("HandyNotes", "AceEvent-3.0", "AceHook-3.0", "AceConsole-3.0")
 local Astrolabe = DongleStub("Astrolabe-0.4")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 local GameVersion = select(4, GetBuildInfo())
@@ -267,6 +267,7 @@ do
 		["Kalimdor"]    = {[0] = "Kalimdor",    __index = Astrolabe.ContinentList[1]},
 		["Azeroth"]     = {[0] = "Azeroth",     __index = Astrolabe.ContinentList[2]},
 		["Expansion01"] = {[0] = "Expansion01", __index = Astrolabe.ContinentList[3]},
+		["Northrend"]   = {[0] = "Northrend",   __index = Astrolabe.ContinentList[4]},
 	}
 	for k, v in pairs(continentMapFile) do
 		setmetatable(v, v)
@@ -361,6 +362,28 @@ function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 	end
 end
 
+-- Function to create a note where the player is
+function HN:CreateNoteHere()
+	-- Get the coordinates of player
+	local c, z, x, y = Astrolabe:GetCurrentPlayerPosition()
+	if c and z and x and y then
+		local coord = HandyNotes:getCoord(x, y)
+		x, y = HandyNotes:getXY(coord)
+
+		-- Pass the data to the edit note frame
+		local HNEditFrame = self.HNEditFrame
+		HNEditFrame.x = x
+		HNEditFrame.y = y
+		HNEditFrame.coord = coord
+		HNEditFrame.mapFile = GetMapInfo() or HandyNotes:GetMapFile(c, z) -- Fallback for "Cosmic" and "World"
+		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
+		HNEditFrame:Show()
+	else
+		self:Print(L["ERROR_CREATE_NOTE1"])
+	end
+end
+
+
 ---------------------------------------------------------
 -- Options table
 local options = {
@@ -411,6 +434,9 @@ function HN:OnInitialize()
 	HandyNotes:RegisterPluginDB("HandyNotes", HNHandler, options)
 
 	WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
+
+	-- Slash command
+	self:RegisterChatCommand("hnnew", "CreateNoteHere")
 end
 
 function HN:OnEnable()
