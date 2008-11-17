@@ -42,5 +42,6 @@ L["Icon Alpha"] = true
 L["The alpha transparency of the icons"] = true
 
 L["\nAlt+Right Click To Add a HandyNote"] = true
+L["ERROR_CREATE_NOTE1"] = "HandyNotes cannot create a note here as it is unable to obtain your current location. Usually this is because there is no map for the zone you are in."
 
 -- vim: ts=4 noexpandtab

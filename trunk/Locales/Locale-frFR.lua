@@ -42,5 +42,6 @@ L["Icon Alpha"] = "Transparence des icônes"
 L["The alpha transparency of the icons"] = "Définit la transparence des icônes."
 
 L["\nAlt+Right Click To Add a HandyNote"] = "\nAlt+clic droit pour ajouter une note pratique"
+L["ERROR_CREATE_NOTE1"] = "HandyNotes cannot create a note here as it is unable to obtain your current location. Usually this is because there is no map for the zone you are in."
 
 -- vim: ts=4 noexpandtab

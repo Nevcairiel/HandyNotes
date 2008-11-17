@@ -42,5 +42,6 @@ L["Icon Alpha"] = "아이콘 투명도"
 L["The alpha transparency of the icons"] = "아이콘의 투명도를 변경합니다."
 
 L["\nAlt+Right Click To Add a HandyNote"] = "\nAlt+오른쪽 클릭하면 노트를 추가합니다."
+L["ERROR_CREATE_NOTE1"] = "HandyNotes cannot create a note here as it is unable to obtain your current location. Usually this is because there is no map for the zone you are in."
 
 -- vim: ts=4 noexpandtab
