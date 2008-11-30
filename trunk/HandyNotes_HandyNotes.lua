@@ -56,7 +56,7 @@ function HNHandler:OnEnter(mapFile, coord)
 		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
 	tooltip:SetText(dbdata[mapFile][coord].title)
-	tooltip:AddLine(dbdata[mapFile][coord].desc)
+	tooltip:AddLine(dbdata[mapFile][coord].desc, nil, nil, nil, true)
 	tooltip:Show()
 end
 
@@ -363,9 +363,27 @@ function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 end
 
 -- Function to create a note where the player is
-function HN:CreateNoteHere()
-	-- Get the coordinates of player
-	local c, z, x, y = Astrolabe:GetCurrentPlayerPosition()
+function HN:CreateNoteHere(arg1)
+	local c, z, x, y
+
+	if arg1 ~= "" then
+		-- Coordinates entered
+		x, y = string.match(strtrim(arg1), "([%d.]+)[, ]+([%d.]+)")
+		x, y = tonumber(x), tonumber(y)
+		if x and y and x > 1 and x < 100 and y > 1 and y < 100 then
+			-- Normalize coordinates to between 0 and 1
+			x, y = x/100, y/100
+		end
+		if not x or not y or x <= 0 or x >= 1 or y <= 0 or y >= 1 then
+			self:Print("Syntax: /hnnew [x, y]")
+			return
+		end
+		c, z = Astrolabe:GetCurrentPlayerPosition()
+	else
+		-- No coordinates entered, get the coordinates of player
+		c, z, x, y = Astrolabe:GetCurrentPlayerPosition()
+	end
+
 	if c and z and x and y then
 		local coord = HandyNotes:getCoord(x, y)
 		x, y = HandyNotes:getXY(coord)
