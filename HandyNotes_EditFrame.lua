@@ -14,7 +14,7 @@ local backdrop2 = {
 
 -- Create the main frame
 -- For jncl (Skinner), this frame is accessed by LibStub("AceAddon-3.0"):GetAddon("HandyNotes"):GetModule("HandyNotes").HNEditFrame
-local HNEditFrame = CreateFrame("Frame", nil, UIParent)
+local HNEditFrame = CreateFrame("Frame", "HNEditFrame", UIParent)
 HN.HNEditFrame = HNEditFrame
 HNEditFrame:Hide()
 HNEditFrame:SetWidth(350)
@@ -246,6 +246,8 @@ end)
 HNEditFrame.descinputbox:SetScript("OnTabPressed", function(self)
 	HNEditFrame.titleinputbox:SetFocus()
 end)
+-- Makes ESC key close HNEditFrame
+tinsert(UISpecialFrames, "HNEditFrame")
 
 
 ---------------------------------------------------------
