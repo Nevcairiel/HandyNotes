@@ -375,7 +375,7 @@ function HN:CreateNoteHere(arg1)
 			x, y = x/100, y/100
 		end
 		if not x or not y or x <= 0 or x >= 1 or y <= 0 or y >= 1 then
-			self:Print("Syntax: /hnnew [x, y]")
+			self:Print(L["Syntax:"].." /hnnew [x, y]")
 			return
 		end
 		c, z = Astrolabe:GetCurrentPlayerPosition()
