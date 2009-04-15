@@ -358,7 +358,11 @@ function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 		if GameVersion >= 30000 then
 			mouseButton, button = button, mouseButton
 		end
-		return self.hooks.WorldMapButton_OnClick(mouseButton, button, ...)
+		if GameVersion >= 30100 then
+			return self.hooks[mouseButton].OnMouseUp(mouseButton, button, ...)
+		else
+			return self.hooks.WorldMapButton_OnClick(mouseButton, button, ...)
+		end
 	end
 end
 
@@ -458,7 +462,11 @@ function HN:OnInitialize()
 end
 
 function HN:OnEnable()
-	self:RawHook("WorldMapButton_OnClick", true)
+	if GameVersion >= 30100 then
+		self:RawHookScript(WorldMapButton, "OnMouseUp", "WorldMapButton_OnClick")
+	else
+		self:RawHook("WorldMapButton_OnClick", true)
+	end
 end
 
 function HN:OnDisable()
