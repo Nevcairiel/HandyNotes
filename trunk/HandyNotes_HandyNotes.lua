@@ -79,8 +79,12 @@ function HNHandler:OnEnter(mapFile, coord)
 	else
 		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	tooltip:SetText(dbdata[mapFile][coord].title)
-	tooltip:AddLine(dbdata[mapFile][coord].desc, nil, nil, nil, true)
+	local title = dbdata[mapFile][coord].title
+	local desc = dbdata[mapFile][coord].desc
+	if title == "" and desc == "" then title = L["(No Title)"] end
+	if title == "" and desc ~= "" then title = desc  desc = nil end
+	tooltip:SetText(title)
+	tooltip:AddLine(desc, nil, nil, nil, true)
 	tooltip:Show()
 end
 

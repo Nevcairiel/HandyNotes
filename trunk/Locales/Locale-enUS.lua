@@ -47,5 +47,6 @@ L["ERROR_CREATE_NOTE1"] = "HandyNotes cannot create a note here as it is unable 
 L["Syntax:"] = true
 
 L["Portal"] = true
+L["(No Title)"] = true
 
 -- vim: ts=4 noexpandtab
