@@ -296,7 +296,6 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		icon:SetAlpha(ourAlpha * alpha)
 		local t = icon.texture
 		if type(iconpath) == "table" then
-			t:SetTexture(iconpath.icon)
 			if iconpath.tCoordLeft then
 				t:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
 			else
@@ -307,10 +306,11 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 			else
 				t:SetVertexColor(1, 1, 1, 1)
 			end
+			t:SetTexture(iconpath.icon)
 		else
-			t:SetTexture(iconpath)
 			t:SetTexCoord(0, 1, 0, 1)
 			t:SetVertexColor(1, 1, 1, 1)
+			t:SetTexture(iconpath)
 		end
 		icon:SetScript("OnClick", pinsHandler.OnClick)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
@@ -378,7 +378,6 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		icon:SetAlpha(ourAlpha * alpha)
 		local t = icon.texture
 		if type(iconpath) == "table" then
-			t:SetTexture(iconpath.icon)
 			if iconpath.tCoordLeft then
 				t:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
 			else
@@ -389,10 +388,11 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 			else
 				t:SetVertexColor(1, 1, 1, 1)
 			end
+			t:SetTexture(iconpath.icon)
 		else
-			t:SetTexture(iconpath)
 			t:SetTexCoord(0, 1, 0, 1)
 			t:SetVertexColor(1, 1, 1, 1)
+			t:SetTexture(iconpath)
 		end
 		icon:SetScript("OnClick", nil)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
@@ -562,6 +562,7 @@ options = {
 		},
 	},
 }
+options.args.plugins.disabled = options.args.overall_settings.disabled
 
 
 ---------------------------------------------------------
@@ -570,13 +571,20 @@ options = {
 function HandyNotes:OnInitialize()
 	-- Set up our database
 	self.db = LibStub("AceDB-3.0"):New("HandyNotesDB", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	db = self.db.profile
 
 	-- Register options table and slash command
 	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("HandyNotes", options)
 	self:RegisterChatCommand("handynotes", function() LibStub("AceConfigDialog-3.0"):Open("HandyNotes") end)
 
-	-- Make it minimap icons update faster
+	-- Get the option table for profiles
+	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+	options.args.profiles.disabled = options.args.overall_settings.disabled
+
+	-- Make minimap icons update faster
 	Astrolabe.MinimapUpdateTime = 0.1
 end
 
@@ -605,5 +613,12 @@ function HandyNotes:OnDisable()
 	Astrolabe:Register_OnEdgeChanged_Callback(self.AstrolabeEdgeCallback)
 	updateFrame:Hide()
 end
+
+function HandyNotes:OnProfileChanged(event, database, newProfileKey)
+	db = database.profile
+	self:UpdateMinimap()
+	self:UpdateWorldMap()
+end
+
 
 -- vim: ts=4 noexpandtab
