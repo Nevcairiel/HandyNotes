@@ -24,6 +24,7 @@ L["The overall alpha transparency of the icons on the Minimap"] = true
 L["Plugins"] = true
 L["Plugin databases"] = true
 L["Configuration for each individual plugin database."] = true
+L["Show the following plugins on the map"] = true
 
 L["Add Handy Note"] = true
 L["Edit Handy Note"] = true
