@@ -30,17 +30,41 @@ local WorldMapTooltip = WorldMapTooltip
 
 ---------------------------------------------------------
 -- Constants
-local icons = {
-	[1] = UnitPopupButtons.RAID_TARGET_1,
-	[2] = UnitPopupButtons.RAID_TARGET_2,
-	[3] = UnitPopupButtons.RAID_TARGET_3,
-	[4] = UnitPopupButtons.RAID_TARGET_4,
-	[5] = UnitPopupButtons.RAID_TARGET_5,
-	[6] = UnitPopupButtons.RAID_TARGET_6,
-	[7] = UnitPopupButtons.RAID_TARGET_7,
-	[8] = UnitPopupButtons.RAID_TARGET_8,
+-- An addon can replace this table or add to it directly, but keep in mind
+-- notes are currently stored with the index number of the chosen icon.
+HN.icons = {
+	[1] = UnitPopupButtons.RAID_TARGET_1, -- Star
+	[2] = UnitPopupButtons.RAID_TARGET_2, -- Circle
+	[3] = UnitPopupButtons.RAID_TARGET_3, -- Diamond
+	[4] = UnitPopupButtons.RAID_TARGET_4, -- Triangle
+	[5] = UnitPopupButtons.RAID_TARGET_5, -- Moon
+	[6] = UnitPopupButtons.RAID_TARGET_6, -- Square
+	[7] = UnitPopupButtons.RAID_TARGET_7, -- Cross
+	[8] = UnitPopupButtons.RAID_TARGET_8, -- Skull
+	[9] = {text = MINIMAP_TRACKING_AUCTIONEER, icon = "Interface\\Minimap\\Tracking\\Auctioneer"},
+	[10] = {text = MINIMAP_TRACKING_BANKER, icon = "Interface\\Minimap\\Tracking\\Banker"},
+	[11] = {text = MINIMAP_TRACKING_BATTLEMASTER, icon = "Interface\\Minimap\\Tracking\\BattleMaster"},
+	[12] = {text = MINIMAP_TRACKING_FLIGHTMASTER, icon = "Interface\\Minimap\\Tracking\\FlightMaster"},
+	[13] = {text = MINIMAP_TRACKING_INNKEEPER, icon = "Interface\\Minimap\\Tracking\\Innkeeper"},
+	[14] = {text = MINIMAP_TRACKING_MAILBOX, icon = "Interface\\Minimap\\Tracking\\Mailbox"},
+	[15] = {text = MINIMAP_TRACKING_REPAIR, icon = "Interface\\Minimap\\Tracking\\Repair"},
+	[16] = {text = MINIMAP_TRACKING_STABLEMASTER, icon = "Interface\\Minimap\\Tracking\\StableMaster"},
+	[17] = {text = MINIMAP_TRACKING_TRAINER_CLASS, icon = "Interface\\Minimap\\Tracking\\Class"},
+	[18] = {text = MINIMAP_TRACKING_TRAINER_PROFESSION, icon = "Interface\\Minimap\\Tracking\\Profession"},
+	[19] = {text = MINIMAP_TRACKING_TRIVIAL_QUESTS, icon = "Interface\\Minimap\\Tracking\\TrivialQuests"},
+	[20] = {text = MINIMAP_TRACKING_VENDOR_AMMO, icon = "Interface\\Minimap\\Tracking\\Ammunition"},
+	[21] = {text = MINIMAP_TRACKING_VENDOR_FOOD, icon = "Interface\\Minimap\\Tracking\\Food"},
+	[22] = {text = MINIMAP_TRACKING_VENDOR_POISON, icon = "Interface\\Minimap\\Tracking\\Poisons"},
+	[23] = {text = MINIMAP_TRACKING_VENDOR_REAGENT, icon = "Interface\\Minimap\\Tracking\\Reagents"},
+	[24] = {text = FACTION_ALLIANCE, icon = "Interface\\TargetingFrame\\UI-PVP-Alliance",
+		tCoordLeft = 0.05, tCoordRight = 0.65, tCoordTop = 0, tCoordBottom = 0.6},
+	[25] = {text = FACTION_HORDE, icon = "Interface\\TargetingFrame\\UI-PVP-Horde",
+		tCoordLeft = 0.05, tCoordRight = 0.65, tCoordTop = 0, tCoordBottom = 0.6},
+	[26] = {text = FACTION_STANDING_LABEL4, icon = "Interface\\TargetingFrame\\UI-PVP-FFA",
+		tCoordLeft = 0.05, tCoordRight = 0.65, tCoordTop = 0, tCoordBottom = 0.6},
+	[27] = {text = ARENA, icon = "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"},
+	[28] = {text = L["Portal"], icon = "Interface\\Icons\\Spell_Arcane_PortalDalaran"},
 }
-HN.icons = icons
 
 
 ---------------------------------------------------------
@@ -138,7 +162,7 @@ do
 			info.isTitle      = 1
 			info.text         = L["HandyNotes"]
 			info.notCheckable = 1
-			local t = icons[dbdata[clickedMapFile][clickedCoord].icon]
+			local t = HN.icons[dbdata[clickedMapFile][clickedCoord].icon]
 			info.icon         = t.icon
 			info.tCoordLeft   = t.tCoordLeft
 			info.tCoordRight  = t.tCoordRight
@@ -278,7 +302,7 @@ do
 		if not t then return end
 		local state, value = next(t, prestate)
 		if value then
-			return state, nil, icons[value.icon], db.icon_scale, db.icon_alpha
+			return state, nil, HN.icons[value.icon], db.icon_scale, db.icon_alpha
 		end
 	end
 
@@ -295,7 +319,7 @@ do
 				state, value = next(data, prestate)
 				while state do -- Have we reached the end of this zone?
 					if value.cont or zone == 0 then -- Show on continent?
-						return state, mapFile, icons[value.icon], db.icon_scale, db.icon_alpha
+						return state, mapFile, HN.icons[value.icon], db.icon_scale, db.icon_alpha
 					end
 					state, value = next(data, state) -- Get next data
 				end
