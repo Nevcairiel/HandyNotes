@@ -21,7 +21,10 @@ local defaults = {
 		icon_alpha    = 1.0,
 		icon_scale_minimap = 1.0,
 		icon_alpha_minimap = 1.0,
-	}
+		enabledPlugins = {
+			['*'] = true,
+		},
+	},
 }
 
 
@@ -132,6 +135,7 @@ end
 ---------------------------------------------------------
 -- Plugin handling
 HandyNotes.plugins = {}
+local pluginsOptionsText = {}
 
 --[[ Documentation:
 HandyNotes.plugins table contains every plugin which we will use to iterate over.
@@ -169,6 +173,7 @@ function HandyNotes:RegisterPluginDB(pluginName, pluginHandler, optionsTable)
 	worldmapPins[pluginName] = {}
 	minimapPins[pluginName] = {}
 	options.args.plugins.args[pluginName] = optionsTable
+	pluginsOptionsText[pluginName] = optionsTable and optionsTable.name or pluginName
 end
 
 
@@ -269,6 +274,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not WorldMapButton:IsVisible() then return end
 
 	clearAllPins(worldmapPins[pluginName])
+	if not db.enabledPlugins[pluginName] then return end
 
 	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
 	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
@@ -350,6 +356,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		Astrolabe:RemoveIconFromMinimap(icon)
 	end
 	clearAllPins(minimapPins[pluginName])
+	if not db.enabledPlugins[pluginName] then return end
 
 	local continent, zone = HandyNotes:GetZoneToCZ(GetRealZoneText())
 	local mapFile = self:GetMapFile(continent, zone) -- or GetMapInfo() -- Astrolabe doesn't support BGs
@@ -538,6 +545,18 @@ options = {
 					name = L["Configuration for each individual plugin database."],
 					type = "description",
 					order = 0,
+				},
+				show_plugins = {
+					name = L["Show the following plugins on the map"], type = "multiselect",
+					order = 20,
+					values = pluginsOptionsText,
+					get = function(info, k)
+						return db.enabledPlugins[k]
+					end,
+					set = function(info, k, v)
+						db.enabledPlugins[k] = v
+						HandyNotes:UpdatePluginMap(nil, k)
+					end,
 				},
 			},
 		},
