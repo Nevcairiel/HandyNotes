@@ -45,4 +45,6 @@ L["\nAlt+Right Click To Add a HandyNote"] = true
 L["ERROR_CREATE_NOTE1"] = "HandyNotes cannot create a note here as it is unable to obtain your current location. Usually this is because there is no map for the zone you are in."
 L["Syntax:"] = true
 
+L["Portal"] = true
+
 -- vim: ts=4 noexpandtab
