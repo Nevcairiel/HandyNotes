@@ -3,7 +3,7 @@
 local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:GetModule("HandyNotes")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
-local GameVersion = select(4, GetBuildInfo())
+
 
 local backdrop2 = {
 	bgFile = nil,
@@ -138,11 +138,7 @@ HNEditFrame.descscrollframe:SetScrollChild(HNEditFrame.descinputbox)
 HNEditFrame.icondropdown = CreateFrame("Frame", "HandyNotes_IconDropDown", HNEditFrame, "UIDropDownMenuTemplate")
 HNEditFrame.icondropdown:SetPoint("TOPLEFT", HNEditFrame.descframe, "BOTTOMLEFT", -17, 0)
 HNEditFrame.icondropdown:SetHitRectInsets(16, 16, 0, 0)
-if GameVersion >= 30000 then
-	UIDropDownMenu_SetWidth(HNEditFrame.icondropdown,100)
-else
-	UIDropDownMenu_SetWidth(100, HNEditFrame.icondropdown)
-end
+UIDropDownMenu_SetWidth(HNEditFrame.icondropdown,100)
 UIDropDownMenu_EnableDropDown(HNEditFrame.icondropdown)
 HNEditFrame.icondropdown.displayMode = "MENU"
 HNEditFrame.icondropdown.texture = HNEditFrame.icondropdown:CreateTexture(nil, "OVERLAY")
@@ -151,14 +147,7 @@ HNEditFrame.icondropdown.texture:SetHeight(12)
 HNEditFrame.icondropdown.texture:SetPoint("RIGHT", HNEditFrame.icondropdown, -41, 2)
 HNEditFrame.icondropdown.text = HandyNotes_IconDropDownText
 HNEditFrame.icondropdown.text:SetPoint("RIGHT", HNEditFrame.icondropdown.texture, "LEFT", -3, 0)
-HNEditFrame.icondropdown.OnClick = function(button,value)
-	if GameVersion >= 30000 then
-		if type(button) ~= "table" then
-			value = button
-		end
-	else
-		value = button
-	end
+HNEditFrame.icondropdown.OnClick = function(button, value)
 	local t = HN.icons[value]
 	HNEditFrame.icondropdown.selectedValue = value
 	HNEditFrame.icondropdown.texture:SetTexture(t.icon)
@@ -203,11 +192,7 @@ HNEditFrame.continentcheckbox.string:SetWidth(200)
 HNEditFrame.continentcheckbox.string:SetJustifyH("LEFT")
 HNEditFrame.continentcheckbox.string:SetPoint("LEFT", 24, 1)
 HNEditFrame.continentcheckbox:SetFontString(HNEditFrame.continentcheckbox.string)
-if GameVersion >= 30000 then
-	HNEditFrame.continentcheckbox:SetNormalFontObject("GameFontNormalSmall")
-else
-	HNEditFrame.continentcheckbox:SetTextFontObject("GameFontNormalSmall")
-end
+HNEditFrame.continentcheckbox:SetNormalFontObject("GameFontNormalSmall")
 HNEditFrame.continentcheckbox:SetHighlightFontObject("GameFontHighlightSmall")
 HNEditFrame.continentcheckbox:SetDisabledFontObject("GameFontDisableSmall")
 HNEditFrame.continentcheckbox:SetText(L["Show on continent map"])
@@ -255,13 +240,13 @@ HNEditFrame:SetScript("OnShow", function(self)
 		HNEditFrame.title:SetText(L["Edit Handy Note"])
 		HNEditFrame.titleinputbox:SetText(data.title)
 		HNEditFrame.descinputbox:SetText(data.desc)
-		HNEditFrame.icondropdown.OnClick(data.icon)
+		HNEditFrame.icondropdown.OnClick(nil, data.icon)
 		HNEditFrame.continentcheckbox:SetChecked(data.cont)
 	else
 		HNEditFrame.title:SetText(L["Add Handy Note"])
 		HNEditFrame.titleinputbox:SetText("")
 		HNEditFrame.descinputbox:SetText("")
-		HNEditFrame.icondropdown.OnClick(1)
+		HNEditFrame.icondropdown.OnClick(nil, 1)
 		HNEditFrame.continentcheckbox:SetChecked(nil)
 	end
 end)
@@ -278,13 +263,15 @@ HNEditFrame.okbutton:SetScript("OnClick", function(self)
 		data.icon = HNEditFrame.icondropdown.selectedValue
 		data.cont = HNEditFrame.continentcheckbox:GetChecked()
 	else
-		HN.db.global[HNEditFrame.mapFile][HNEditFrame.coord] = {
+		data = {
 			title = HNEditFrame.titleinputbox:GetText(),
 			desc = HNEditFrame.descinputbox:GetText(),
 			icon = HNEditFrame.icondropdown.selectedValue,
 			cont = HNEditFrame.continentcheckbox:GetChecked(),
 		}
+		HN.db.global[HNEditFrame.mapFile][HNEditFrame.coord] = data
 	end
+	data.level = (HNEditFrame.level ~= 0) and HNEditFrame.level or nil
 	HNEditFrame:Hide()
 	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 end)
