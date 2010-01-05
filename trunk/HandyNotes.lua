@@ -35,6 +35,7 @@ local tconcat = table.concat
 local pairs, next, type = pairs, next, type
 local CreateFrame = CreateFrame
 local GetCurrentMapContinent, GetCurrentMapZone = GetCurrentMapContinent, GetCurrentMapZone
+local GetCurrentMapDungeonLevel = GetCurrentMapDungeonLevel
 local GetRealZoneText = GetRealZoneText
 local WorldMapButton, Minimap = WorldMapButton, Minimap
 
@@ -143,10 +144,11 @@ In this table, the format is:
 	["Name of plugin"] = {table containing a set of standard functions, which we'll call pluginHandler}
 
 Standard functions we require for every plugin:
-	iter, state, value = pluginHandler:GetNodes(mapFile, minimap)
+	iter, state, value = pluginHandler:GetNodes(mapFile, minimap, dungeonLevel)
 		Parameters
 		- mapFile: The zone we want data for
-		- minimap: Optional argument indicating that we want to get nodes to display for the minimap
+		- minimap: Boolean argument indicating that we want to get nodes to display for the minimap
+		- dungeonLevel: Level of the dungeon map. 0 indicates the zone has no dungeon levels
 		Returns:
 		- iter: An iterator function that will loop over and return 5 values
 			(coord, mapFile, iconpath, scale, alpha)
@@ -277,13 +279,13 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not db.enabledPlugins[pluginName] then return end
 
 	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
-	local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
+	local continent, zone, level = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
 	local mapFile = GetMapInfo() or self:GetMapFile(continent, zone) -- Fallback for "Cosmic" and "World"
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = WorldMapButton:GetFrameLevel() + 5
 	local frameStrata = WorldMapButton:GetFrameStrata()
 
-	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile) do
+	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, false, level) do
 		-- Scarlet Enclave check, only do stuff if we're on that map, since we have no zone translation for it yet in Astrolabe
 		if mapFile2 ~= "ScarletEnclave" or mapFile2 == mapFile then
 		local icon = getNewPin()
@@ -359,6 +361,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	if not db.enabledPlugins[pluginName] then return end
 
 	local continent, zone = HandyNotes:GetZoneToCZ(GetRealZoneText())
+	local level = GetCurrentMapDungeonLevel()
 	local mapFile = self:GetMapFile(continent, zone) -- or GetMapInfo() -- Astrolabe doesn't support BGs
 	if not mapFile then return end
 
@@ -367,7 +370,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	local frameLevel = Minimap:GetFrameLevel() + 5
 	local frameStrata = Minimap:GetFrameStrata()
 
-	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, true) do
+	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, true, level) do
 		local icon = getNewPin()
 		icon:SetParent(Minimap)
 		icon:SetFrameStrata(frameStrata)
@@ -583,9 +586,6 @@ function HandyNotes:OnInitialize()
 	-- Get the option table for profiles
 	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	options.args.profiles.disabled = options.args.overall_settings.disabled
-
-	-- Make minimap icons update faster
-	Astrolabe.MinimapUpdateTime = 0.1
 end
 
 function HandyNotes:OnEnable()

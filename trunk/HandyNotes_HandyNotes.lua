@@ -4,7 +4,7 @@ local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:NewModule("HandyNotes", "AceEvent-3.0", "AceHook-3.0", "AceConsole-3.0")
 local Astrolabe = DongleStub("Astrolabe-0.4")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
-local GameVersion = select(4, GetBuildInfo())
+
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
@@ -24,6 +24,7 @@ local defaults = {
 ---------------------------------------------------------
 -- Localize some globals
 local next = next
+local wipe = wipe
 local GameTooltip = GameTooltip
 local WorldMapTooltip = WorldMapTooltip
 
@@ -97,10 +98,6 @@ function HNHandler:OnLeave(mapFile, coord)
 end
 
 local function deletePin(button, mapFile, coord)
-	if GameVersion < 30000 then
-		coord = mapFile
-		mapFile = button
-	end
 	local HNEditFrame = HN.HNEditFrame
 	if HNEditFrame.coord == coord and HNEditFrame.mapFile == mapFile then
 		HNEditFrame:Hide()
@@ -110,23 +107,16 @@ local function deletePin(button, mapFile, coord)
 end
 
 local function editPin(button, mapFile, coord)
-	if GameVersion < 30000 then
-		coord = mapFile
-		mapFile = button
-	end
 	local HNEditFrame = HN.HNEditFrame
 	HNEditFrame.x, HNEditFrame.y = HandyNotes:getXY(coord)
 	HNEditFrame.coord = coord
-	HNEditFrame.mapFile = mapFile 
+	HNEditFrame.mapFile = mapFile
+	HNEditFrame.level = dbdata[mapFile][coord].level
 	HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 	HNEditFrame:Show()
 end
 
 local function addCartWaypoint(button, mapFile, coord)
-	if GameVersion < 30000 then
-		coord = mapFile
-		mapFile = button
-	end
 	if Cartographer and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
 		local x, y = HandyNotes:getXY(coord)
 		local cartCoordID = floor(x*10000 + 0.5) + floor(y*10000 + 0.5)*10001
@@ -139,10 +129,6 @@ local function addCartWaypoint(button, mapFile, coord)
 end
 
 local function addTomTomWaypoint(button, mapFile, coord)
-	if GameVersion < 30000 then
-		coord = mapFile
-		mapFile = button
-	end
 	if TomTom then
 		local c, z = HandyNotes:GetCZ(mapFile)
 		local x, y = HandyNotes:getXY(coord)
@@ -156,9 +142,6 @@ do
 	local clickedMapFile = nil
 	local clickedZone = nil
 	local function generateMenu(button, level)
-		if GameVersion < 30000 then
-			level = button
-		end
 		if (not level) then return end
 		for k in pairs(info) do info[k] = nil end
 		if (level == 1) then
@@ -304,10 +287,20 @@ do
 	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
 		if not t then return end
-		local state, value = next(t, prestate)
+		local data = t.data
+		local level = t.L
+		local state, value = next(data, prestate)
 		if value then
-			return state, nil, HN.icons[value.icon], db.icon_scale, db.icon_alpha
+			while value do -- Have we reached the end of this zone?
+				-- Map has no dungeon levels or dungeon level matches
+				if not value.level or level == 0 or level == value.level then
+					return state, nil, HN.icons[value.icon], db.icon_scale, db.icon_alpha
+				end
+				state, value = next(data, state) -- Get next data
+			end
 		end
+		wipe(t)
+		tablepool[t] = true
 	end
 
 	-- This is a funky custom iterator we use to iterate over every zone's nodes
@@ -335,10 +328,11 @@ do
 			data = dbdata[mapFile]
 			prestate = nil
 		end
+		wipe(t)
 		tablepool[t] = true
 	end
 
-	function HNHandler:GetNodes(mapFile)
+	function HNHandler:GetNodes(mapFile, minimap, dungeonLevel)
 		local C = continentMapFile[mapFile] -- Is this a continent?
 		if C then
 			local tbl = next(tablepool) or {}
@@ -347,7 +341,11 @@ do
 			tbl.Z = 0
 			return iterCont, tbl, nil
 		else -- It is a zone
-			return iter, dbdata[mapFile], nil
+			local tbl = next(tablepool) or {}
+			tablepool[tbl] = nil
+			tbl.data = dbdata[mapFile]
+			tbl.L = dungeonLevel
+			return iter, tbl, nil
 		end
 	end
 end
@@ -357,16 +355,13 @@ end
 -- HandyNotes core
 
 -- Hooked function on clicking the world map
-function HN:WorldMapButton_OnClick(mouseButton, button, ...)
-	if GameVersion >= 30000 then
-		mouseButton, button = button, mouseButton
-	end
+-- button is guaranteed to be passed in with the WorldMapButton frame
+function HN:WorldMapButton_OnClick(button, mouseButton, ...)
 	if mouseButton == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
-		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
+		local C, Z, L = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
 		local mapFile = GetMapInfo() or HandyNotes:GetMapFile(C, Z) -- Fallback for "Cosmic" and "World"
 
 		-- Get the coordinate clicked on
-		button = button or this
 		local x, y = GetCursorPosition()
 		local scale = button:GetEffectiveScale()
 		x = (x/scale - button:GetLeft()) / button:GetWidth()
@@ -380,17 +375,11 @@ function HN:WorldMapButton_OnClick(mouseButton, button, ...)
 		HNEditFrame.y = y
 		HNEditFrame.coord = coord
 		HNEditFrame.mapFile = mapFile
+		HNEditFrame.level = L
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
-		if GameVersion >= 30000 then
-			mouseButton, button = button, mouseButton
-		end
-		if GameVersion >= 30100 then
-			return self.hooks[mouseButton].OnMouseUp(mouseButton, button, ...)
-		else
-			return self.hooks.WorldMapButton_OnClick(mouseButton, button, ...)
-		end
+		return self.hooks[button].OnMouseUp(button, mouseButton, ...)
 	end
 end
 
@@ -426,6 +415,7 @@ function HN:CreateNoteHere(arg1)
 		HNEditFrame.y = y
 		HNEditFrame.coord = coord
 		HNEditFrame.mapFile = GetMapInfo() or HandyNotes:GetMapFile(c, z) -- Fallback for "Cosmic" and "World"
+		HNEditFrame.level = GetCurrentMapDungeonLevel()
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
@@ -490,11 +480,7 @@ function HN:OnInitialize()
 end
 
 function HN:OnEnable()
-	if GameVersion >= 30100 then
-		self:RawHookScript(WorldMapButton, "OnMouseUp", "WorldMapButton_OnClick")
-	else
-		self:RawHook("WorldMapButton_OnClick", true)
-	end
+	self:RawHookScript(WorldMapButton, "OnMouseUp", "WorldMapButton_OnClick")
 end
 
 function HN:OnDisable()
