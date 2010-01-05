@@ -5,6 +5,7 @@ local HN = HandyNotes:GetModule("HandyNotes")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 
 
+local info = {}
 local backdrop2 = {
 	bgFile = nil,
 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -18,7 +19,7 @@ local HNEditFrame = CreateFrame("Frame", "HNEditFrame", UIParent)
 HN.HNEditFrame = HNEditFrame
 HNEditFrame:Hide()
 HNEditFrame:SetWidth(350)
-HNEditFrame:SetHeight(210)
+HNEditFrame:SetHeight(235)
 HNEditFrame:SetPoint("BOTTOM", 0, 90)
 HNEditFrame:SetBackdrop({ 
 	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -138,7 +139,7 @@ HNEditFrame.descscrollframe:SetScrollChild(HNEditFrame.descinputbox)
 HNEditFrame.icondropdown = CreateFrame("Frame", "HandyNotes_IconDropDown", HNEditFrame, "UIDropDownMenuTemplate")
 HNEditFrame.icondropdown:SetPoint("TOPLEFT", HNEditFrame.descframe, "BOTTOMLEFT", -17, 0)
 HNEditFrame.icondropdown:SetHitRectInsets(16, 16, 0, 0)
-UIDropDownMenu_SetWidth(HNEditFrame.icondropdown,100)
+UIDropDownMenu_SetWidth(HNEditFrame.icondropdown, 120)
 UIDropDownMenu_EnableDropDown(HNEditFrame.icondropdown)
 HNEditFrame.icondropdown.displayMode = "MENU"
 HNEditFrame.icondropdown.texture = HNEditFrame.icondropdown:CreateTexture(nil, "OVERLAY")
@@ -147,6 +148,7 @@ HNEditFrame.icondropdown.texture:SetHeight(12)
 HNEditFrame.icondropdown.texture:SetPoint("RIGHT", HNEditFrame.icondropdown, -41, 2)
 HNEditFrame.icondropdown.text = HandyNotes_IconDropDownText
 HNEditFrame.icondropdown.text:SetPoint("RIGHT", HNEditFrame.icondropdown.texture, "LEFT", -3, 0)
+HNEditFrame.icondropdown.text:SetWidth(HNEditFrame.icondropdown.text:GetWidth() - 9)
 HNEditFrame.icondropdown.OnClick = function(button, value)
 	local t = HN.icons[value]
 	HNEditFrame.icondropdown.selectedValue = value
@@ -164,8 +166,8 @@ HNEditFrame.icondropdown.OnClick = function(button, value)
 		HNEditFrame.icondropdown.text:SetTextColor(1, 1, 1, 1)
 	end
 end
-local info = {}
 HNEditFrame.icondropdown.initialize = function(level)
+	wipe(info)
 	for i = 1, #HN.icons do
 		local t = HN.icons[i]
 		info.text = t.text
@@ -188,7 +190,7 @@ HNEditFrame.continentcheckbox:SetWidth(24)
 HNEditFrame.continentcheckbox:SetHeight(24)
 HNEditFrame.continentcheckbox:SetPoint("LEFT", HNEditFrame.icondropdown, "RIGHT", -10, 2)
 HNEditFrame.continentcheckbox.string = HNEditFrame.continentcheckbox:CreateFontString()
-HNEditFrame.continentcheckbox.string:SetWidth(200)
+HNEditFrame.continentcheckbox.string:SetWidth(153)
 HNEditFrame.continentcheckbox.string:SetJustifyH("LEFT")
 HNEditFrame.continentcheckbox.string:SetPoint("LEFT", 24, 1)
 HNEditFrame.continentcheckbox:SetFontString(HNEditFrame.continentcheckbox.string)
@@ -200,11 +202,36 @@ HNEditFrame.continentcheckbox:SetChecked(true)
 HNEditFrame.continentcheckbox:SetHitRectInsets(0, -HNEditFrame.continentcheckbox.string:GetStringWidth(), 0, 0)
 HNEditFrame.continentcheckbox:SetPushedTextOffset(0, 0)
 
+-- Create the Level Dropdown
+HNEditFrame.leveldropdown = CreateFrame("Frame", "HandyNotes_LevelDropDown", HNEditFrame, "UIDropDownMenuTemplate")
+HNEditFrame.leveldropdown:SetPoint("TOPLEFT", HNEditFrame.icondropdown, "BOTTOMLEFT", 0, 8)
+HNEditFrame.leveldropdown:SetHitRectInsets(16, 16, 0, 0)
+UIDropDownMenu_SetWidth(HNEditFrame.leveldropdown, 282)
+UIDropDownMenu_EnableDropDown(HNEditFrame.leveldropdown)
+HNEditFrame.leveldropdown.displayMode = "MENU"
+HNEditFrame.leveldropdown.text = HandyNotes_LevelDropDownText
+HNEditFrame.leveldropdown.OnClick = function(button, value)
+	HNEditFrame.leveldropdown.selectedValue = value
+	HNEditFrame.leveldropdown.text:SetText(HNEditFrame.leveldata[value] or ALL)
+end
+HNEditFrame.leveldata = {}
+HNEditFrame.leveldropdown.initialize = function(level)
+	wipe(info)
+	for i = 0, #HNEditFrame.leveldata do
+		info.text = HNEditFrame.leveldata[i] or ALL
+		info.arg1 = i
+		info.func = HNEditFrame.leveldropdown.OnClick
+		info.checked = HNEditFrame.leveldropdown.selectedValue == i
+		info.keepShownOnClick = nil
+		UIDropDownMenu_AddButton(info)
+	end
+end
+
 -- Create the OK button
 HNEditFrame.okbutton = CreateFrame("Button", nil, HNEditFrame, "OptionsButtonTemplate")
 HNEditFrame.okbutton:SetWidth(150)
 HNEditFrame.okbutton:SetHeight(22)
-HNEditFrame.okbutton:SetPoint("TOPRIGHT", HNEditFrame.icondropdown, "BOTTOMRIGHT", 15, 0)
+HNEditFrame.okbutton:SetPoint("TOPLEFT", HNEditFrame.leveldropdown, "BOTTOMLEFT", 15, 0)
 HNEditFrame.okbutton:SetText(OKAY)
 
 -- Create the Cancel button
@@ -242,12 +269,26 @@ HNEditFrame:SetScript("OnShow", function(self)
 		HNEditFrame.descinputbox:SetText(data.desc)
 		HNEditFrame.icondropdown.OnClick(nil, data.icon)
 		HNEditFrame.continentcheckbox:SetChecked(data.cont)
+		if #HNEditFrame.leveldata > 0 then
+			UIDropDownMenu_EnableDropDown(HNEditFrame.leveldropdown)
+			HNEditFrame.leveldropdown.OnClick(nil, data.level)
+		else
+			UIDropDownMenu_DisableDropDown(HNEditFrame.leveldropdown)
+			HNEditFrame.leveldropdown.text:SetText("")
+		end
 	else
 		HNEditFrame.title:SetText(L["Add Handy Note"])
 		HNEditFrame.titleinputbox:SetText("")
 		HNEditFrame.descinputbox:SetText("")
 		HNEditFrame.icondropdown.OnClick(nil, 1)
 		HNEditFrame.continentcheckbox:SetChecked(nil)
+		if #HNEditFrame.leveldata > 0 then
+			UIDropDownMenu_EnableDropDown(HNEditFrame.leveldropdown)
+			HNEditFrame.leveldropdown.OnClick(nil, HNEditFrame.level)
+		else
+			UIDropDownMenu_DisableDropDown(HNEditFrame.leveldropdown)
+			HNEditFrame.leveldropdown.text:SetText("")
+		end
 	end
 end)
 
@@ -257,21 +298,16 @@ end)
 
 HNEditFrame.okbutton:SetScript("OnClick", function(self)
 	local data = HN.db.global[HNEditFrame.mapFile][HNEditFrame.coord]
-	if data then
-		data.title = HNEditFrame.titleinputbox:GetText()
-		data.desc = HNEditFrame.descinputbox:GetText()
-		data.icon = HNEditFrame.icondropdown.selectedValue
-		data.cont = HNEditFrame.continentcheckbox:GetChecked()
-	else
-		data = {
-			title = HNEditFrame.titleinputbox:GetText(),
-			desc = HNEditFrame.descinputbox:GetText(),
-			icon = HNEditFrame.icondropdown.selectedValue,
-			cont = HNEditFrame.continentcheckbox:GetChecked(),
-		}
+	if not data then
+		data = {}
 		HN.db.global[HNEditFrame.mapFile][HNEditFrame.coord] = data
 	end
-	data.level = (HNEditFrame.level ~= 0) and HNEditFrame.level or nil
+	data.title = HNEditFrame.titleinputbox:GetText()
+	data.desc = HNEditFrame.descinputbox:GetText()
+	data.icon = HNEditFrame.icondropdown.selectedValue
+	data.cont = HNEditFrame.continentcheckbox:GetChecked()
+	data.level = HNEditFrame.leveldropdown.selectedValue
+	if data.level == 0 then data.level = nil end
 	HNEditFrame:Hide()
 	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 end)

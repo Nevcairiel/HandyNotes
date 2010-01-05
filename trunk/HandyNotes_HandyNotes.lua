@@ -112,6 +112,7 @@ local function editPin(button, mapFile, coord)
 	HNEditFrame.coord = coord
 	HNEditFrame.mapFile = mapFile
 	HNEditFrame.level = dbdata[mapFile][coord].level
+	HN:FillDungeonLevelData()
 	HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 	HNEditFrame:Show()
 end
@@ -376,6 +377,7 @@ function HN:WorldMapButton_OnClick(button, mouseButton, ...)
 		HNEditFrame.coord = coord
 		HNEditFrame.mapFile = mapFile
 		HNEditFrame.level = L
+		self:FillDungeonLevelData()
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
@@ -416,10 +418,22 @@ function HN:CreateNoteHere(arg1)
 		HNEditFrame.coord = coord
 		HNEditFrame.mapFile = GetMapInfo() or HandyNotes:GetMapFile(c, z) -- Fallback for "Cosmic" and "World"
 		HNEditFrame.level = GetCurrentMapDungeonLevel()
+		self:FillDungeonLevelData()
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
 		self:Print(L["ERROR_CREATE_NOTE1"])
+	end
+end
+
+function HN:FillDungeonLevelData()
+	wipe(HNEditFrame.leveldata)
+	local mapname = strupper(GetMapInfo() or "")
+	local usesTerrainMap = DungeonUsesTerrainMap() and 1 or 0
+	for i= 1, GetNumDungeonMapLevels() do
+		local floorNum = i - usesTerrainMap
+		local floorname =_G["DUNGEON_FLOOR_" .. mapname .. floorNum]
+		HNEditFrame.leveldata[i] = floorname or string.format(FLOOR_NUMBER, i)
 	end
 end
 
