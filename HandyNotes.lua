@@ -181,9 +181,11 @@ end
 
 local pinsHandler = {}
 function pinsHandler:OnEnter(motion)
+	WorldMapBlobFrame:SetScript("OnUpdate", nil) -- override default UI to hide the tooltip
 	safecall(HandyNotes.plugins[self.pluginName].OnEnter, self, self.mapFile, self.coord)
 end
 function pinsHandler:OnLeave(motion)
+	WorldMapBlobFrame:SetScript("OnUpdate", WorldMapBlobFrame_OnUpdate) -- restore default UI
 	safecall(HandyNotes.plugins[self.pluginName].OnLeave, self, self.mapFile, self.coord)
 end
 function pinsHandler:OnClick(button, down)
