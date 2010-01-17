@@ -584,6 +584,7 @@ function HandyNotes:OnInitialize()
 	-- Register options table and slash command
 	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("HandyNotes", options)
 	self:RegisterChatCommand("handynotes", function() LibStub("AceConfigDialog-3.0"):Open("HandyNotes") end)
+	LibStub("AceConfigDialog-3.0"):AddToBlizOptions("HandyNotes", "HandyNotes")
 
 	-- Get the option table for profiles
 	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
