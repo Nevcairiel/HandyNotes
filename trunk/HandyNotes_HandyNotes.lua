@@ -118,7 +118,7 @@ local function editPin(button, mapFile, coord)
 end
 
 local function addCartWaypoint(button, mapFile, coord)
-	if Cartographer and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
+	if Cartographer and Cartographer.HasModule and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
 		local x, y = HandyNotes:getXY(coord)
 		local cartCoordID = floor(x*10000 + 0.5) + floor(y*10000 + 0.5)*10001
 		local BZR = LibStub("LibBabble-Zone-3.0"):GetReverseLookupTable()
@@ -183,7 +183,7 @@ do
 			UIDropDownMenu_AddButton(info, level)
 
 			-- Cartographer_Waypoints menu item
-			if Cartographer and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
+			if Cartographer and Cartographer.HasModule and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
 				if HandyNotes:GetCZToZone(HandyNotes:GetCZ(clickedMapFile)) then -- Only if this is in a mapzone
 					info.text = L["Add this location to Cartographer_Waypoints"]
 					info.icon = nil
