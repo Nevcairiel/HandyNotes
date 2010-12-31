@@ -290,6 +290,11 @@ HNEditFrame:SetScript("OnShow", function(self)
 			HNEditFrame.leveldropdown.text:SetText("")
 		end
 	end
+	if WorldMapFrame:IsShown() then
+		self:SetParent(WorldMapFrame)
+	else
+		self:SetParent(UIParent)
+	end
 end)
 
 
