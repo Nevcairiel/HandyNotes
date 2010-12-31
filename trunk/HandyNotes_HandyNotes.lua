@@ -384,7 +384,7 @@ end
 
 -- Function to create a note where the player is
 function HN:CreateNoteHere(arg1)
-	local c, z, x, y
+	local mapID, level, x, y
 
 	if arg1 ~= "" then
 		-- Coordinates entered
@@ -398,13 +398,13 @@ function HN:CreateNoteHere(arg1)
 			self:Print(L["Syntax:"].." /hnnew [x, y]")
 			return
 		end
-		c, z = Astrolabe:GetCurrentPlayerPosition()
+		mapID, level = Astrolabe:GetUnitPosition("player")
 	else
 		-- No coordinates entered, get the coordinates of player
-		c, z, x, y = Astrolabe:GetCurrentPlayerPosition()
+		mapID, level, x, y = Astrolabe:GetUnitPosition("player")
 	end
 
-	if c and z and x and y then
+	if mapID and level and x and y then
 		local coord = HandyNotes:getCoord(x, y)
 		x, y = HandyNotes:getXY(coord)
 
@@ -413,7 +413,7 @@ function HN:CreateNoteHere(arg1)
 		HNEditFrame.x = x
 		HNEditFrame.y = y
 		HNEditFrame.coord = coord
-		HNEditFrame.mapFile = GetMapInfo() or HandyNotes:GetMapFile(c, z) -- Fallback for "Cosmic" and "World"
+		HNEditFrame.mapFile = GetMapInfo() -- This might produce unexpected results since we didn't convert mapID to mapFile
 		HNEditFrame.level = GetCurrentMapDungeonLevel()
 		self:FillDungeonLevelData()
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
@@ -424,6 +424,7 @@ function HN:CreateNoteHere(arg1)
 end
 
 function HN:FillDungeonLevelData()
+	local HNEditFrame = self.HNEditFrame
 	wipe(HNEditFrame.leveldata)
 	local mapname = strupper(GetMapInfo() or "")
 	local usesTerrainMap = DungeonUsesTerrainMap() and 1 or 0
