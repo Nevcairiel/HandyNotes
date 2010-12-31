@@ -2,7 +2,7 @@
 -- Module declaration
 local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:NewModule("HandyNotes", "AceEvent-3.0", "AceHook-3.0", "AceConsole-3.0")
-local Astrolabe = DongleStub("Astrolabe-0.4")
+local Astrolabe = DongleStub("Astrolabe-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 
 
@@ -168,7 +168,6 @@ do
 			info.tCoordTop    = nil
 			info.tCoordBottom = nil
 			info.text = L["Edit Handy Note"]
-			info.icon = icon
 			info.func = editPin
 			info.arg1 = clickedMapFile
 			info.arg2 = clickedCoord
@@ -176,7 +175,6 @@ do
 
 			-- Delete menu item
 			info.text = L["Delete Handy Note"]
-			info.icon = icon
 			info.func = deletePin
 			info.arg1 = clickedMapFile
 			info.arg2 = clickedCoord
@@ -186,7 +184,6 @@ do
 			if Cartographer and Cartographer.HasModule and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
 				if HandyNotes:GetCZToZone(HandyNotes:GetCZ(clickedMapFile)) then -- Only if this is in a mapzone
 					info.text = L["Add this location to Cartographer_Waypoints"]
-					info.icon = nil
 					info.func = addCartWaypoint
 					info.arg1 = clickedMapFile
 					info.arg2 = clickedCoord
@@ -196,7 +193,6 @@ do
 
 			if TomTom then
 				info.text = L["Add this location to TomTom waypoints"]
-				info.icon = nil
 				info.func = addTomTomWaypoint
 				info.arg1 = clickedMapFile
 				info.arg2 = clickedCoord
@@ -205,7 +201,6 @@ do
 
 			-- Close menu item
 			info.text         = CLOSE
-			info.icon         = nil
 			info.func         = function() CloseDropDownMenus() end
 			info.arg1         = nil
 			info.arg2         = nil
@@ -276,10 +271,12 @@ do
 	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
 	local continentMapFile = {
-		["Kalimdor"]    = {[0] = "Kalimdor",    __index = Astrolabe.ContinentList[1]},
-		["Azeroth"]     = {[0] = "Azeroth",     __index = Astrolabe.ContinentList[2]},
-		["Expansion01"] = {[0] = "Expansion01", __index = Astrolabe.ContinentList[3]},
-		["Northrend"]   = {[0] = "Northrend",   __index = Astrolabe.ContinentList[4]},
+		["Kalimdor"]              = {__index = Astrolabe.ContinentList[1]},
+		["Azeroth"]               = {__index = Astrolabe.ContinentList[2]},
+		["Expansion01"]           = {__index = Astrolabe.ContinentList[3]},
+		["Northrend"]             = {__index = Astrolabe.ContinentList[4]},
+		["TheMaelstromContinent"] = {__index = Astrolabe.ContinentList[5]},
+		["Vashjir"]               = {[0] = 613, 614, 615, 610},
 	}
 	for k, v in pairs(continentMapFile) do
 		setmetatable(v, v)
@@ -309,7 +306,7 @@ do
 	local function iterCont(t, prestate)
 		if not t then return end
 		local zone = t.Z
-		local mapFile = t.C[zone]
+		local mapFile = HandyNotes:GetMapIDtoMapFile(t.C[zone])
 		local data = dbdata[mapFile]
 		local state, value
 		while mapFile do
@@ -325,7 +322,7 @@ do
 			-- Get next zone
 			zone = zone + 1
 			t.Z = zone
-			mapFile = t.C[zone]
+			mapFile = HandyNotes:GetMapIDtoMapFile(t.C[zone])
 			data = dbdata[mapFile]
 			prestate = nil
 		end
