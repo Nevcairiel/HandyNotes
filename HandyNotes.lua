@@ -7,7 +7,7 @@ HandyNotes
 HandyNotes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes", "AceConsole-3.0", "AceEvent-3.0")
 local HandyNotes = HandyNotes
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
-local Astrolabe = DongleStub("Astrolabe-0.4")
+local Astrolabe = DongleStub("Astrolabe-1.0")
 
 
 ---------------------------------------------------------
@@ -196,36 +196,59 @@ end
 ---------------------------------------------------------
 -- Public functions
 
--- Public functions for plugins to convert between MapFile <-> C,Z
+-- Build data
 local continentMapFile = {
 	[WORLDMAP_COSMIC_ID] = "Cosmic", -- That constant is -1
-	[0] = "World",
-	[1] = "Kalimdor",
-	[2] = "Azeroth",
-	[3] = "Expansion01",
-	[4] = "Northrend",
+	[WORLDMAP_WORLD_ID] = "World", -- That constant is 0
 }
-local reverseMapFileC = {}
-local reverseMapFileZ = {}
-for C = 1, #Astrolabe.ContinentList do
-	for Z = 1, #Astrolabe.ContinentList[C] do
-		local mapFile = Astrolabe.ContinentList[C][Z]
-		reverseMapFileC[mapFile] = C
-		reverseMapFileZ[mapFile] = Z
-	end
-end
-for C = -1, 4 do
-	local mapFile = continentMapFile[C]
+local continentList = {GetMapContinents()}
+local zoneList = {}
+local reverseZoneC = {}
+local reverseZoneZ = {}
+local zonetoMapID = {}
+local mapIDtoMapFile = {}
+local mapFiletoMapID = {}
+local reverseMapFileC = {
+	["Cosmic"] = WORLDMAP_COSMIC_ID,
+	["World"] = WORLDMAP_WORLD_ID,
+}
+local reverseMapFileZ = {
+	["Cosmic"] = 0,
+	["World"] = 0,
+}
+for C, CName in ipairs(continentList) do
+	SetMapZoom(C, 0)
+	local mapID = GetCurrentMapAreaID()
+	local mapFile = GetMapInfo()
 	reverseMapFileC[mapFile] = C
 	reverseMapFileZ[mapFile] = 0
+	reverseZoneC[CName] = C
+	reverseZoneZ[CName] = 0
+	mapIDtoMapFile[mapID] = mapFile
+	mapFiletoMapID[mapFile] = mapID
+	continentMapFile[C] = mapFile
+	zoneList[C] = {GetMapZones(C)}
+	for Z, ZName in ipairs(zoneList[C]) do
+		SetMapZoom(C, Z)
+		local mapID = GetCurrentMapAreaID()
+		local mapFile = GetMapInfo()
+		reverseMapFileC[mapFile] = C
+		reverseMapFileZ[mapFile] = Z
+		reverseZoneC[ZName] = C
+		reverseZoneZ[ZName] = Z
+		mapIDtoMapFile[mapID] = mapFile
+		mapFiletoMapID[mapFile] = mapID
+		zonetoMapID[ZName] = mapID
+	end
 end
 
+-- Public functions for plugins to convert between MapFile <-> C,Z
 function HandyNotes:GetMapFile(C, Z)
 	if not C or not Z then return end
 	if Z == 0 then
 		return continentMapFile[C]
 	elseif C > 0 then
-		return Astrolabe.ContinentList[C][Z]
+		return mapIDtoMapFile[Astrolabe.ContinentList[C][Z]]
 	end
 end
 function HandyNotes:GetCZ(mapFile)
@@ -241,22 +264,6 @@ function HandyNotes:getXY(id)
 end
 
 -- Public functions for plugins to convert between GetRealZoneText() <-> C,Z
--- GetRealZoneText() returns localized strings, so these are also the functions
--- to get localized display strings.
-local continentList = {GetMapContinents()}
-local zoneList = {}
-local reverseZoneC = {}
-local reverseZoneZ = {}
-for C, cname in pairs(continentList) do
-	reverseZoneC[cname] = C
-	reverseZoneZ[cname] = 0
-	zoneList[C] = {GetMapZones(C)}
-	for Z, zname in pairs(zoneList[C]) do
-		reverseZoneC[zname] = C
-		reverseZoneZ[zname] = Z
-	end
-end
-
 function HandyNotes:GetZoneToCZ(zone)
 	return reverseZoneC[zone], reverseZoneZ[zone]
 end
@@ -267,6 +274,19 @@ function HandyNotes:GetCZToZone(C, Z)
 	elseif C > 0 then
 		return zoneList[C][Z]
 	end
+end
+
+-- Public functions for plugins to convert between MapFile <-> Map ID
+function HandyNotes:GetMapFiletoMapID(mapFile)
+	return mapFiletoMapID[mapFile]
+end
+function HandyNotes:GetMapIDtoMapFile(mapID)
+	return mapIDtoMapFile[mapID]
+end
+
+-- Public function for plugins to convert between GetRealZoneText() <-> Map ID
+function HandyNotes:GetZoneToMapID(zone)
+	return zonetoMapID[zone]
 end
 
 
@@ -282,6 +302,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 
 	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
 	local continent, zone, level = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
+	local mapID = GetCurrentMapAreaID()
 	local mapFile = GetMapInfo() or self:GetMapFile(continent, zone) -- Fallback for "Cosmic" and "World"
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = WorldMapButton:GetFrameLevel() + 5
@@ -319,23 +340,18 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		icon:SetScript("OnClick", pinsHandler.OnClick)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
 		icon:SetScript("OnLeave", pinsHandler.OnLeave)
-		local C, Z
-		if mapFile2 then
-			C, Z = self:GetCZ(mapFile2)
-		else
-			C, Z = continent, zone
-		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-		if not C or not Z or C == WORLDMAP_COSMIC_ID then
+		local mapID2 = HandyNotes:GetMapFiletoMapID(mapFile2 or mapFile)
+		if not mapID2 then
 			icon:ClearAllPoints()
 			icon:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x*WorldMapButton:GetWidth(), -y*WorldMapButton:GetHeight())
 			icon:Show()
 		else
-			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, C, Z, x, y)
+			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, mapID2, level, x, y)
 		end
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
-		worldmapPins[pluginName][(C or 0)*1e10 + (Z or 0)*1e8 + coord] = icon
+		worldmapPins[pluginName][(mapID2 or 0)*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
 		icon.mapFile = mapFile2 or mapFile
@@ -363,8 +379,10 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	if not db.enabledPlugins[pluginName] then return end
 
 	local continent, zone = HandyNotes:GetZoneToCZ(GetRealZoneText())
+	local mapID = HandyNotes:GetZoneToMapID(GetRealZoneText())
+	if not mapID then return end  -- Astrolabe doesn't support instances
 	local level = GetCurrentMapDungeonLevel()
-	local mapFile = self:GetMapFile(continent, zone) -- or GetMapInfo() -- Astrolabe doesn't support BGs
+	local mapFile = self:GetMapFile(continent, zone) -- or GetMapInfo()
 	if not mapFile then return end
 
 	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
@@ -373,6 +391,8 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	local frameStrata = Minimap:GetFrameStrata()
 
 	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, true, level) do
+		local mapID2 = HandyNotes:GetMapFiletoMapID(mapFile2 or mapFile)
+		if mapID2 then
 		local icon = getNewPin()
 		icon:SetParent(Minimap)
 		icon:SetFrameStrata(frameStrata)
@@ -402,20 +422,15 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		icon:SetScript("OnClick", nil)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
 		icon:SetScript("OnLeave", pinsHandler.OnLeave)
-		local C, Z
-		if mapFile2 then
-			C, Z = self:GetCZ(mapFile2)
-		else
-			C, Z = continent, zone
-		end
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-		Astrolabe:PlaceIconOnMinimap(icon, C, Z, x, y)
+		Astrolabe:PlaceIconOnMinimap(icon, mapID2, level, x, y)
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
-		minimapPins[pluginName][(C or 0)*1e10 + (Z or 0)*1e8 + coord] = icon
+		minimapPins[pluginName][mapID2*1e8 + coord] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
 		icon.mapFile = mapFile2 or mapFile
+		end
 	end
 end
 
@@ -455,9 +470,11 @@ local updateFrame = CreateFrame("Frame")
 updateFrame:Hide()
 do
 	local zone
+	local level
 	updateFrame:SetScript("OnUpdate", function()
-		if zone ~= GetRealZoneText() then
+		if zone ~= GetRealZoneText() or level ~= GetCurrentMapDungeonLevel() then
 			zone = GetRealZoneText()
+			level = GetCurrentMapDungeonLevel()
 			HandyNotes:UpdateMinimap()
 		end
 	end)
