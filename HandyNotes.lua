@@ -207,8 +207,14 @@ local zoneList = {}
 local reverseZoneC = {}
 local reverseZoneZ = {}
 local zonetoMapID = {}
-local mapIDtoMapFile = {}
-local mapFiletoMapID = {}
+local mapIDtoMapFile = {
+	[WORLDMAP_COSMIC_ID] = "Cosmic",
+	[WORLDMAP_WORLD_ID] = "World",
+}
+local mapFiletoMapID = {
+	["Cosmic"] = -1,
+	["World"] = 0,
+}
 local reverseMapFileC = {
 	["Cosmic"] = WORLDMAP_COSMIC_ID,
 	["World"] = WORLDMAP_WORLD_ID,
