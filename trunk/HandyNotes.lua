@@ -151,10 +151,11 @@ Standard functions we require for every plugin:
 		- dungeonLevel: Level of the dungeon map. 0 indicates the zone has no dungeon levels
 		Returns:
 		- iter: An iterator function that will loop over and return 5 values
-			(coord, mapFile, iconpath, scale, alpha)
+			(coord, mapFile, iconpath, scale, alpha, dungeonLevel)
 			for every node in the requested zone. If the mapFile return value is nil, we assume it is the
 			same mapFile as the argument passed in. Mainly used for continent mapFile where the map passed
-			in is a continent, and the return values are coords of subzone maps.
+			in is a continent, and the return values are coords of subzone maps. If the return dungeonLevel
+			is nil, we assume it is the same as the argument passed in.
 		- state, value: First 2 args to pass into iter() on the initial iteration
 
 Standard functions you can provide optionally:
@@ -308,7 +309,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	local frameLevel = WorldMapButton:GetFrameLevel() + 5
 	local frameStrata = WorldMapButton:GetFrameStrata()
 
-	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, false, level) do
+	for coord, mapFile2, iconpath, scale, alpha, level2 in pluginHandler:GetNodes(mapFile, false, level) do
 		-- Scarlet Enclave check, only do stuff if we're on that map, since we have no zone translation for it yet in Astrolabe
 		if mapFile2 ~= "ScarletEnclave" or mapFile2 == mapFile then
 		local icon = getNewPin()
@@ -347,7 +348,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 			icon:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x*WorldMapButton:GetWidth(), -y*WorldMapButton:GetHeight())
 			icon:Show()
 		else
-			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, mapID2, level, x, y)
+			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, mapID2, level2 or level, x, y)
 		end
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
@@ -390,7 +391,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	local frameLevel = Minimap:GetFrameLevel() + 5
 	local frameStrata = Minimap:GetFrameStrata()
 
-	for coord, mapFile2, iconpath, scale, alpha in pluginHandler:GetNodes(mapFile, true, level) do
+	for coord, mapFile2, iconpath, scale, alpha, level2 in pluginHandler:GetNodes(mapFile, true, level) do
 		local mapID2 = HandyNotes:GetMapFiletoMapID(mapFile2 or mapFile)
 		if mapID2 then
 		local icon = getNewPin()
@@ -423,7 +424,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		icon:SetScript("OnEnter", pinsHandler.OnEnter)
 		icon:SetScript("OnLeave", pinsHandler.OnLeave)
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-		Astrolabe:PlaceIconOnMinimap(icon, mapID2, level, x, y)
+		Astrolabe:PlaceIconOnMinimap(icon, mapID2, level2 or level, x, y)
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
 		minimapPins[pluginName][mapID2*1e8 + coord] = icon
