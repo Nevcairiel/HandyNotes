@@ -376,6 +376,7 @@ end
 
 
 -- This function updates all the icons of one plugin on the world map
+local levelUpValue
 function HandyNotes:UpdateMinimapPlugin(pluginName)
 	--if not Minimap:IsVisible() then return end
 
@@ -388,7 +389,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	local continent, zone = HandyNotes:GetZoneToCZ(GetRealZoneText())
 	local mapID = HandyNotes:GetZoneToMapID(GetRealZoneText())
 	if not mapID then return end  -- Astrolabe doesn't support instances
-	local level = GetCurrentMapDungeonLevel()
+	local level = levelUpValue or GetCurrentMapDungeonLevel()
 	local mapFile = self:GetMapFile(continent, zone) -- or GetMapInfo()
 	if not mapFile then return end
 
@@ -477,11 +478,13 @@ local updateFrame = CreateFrame("Frame")
 updateFrame:Hide()
 do
 	local zone
-	local level
 	updateFrame:SetScript("OnUpdate", function()
-		if zone ~= GetRealZoneText() or level ~= GetCurrentMapDungeonLevel() then
-			zone = GetRealZoneText()
-			level = GetCurrentMapDungeonLevel()
+		local zone2 = GetRealZoneText()
+		local level = WorldMapFrame:IsShown() and levelUpValue or GetCurrentMapDungeonLevel()
+		if zone ~= zone2 or levelUpValue ~= level then
+			if zone ~= zone2 and WorldMapFrame:IsShown() then level = 0 end
+			zone = zone2
+			levelUpValue = level
 			HandyNotes:UpdateMinimap()
 		end
 	end)
