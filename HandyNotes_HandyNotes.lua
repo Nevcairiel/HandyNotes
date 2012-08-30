@@ -142,6 +142,7 @@ do
 	local info = {}
 	local clickedMapFile = nil
 	local clickedZone = nil
+	local clickedCoord = nil
 	local function generateMenu(button, level)
 		if (not level) then return end
 		for k in pairs(info) do info[k] = nil end
