@@ -226,7 +226,7 @@ do
 			ToggleDropDownMenu(1, nil, HandyNotes_HandyNotesDropdownMenu, self, 0, 0)
 		elseif button == "LeftButton" and down and IsControlKeyDown() and IsShiftKeyDown() then
 			-- Only move if we're viewing the same map as the icon's map
-			if mapFile == GetMapInfo() or mapFile == "World" or mapFile == "Cosmic" then
+			if mapFile == HandyNotes:WhereAmI() or mapFile == "World" or mapFile == "Cosmic" then
 				isMoving = true
 				self:StartMoving()
 			end
@@ -278,6 +278,7 @@ do
 		["Northrend"]             = {__index = Astrolabe.ContinentList[4]},
 		["TheMaelstromContinent"] = {__index = Astrolabe.ContinentList[5]},
 		["Vashjir"]               = {[0] = 613, 614, 615, 610},
+		["Pandaria"]              = {__index = Astrolabe.ContinentList[6]},
 	}
 	for k, v in pairs(continentMapFile) do
 		setmetatable(v, v)
@@ -358,7 +359,7 @@ end
 function HN:WorldMapButton_OnClick(button, mouseButton, ...)
 	if mouseButton == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
 		local C, Z, L = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
-		local mapFile = GetMapInfo() or HandyNotes:GetMapFile(C, Z) -- Fallback for "Cosmic" and "World"
+		local mapFile = HandyNotes:WhereAmI()
 
 		-- Get the coordinate clicked on
 		local x, y = GetCursorPosition()
@@ -414,7 +415,7 @@ function HN:CreateNoteHere(arg1)
 		HNEditFrame.x = x
 		HNEditFrame.y = y
 		HNEditFrame.coord = coord
-		HNEditFrame.mapFile = GetMapInfo() -- This might produce unexpected results since we didn't convert mapID to mapFile
+		HNEditFrame.mapFile = HandyNotes:WhereAmI()
 		HNEditFrame.level = GetCurrentMapDungeonLevel()
 		self:FillDungeonLevelData()
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
@@ -427,11 +428,18 @@ end
 function HN:FillDungeonLevelData()
 	local HNEditFrame = self.HNEditFrame
 	wipe(HNEditFrame.leveldata)
+	-- Note: Even if we're in a microdungeon, the constants are still based off the containing zone
+	-- Thus no WhereAmI here.
 	local mapname = strupper(GetMapInfo() or "")
 	local usesTerrainMap = DungeonUsesTerrainMap() and 1 or 0
-	for i= 1, GetNumDungeonMapLevels() do
+	local numLevels, firstFloor = GetNumDungeonMapLevels()
+	local lastFloor = firstFloor + numLevels - 1
+	if numLevels > 0 then
+		HNEditFrame.leveldata[0] = ALL
+	end
+	for i=firstFloor, lastFloor do
 		local floorNum = i - usesTerrainMap
-		local floorname =_G["DUNGEON_FLOOR_" .. mapname .. floorNum]
+		local floorname = _G["DUNGEON_FLOOR_" .. mapname .. floorNum]
 		HNEditFrame.leveldata[i] = floorname or string.format(FLOOR_NUMBER, i)
 	end
 end
