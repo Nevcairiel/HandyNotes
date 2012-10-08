@@ -300,6 +300,24 @@ end
 ---------------------------------------------------------
 -- Core functions
 
+-- This function gets a mapfile for our current location
+function HandyNotes:WhereAmI(continent, zone)
+	local continent, zone, level = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
+	local mapID = GetCurrentMapAreaID()
+	local mapFile, _, _, isMicroDungeon, microFile = GetMapInfo()
+	if microFile then
+		mapFile = microFile
+		-- I am not sure if there's a better place for this to happen...
+		-- Note that recording the reverse isn't possible, since multiple mapids as returned
+		-- by GetCurrentAreaMapID will map to a single mapFile due to themicro dungeons.
+		mapFiletoMapID[mapFile] = mapID
+	end
+	if not mapFile then
+		mapFile = self:GetMapFile(continent, zone) -- Fallback for "Cosmic" and "World"
+	end
+	return mapFile, mapID, level
+end
+
 -- This function updates all the icons of one plugin on the world map
 function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not WorldMapButton:IsVisible() then return end
@@ -308,9 +326,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not db.enabledPlugins[pluginName] then return end
 
 	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
-	local continent, zone, level = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
-	local mapID = GetCurrentMapAreaID()
-	local mapFile = GetMapInfo() or self:GetMapFile(continent, zone) -- Fallback for "Cosmic" and "World"
+	local mapFile, mapID, level = self:WhereAmI(continent, zone)
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = WorldMapButton:GetFrameLevel() + 5
 	local frameStrata = WorldMapButton:GetFrameStrata()
@@ -386,12 +402,9 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	clearAllPins(minimapPins[pluginName])
 	if not db.enabledPlugins[pluginName] then return end
 
-	local continent, zone = HandyNotes:GetZoneToCZ(GetRealZoneText())
-	local mapID = HandyNotes:GetZoneToMapID(GetRealZoneText())
-	if not mapID then return end  -- Astrolabe doesn't support instances
-	local level = levelUpValue or GetCurrentMapDungeonLevel()
-	local mapFile = self:GetMapFile(continent, zone) -- or GetMapInfo()
-	if not mapFile then return end
+	local mapFile, mapID, level = self:WhereAmI(continent, zone)
+	if not (mapID and mapFile) then return end  -- Astrolabe doesn't support instances
+	level = levelUpValue or level
 
 	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
 	local pluginHandler = self.plugins[pluginName]
@@ -401,43 +414,43 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	for coord, mapFile2, iconpath, scale, alpha, level2 in pluginHandler:GetNodes(mapFile, true, level) do
 		local mapID2 = HandyNotes:GetMapFiletoMapID(mapFile2 or mapFile)
 		if mapID2 then
-		local icon = getNewPin()
-		icon:SetParent(Minimap)
-		icon:SetFrameStrata(frameStrata)
-		icon:SetFrameLevel(frameLevel)
-		scale = ourScale * scale
-		icon:SetHeight(scale) -- Can't use :SetScale as that changes our positioning scaling as well
-		icon:SetWidth(scale)
-		icon:SetAlpha(ourAlpha * alpha)
-		local t = icon.texture
-		if type(iconpath) == "table" then
-			if iconpath.tCoordLeft then
-				t:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+			local icon = getNewPin()
+			icon:SetParent(Minimap)
+			icon:SetFrameStrata(frameStrata)
+			icon:SetFrameLevel(frameLevel)
+			scale = ourScale * scale
+			icon:SetHeight(scale) -- Can't use :SetScale as that changes our positioning scaling as well
+			icon:SetWidth(scale)
+			icon:SetAlpha(ourAlpha * alpha)
+			local t = icon.texture
+			if type(iconpath) == "table" then
+				if iconpath.tCoordLeft then
+					t:SetTexCoord(iconpath.tCoordLeft, iconpath.tCoordRight, iconpath.tCoordTop, iconpath.tCoordBottom)
+				else
+					t:SetTexCoord(0, 1, 0, 1)
+				end
+				if iconpath.r then
+					t:SetVertexColor(iconpath.r, iconpath.g, iconpath.b, iconpath.a)
+				else
+					t:SetVertexColor(1, 1, 1, 1)
+				end
+				t:SetTexture(iconpath.icon)
 			else
 				t:SetTexCoord(0, 1, 0, 1)
-			end
-			if iconpath.r then
-				t:SetVertexColor(iconpath.r, iconpath.g, iconpath.b, iconpath.a)
-			else
 				t:SetVertexColor(1, 1, 1, 1)
+				t:SetTexture(iconpath)
 			end
-			t:SetTexture(iconpath.icon)
-		else
-			t:SetTexCoord(0, 1, 0, 1)
-			t:SetVertexColor(1, 1, 1, 1)
-			t:SetTexture(iconpath)
-		end
-		icon:SetScript("OnClick", nil)
-		icon:SetScript("OnEnter", pinsHandler.OnEnter)
-		icon:SetScript("OnLeave", pinsHandler.OnLeave)
-		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-		Astrolabe:PlaceIconOnMinimap(icon, mapID2, level2 or level, x, y)
-		t:ClearAllPoints()
-		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
-		minimapPins[pluginName][mapID2*1e8 + coord] = icon
-		icon.pluginName = pluginName
-		icon.coord = coord
-		icon.mapFile = mapFile2 or mapFile
+			icon:SetScript("OnClick", nil)
+			icon:SetScript("OnEnter", pinsHandler.OnEnter)
+			icon:SetScript("OnLeave", pinsHandler.OnLeave)
+			local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
+			Astrolabe:PlaceIconOnMinimap(icon, mapID2, level2 or level, x, y)
+			t:ClearAllPoints()
+			t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
+			minimapPins[pluginName][mapID2*1e8 + coord] = icon
+			icon.pluginName = pluginName
+			icon.coord = coord
+			icon.mapFile = mapFile2 or mapFile
 		end
 	end
 end
