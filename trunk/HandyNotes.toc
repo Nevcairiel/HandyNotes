@@ -1,4 +1,4 @@
-﻿## Interface: 40000
+﻿## Interface: 50300
 ## Title: HandyNotes
 ## Notes: Handy notes for your maps
 ## Notes-frFR: Notes pratiques pour vos cartes.
