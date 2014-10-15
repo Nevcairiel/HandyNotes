@@ -380,7 +380,7 @@ function HN:WorldMapButton_OnClick(button, mouseButton, ...)
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
-		return self.hooks[button].OnMouseUp(button, mouseButton, ...)
+		return self.hooks[button].OnClick(button, mouseButton, ...)
 	end
 end
 
@@ -494,14 +494,14 @@ function HN:OnInitialize()
 	-- Initialize our database with HandyNotes
 	HandyNotes:RegisterPluginDB("HandyNotes", HNHandler, options)
 
-	WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
+	--WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
 
 	-- Slash command
 	self:RegisterChatCommand("hnnew", "CreateNoteHere")
 end
 
 function HN:OnEnable()
-	self:RawHookScript(WorldMapButton, "OnMouseUp", "WorldMapButton_OnClick")
+	self:RawHookScript(WorldMapButton, "OnClick", "WorldMapButton_OnClick")
 end
 
 function HN:OnDisable()
