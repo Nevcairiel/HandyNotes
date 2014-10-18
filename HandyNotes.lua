@@ -200,6 +200,7 @@ end
 -- Build data
 local continentMapFile = {
 	[WORLDMAP_COSMIC_ID] = "Cosmic", -- That constant is -1
+	[WORLDMAP_AZEROTH_ID] = "World",
 }
 local continentList = {}
 local zoneList = {}
@@ -208,15 +209,19 @@ local reverseZoneZ = {}
 local zonetoMapID = {}
 local mapIDtoMapFile = {
 	[WORLDMAP_COSMIC_ID] = "Cosmic",
+	[WORLDMAP_AZEROTH_ID] = "World",
 }
 local mapFiletoMapID = {
 	["Cosmic"] = -1,
+	["World"] = 0,
 }
 local reverseMapFileC = {
 	["Cosmic"] = WORLDMAP_COSMIC_ID,
+	["World"] = WORLDMAP_AZEROTH_ID,
 }
 local reverseMapFileZ = {
 	["Cosmic"] = 0,
+	["World"] = 0,
 }
 local continentTempList = {GetMapContinents()}
 for i = 1, #continentTempList, 2 do
