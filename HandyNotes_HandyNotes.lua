@@ -279,6 +279,7 @@ do
 		["TheMaelstromContinent"] = {__index = Astrolabe.ContinentList[5]},
 		["Vashjir"]               = {[0] = 613, 614, 615, 610},
 		["Pandaria"]              = {__index = Astrolabe.ContinentList[6]},
+		["Draenor"]               = {__index = Astrolabe.ContinentList[7]},
 	}
 	for k, v in pairs(continentMapFile) do
 		setmetatable(v, v)
