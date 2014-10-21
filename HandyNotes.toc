@@ -7,7 +7,7 @@
 ## DefaultState: enabled
 ## X-Category: Map
 ## X-eMail: xinhuan @ gmail DOT com
-## OptionalDeps: Ace3, TomTom
+## OptionalDeps: Ace3, TomTom, Astrolabe
 
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Always: delayed
