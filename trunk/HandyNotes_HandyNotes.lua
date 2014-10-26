@@ -131,9 +131,14 @@ end
 
 local function addTomTomWaypoint(button, mapFile, coord)
 	if TomTom then
-		local c, z = HandyNotes:GetCZ(mapFile)
+		local mapId = HandyNotes:GetMapFiletoMapID(mapFile)
 		local x, y = HandyNotes:getXY(coord)
-		TomTom:AddZWaypoint(c, z, x*100, y*100, dbdata[mapFile][coord].title, nil, true, true)
+		TomTom:AddMFWaypoint(mapId, nil, x, y, {
+			title = dbdata[mapFile][coord].title,
+			persistent = nil,
+			minimap = true,
+			world = true
+		})
 	end
 end
 
