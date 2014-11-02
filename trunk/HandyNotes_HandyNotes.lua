@@ -117,18 +117,6 @@ local function editPin(button, mapFile, coord)
 	HNEditFrame:Show()
 end
 
-local function addCartWaypoint(button, mapFile, coord)
-	if Cartographer and Cartographer.HasModule and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
-		local x, y = HandyNotes:getXY(coord)
-		local cartCoordID = floor(x*10000 + 0.5) + floor(y*10000 + 0.5)*10001
-		local BZR = LibStub("LibBabble-Zone-3.0"):GetReverseLookupTable()
-		local zone = HandyNotes:GetCZToZone(HandyNotes:GetCZ(mapFile))
-		if zone then
-			Cartographer_Waypoints:AddRoutesWaypoint(BZR[zone], cartCoordID, dbdata[mapFile][coord].title)
-		end
-	end
-end
-
 local function addTomTomWaypoint(button, mapFile, coord)
 	if TomTom then
 		local mapId = HandyNotes:GetMapFiletoMapID(mapFile)
@@ -185,17 +173,6 @@ do
 			info.arg1 = clickedMapFile
 			info.arg2 = clickedCoord
 			UIDropDownMenu_AddButton(info, level)
-
-			-- Cartographer_Waypoints menu item
-			if Cartographer and Cartographer.HasModule and Cartographer:HasModule("Waypoints") and Cartographer:IsModuleActive("Waypoints") then
-				if HandyNotes:GetCZToZone(HandyNotes:GetCZ(clickedMapFile)) then -- Only if this is in a mapzone
-					info.text = L["Add this location to Cartographer_Waypoints"]
-					info.func = addCartWaypoint
-					info.arg1 = clickedMapFile
-					info.arg2 = clickedCoord
-					UIDropDownMenu_AddButton(info, level)
-				end
-			end
 
 			if TomTom then
 				info.text = L["Add this location to TomTom waypoints"]
