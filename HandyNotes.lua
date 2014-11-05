@@ -338,7 +338,7 @@ end
 -- Core functions
 
 -- This function gets a mapfile for our current location
-function HandyNotes:WhereAmI(continent, zone)
+function HandyNotes:WhereAmI()
 	local continent, zone, level = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
 	local mapID = GetCurrentMapAreaID()
 	local mapFile, _, _, isMicroDungeon, microFile = GetMapInfo()
@@ -363,7 +363,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not db.enabledPlugins[pluginName] then return end
 
 	local ourScale, ourAlpha = 12 * db.icon_scale, db.icon_alpha
-	local mapFile, mapID, level = self:WhereAmI(continent, zone)
+	local mapFile, mapID, level = self:WhereAmI()
 	local pluginHandler = self.plugins[pluginName]
 	local frameLevel = WorldMapButton:GetFrameLevel() + 5
 	local frameStrata = WorldMapButton:GetFrameStrata()
