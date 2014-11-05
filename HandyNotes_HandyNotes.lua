@@ -134,7 +134,6 @@ do
 	local isMoving = false
 	local info = {}
 	local clickedMapFile = nil
-	local clickedZone = nil
 	local clickedCoord = nil
 	local function generateMenu(button, level)
 		if (not level) then return end
@@ -341,8 +340,7 @@ end
 -- button is guaranteed to be passed in with the WorldMapButton frame
 function HN:WorldMapButton_OnClick(button, mouseButton, ...)
 	if mouseButton == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
-		local C, Z, L = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
-		local mapFile = HandyNotes:WhereAmI()
+		local mapFile, L = HandyNotes:WhereAmI(), GetCurrentMapDungeonLevel()
 
 		-- Get the coordinate clicked on
 		local x, y = GetCursorPosition()
