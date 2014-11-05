@@ -439,7 +439,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 	clearAllPins(minimapPins[pluginName])
 	if not db.enabledPlugins[pluginName] then return end
 
-	local mapFile, mapID, level = self:WhereAmI(continent, zone)
+	local mapFile, mapID, level = self:WhereAmI()
 	if not (mapID and mapFile) then return end  -- Astrolabe doesn't support instances
 	level = levelUpValue or level
 
