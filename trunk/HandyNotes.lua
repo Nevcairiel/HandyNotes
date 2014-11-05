@@ -253,6 +253,37 @@ for i = 1, #continentTempList, 2 do
 		mapFiletoMapID[mapFile] = mapID
 		zonetoMapID[ZName] = mapID
 	end
+
+	-- map things we don't have on the map zones
+	local areas = GetAreaMaps()
+	for i, mapID in pairs(areas) do
+		SetMapByID(mapID)
+		local mapFile = GetMapInfo()
+		local ZName = GetMapNameByID(mapID)
+		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
+		
+		-- nil out invalid C/Z values (Cosmic/World)
+		if C == -1 or C == 0 then C = nil end
+		if Z == 0 then Z = nil end
+		
+		-- insert into the zonelist, but don't overwrite entries
+		if C and zoneList[C] and Z and not zoneList[C][Z] then
+			zoneList[C][Z] = ZName
+		end
+		mapIDtoMapFile[mapID] = mapFile
+		-- since some mapfiles are used twice, don't overwrite them here
+		-- the second usage is usually a much weirder place (instances, scenarios, ...)
+		if not mapFiletoMapID[mapFile] then
+			mapFiletoMapID[mapFile] = mapID
+			reverseMapFileC[mapFile] = C
+			reverseMapFileZ[mapFile] = Z
+		end
+		if not zonetoMapID[ZName] then
+			zonetoMapID[ZName] = mapID
+			reverseZoneC[ZName] = C
+			reverseZoneZ[ZName] = Z
+		end
+	end
 end
 
 -- Public functions for plugins to convert between MapFile <-> C,Z
