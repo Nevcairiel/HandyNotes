@@ -2,9 +2,9 @@
 -- Module declaration
 local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:NewModule("HandyNotes", "AceEvent-3.0", "AceHook-3.0", "AceConsole-3.0")
-local Astrolabe = DongleStub("Astrolabe-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 
+local HBD = LibStub("HereBeDragons-1.0")
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
@@ -250,21 +250,7 @@ do
 end
 
 do
-	local emptyTbl = {}
 	local tablepool = setmetatable({}, {__mode = 'k'})
-	local continentMapFile = {
-		["Kalimdor"]              = {__index = Astrolabe.ContinentList[1]},
-		["Azeroth"]               = {__index = Astrolabe.ContinentList[2]},
-		["Expansion01"]           = {__index = Astrolabe.ContinentList[3]},
-		["Northrend"]             = {__index = Astrolabe.ContinentList[4]},
-		["TheMaelstromContinent"] = {__index = Astrolabe.ContinentList[5]},
-		["Vashjir"]               = {[0] = 613, 614, 615, 610},
-		["Pandaria"]              = {__index = Astrolabe.ContinentList[6]},
-		["Draenor"]               = {__index = Astrolabe.ContinentList[7]},
-	}
-	for k, v in pairs(continentMapFile) do
-		setmetatable(v, v)
-	end
 
 	-- This is a custom iterator we use to iterate over every node in a given zone
 	local function iter(t, prestate)
@@ -304,7 +290,7 @@ do
 				end
 			end
 			-- Get next zone
-			zone = zone + 1
+			zone = next(t.C, zone)
 			t.Z = zone
 			mapFile = HandyNotes:GetMapIDtoMapFile(t.C[zone])
 			data = dbdata[mapFile]
@@ -315,12 +301,12 @@ do
 	end
 
 	function HNHandler:GetNodes(mapFile, minimap, dungeonLevel)
-		local C = continentMapFile[mapFile] -- Is this a continent?
+		local C = HandyNotes:GetContinentZoneList(mapFile) -- Is this a continent?
 		if C then
 			local tbl = next(tablepool) or {}
 			tablepool[tbl] = nil
 			tbl.C = C
-			tbl.Z = 0
+			tbl.Z = next(C)
 			return iterCont, tbl, nil
 		else -- It is a zone
 			local tbl = next(tablepool) or {}
@@ -381,10 +367,10 @@ function HN:CreateNoteHere(arg1)
 			self:Print(L["Syntax:"].." /hnnew [x, y]")
 			return
 		end
-		mapID, level = Astrolabe:GetUnitPosition("player")
+		mapID, level = HBD:GetPlayerZone()
 	else
 		-- No coordinates entered, get the coordinates of player
-		mapID, level, x, y = Astrolabe:GetUnitPosition("player")
+		x, y, mapID, level = HBD:GetPlayerZonePosition()
 	end
 
 	if mapID and level and x and y then
@@ -471,6 +457,28 @@ function HN:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("HandyNotes_HandyNotesDB", defaults)
 	db = self.db.profile
 	dbdata = self.db.global
+
+	-- migrate data, if neccessary
+	local migration = {}
+	for zone in pairs(dbdata) do
+		if zone:find("_terrain%d+$") then
+			migration[zone] = true
+		end
+	end
+
+	for zone in pairs(migration) do
+		local data = dbdata[zone]
+		dbdata[zone] = nil
+
+		local stripped_zone = zone:gsub("_terrain%d+$", "")
+		if dbdata[stripped_zone] then
+			for coord, info in pairs(data) do
+				dbdata[stripped_zone][coord] = info
+			end
+		else
+			dbdata[stripped_zone] = data
+		end
+	end
 
 	-- Initialize our database with HandyNotes
 	HandyNotes:RegisterPluginDB("HandyNotes", HNHandler, options)
