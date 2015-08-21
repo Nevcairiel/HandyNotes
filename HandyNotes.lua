@@ -7,8 +7,9 @@ HandyNotes
 HandyNotes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes", "AceConsole-3.0", "AceEvent-3.0")
 local HandyNotes = HandyNotes
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
-local Astrolabe = DongleStub("Astrolabe-1.0")
 
+local HBD = LibStub("HereBeDragons-1.0")
+local HBDPins = LibStub("HereBeDragons-Pins-1.0")
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
@@ -198,105 +199,51 @@ end
 -- Public functions
 
 -- Build data
-local continentMapFile = {
-	[WORLDMAP_COSMIC_ID] = "Cosmic", -- That constant is -1
-	[WORLDMAP_AZEROTH_ID] = "World",
-}
-local continentList = {}
-local zoneList = {}
 local reverseZoneC = {}
 local reverseZoneZ = {}
 local zonetoMapID = {}
-local mapIDtoMapFile = {
-	[WORLDMAP_COSMIC_ID] = "Cosmic",
-	[WORLDMAP_AZEROTH_ID] = "World",
-}
-local mapFiletoMapID = {
-	["Cosmic"] = -1,
-	["World"] = 0,
-}
-local reverseMapFileC = {
-	["Cosmic"] = WORLDMAP_COSMIC_ID,
-	["World"] = WORLDMAP_AZEROTH_ID,
-}
-local reverseMapFileZ = {
-	["Cosmic"] = 0,
-	["World"] = 0,
-}
-local continentTempList = {GetMapContinents()}
-for i = 1, #continentTempList, 2 do
-	local C = (i + 1) / 2
-	local mapID, CName = continentTempList[i], continentTempList[i+1]
-	SetMapZoom(C, 0)
-	local mapFile = GetMapInfo()
-	continentList[C] = CName
-	reverseMapFileC[mapFile] = C
-	reverseMapFileZ[mapFile] = 0
-	reverseZoneC[CName] = C
-	reverseZoneZ[CName] = 0
-	mapIDtoMapFile[mapID] = mapFile
-	mapFiletoMapID[mapFile] = mapID
-	continentMapFile[C] = mapFile
-	zoneList[C] = {}
-	local zoneTempList = {GetMapZones(C)}
-	for j = 1, #zoneTempList, 2 do
-		local mapID, ZName = zoneTempList[j], zoneTempList[j+1]
-		SetMapByID(mapID)
-		local Z = GetCurrentMapZone()
-		local mapFile = GetMapInfo()
-		zoneList[C][Z] = ZName
-		reverseMapFileC[mapFile] = C
-		reverseMapFileZ[mapFile] = Z
-		reverseZoneC[ZName] = C
-		reverseZoneZ[ZName] = Z
-		mapIDtoMapFile[mapID] = mapFile
-		mapFiletoMapID[mapFile] = mapID
-		zonetoMapID[ZName] = mapID
+local allMapIDs = HBD:GetAllMapIDs()
+for _, mapID in pairs(allMapIDs) do
+	local C, Z = HBD:GetCZFromMapID(mapID)
+	local name = HBD:GetLocalizedMap(mapID)
+
+	if name and C > 0 and Z >= 0 then
+		reverseZoneC[name] = C
+		reverseZoneZ[name] = Z
+
+		-- always set here to prefer zones with valid C/Z
+		zonetoMapID[name] = mapID
 	end
 
-	-- map things we don't have on the map zones
-	local areas = GetAreaMaps()
-	for i, mapID in pairs(areas) do
-		SetMapByID(mapID)
-		local mapFile = GetMapInfo()
-		local ZName = GetMapNameByID(mapID)
-		local C, Z = GetCurrentMapContinent(), GetCurrentMapZone()
-		
-		-- nil out invalid C/Z values (Cosmic/World)
-		if C == -1 or C == 0 then C = nil end
-		if Z == 0 then Z = nil end
-		
-		-- insert into the zonelist, but don't overwrite entries
-		if C and zoneList[C] and Z and not zoneList[C][Z] then
-			zoneList[C][Z] = ZName
-		end
-		mapIDtoMapFile[mapID] = mapFile
-		-- since some mapfiles are used twice, don't overwrite them here
-		-- the second usage is usually a much weirder place (instances, scenarios, ...)
-		if not mapFiletoMapID[mapFile] then
-			mapFiletoMapID[mapFile] = mapID
-			reverseMapFileC[mapFile] = C
-			reverseMapFileZ[mapFile] = Z
-		end
-		if not zonetoMapID[ZName] then
-			zonetoMapID[ZName] = mapID
-			reverseZoneC[ZName] = C
-			reverseZoneZ[ZName] = Z
-		end
+	if name and not zonetoMapID[name] then
+		zonetoMapID[name] = mapID
 	end
+end
+allMapIDs = nil
+
+local continentMapFile = {
+	["Kalimdor"]              = HBD.continentZoneMap[1],
+	["Azeroth"]               = HBD.continentZoneMap[2],
+	["Expansion01"]           = HBD.continentZoneMap[3],
+	["Northrend"]             = HBD.continentZoneMap[4],
+	["TheMaelstromContinent"] = HBD.continentZoneMap[5],
+	["Vashjir"]               = {[0] = 613, 614, 615, 610}, -- Vashjir isn't an actual continent, but the map treats it like one, so hardcode its 3 zones (+ continent map)
+	["Pandaria"]              = HBD.continentZoneMap[6],
+	["Draenor"]               = HBD.continentZoneMap[7],
+}
+
+-- Public function to get a list of zones in a continent
+-- Note: This list is not an array, it uses the Z value as a key, which is not continous
+function HandyNotes:GetContinentZoneList(mapFile)
+	return continentMapFile[mapFile]
 end
 
 -- Public functions for plugins to convert between MapFile <-> C,Z
 function HandyNotes:GetMapFile(C, Z)
-	if not C or not Z then return end
-	if Z == 0 then
-		return continentMapFile[C]
-	elseif C > 0 then
-		return mapIDtoMapFile[Astrolabe.ContinentList[C][Z]]
-	end
+	return HBD:GetMapFileFromID(HBD:GetMapIDFromCZ(C, Z))
 end
 function HandyNotes:GetCZ(mapFile)
-	return reverseMapFileC[mapFile], reverseMapFileZ[mapFile]
+	return HBD:GetCZFromMapID(HBD:GetMapIDFromFile(mapFile))
 end
 
 -- Public functions for plugins to convert between coords <--> x,y
@@ -312,20 +259,15 @@ function HandyNotes:GetZoneToCZ(zone)
 	return reverseZoneC[zone], reverseZoneZ[zone]
 end
 function HandyNotes:GetCZToZone(C, Z)
-	if not C or not Z then return end
-	if Z == 0 then
-		return continentList[C]
-	elseif C > 0 then
-		return zoneList[C][Z]
-	end
+	return HBD:GetLocalizedMap(HBD:GetMapIDFromCZ(C, Z))
 end
 
 -- Public functions for plugins to convert between MapFile <-> Map ID
 function HandyNotes:GetMapFiletoMapID(mapFile)
-	return mapFiletoMapID[mapFile]
+	return mapFile and HBD:GetMapIDFromFile(mapFile)
 end
 function HandyNotes:GetMapIDtoMapFile(mapID)
-	return mapIDtoMapFile[mapID]
+	return mapID and HBD:GetMapFileFromID(mapID)
 end
 
 -- Public function for plugins to convert between GetRealZoneText() <-> Map ID
@@ -337,20 +279,20 @@ end
 ---------------------------------------------------------
 -- Core functions
 
--- This function gets a mapfile for our current location
+-- This function gets a mapfile for the currently opened worldmap
 function HandyNotes:WhereAmI()
 	local continent, zone, level = GetCurrentMapContinent(), GetCurrentMapZone(), GetCurrentMapDungeonLevel()
 	local mapID = GetCurrentMapAreaID()
 	local mapFile, _, _, isMicroDungeon, microFile = GetMapInfo()
 	if microFile then
 		mapFile = microFile
-		-- I am not sure if there's a better place for this to happen...
-		-- Note that recording the reverse isn't possible, since multiple mapids as returned
-		-- by GetCurrentAreaMapID will map to a single mapFile due to themicro dungeons.
-		mapFiletoMapID[mapFile] = mapID
 	end
 	if not mapFile then
 		mapFile = self:GetMapFile(continent, zone) -- Fallback for "Cosmic" and "World"
+	end
+	if mapFile then
+		-- strip alternate/phased zone tokens
+		mapFile = mapFile:gsub("_terrain%d+$", "")
 	end
 	return mapFile, mapID, level
 end
@@ -359,6 +301,7 @@ end
 function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not WorldMapButton:IsVisible() then return end
 
+	HBDPins:RemoveAllWorldMapIcons("HandyNotes" .. pluginName)
 	clearAllPins(worldmapPins[pluginName])
 	if not db.enabledPlugins[pluginName] then return end
 
@@ -407,7 +350,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 			icon:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x*WorldMapButton:GetWidth(), -y*WorldMapButton:GetHeight())
 			icon:Show()
 		else
-			Astrolabe:PlaceIconOnWorldMap(WorldMapButton, icon, mapID2, level2 or level, x, y)
+			HBDPins:AddWorldMapIconMF("HandyNotes" .. pluginName, icon, mapID2, level2 or level, x, y)
 		end
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
@@ -429,19 +372,15 @@ end
 
 
 -- This function updates all the icons of one plugin on the world map
-local levelUpValue
 function HandyNotes:UpdateMinimapPlugin(pluginName)
 	--if not Minimap:IsVisible() then return end
 
-	for coordID, icon in pairs(minimapPins[pluginName]) do
-		Astrolabe:RemoveIconFromMinimap(icon)
-	end
+	HBDPins:RemoveAllMinimapIcons("HandyNotes" .. pluginName)
 	clearAllPins(minimapPins[pluginName])
 	if not db.enabledPlugins[pluginName] then return end
 
-	local mapFile, mapID, level = self:WhereAmI()
-	if not (mapID and mapFile) then return end  -- Astrolabe doesn't support instances
-	level = levelUpValue or level
+	local mapID, level, mapFile = HBD:GetPlayerZone()
+	if not (mapID and mapFile) then return end 
 
 	local ourScale, ourAlpha = 12 * db.icon_scale_minimap, db.icon_alpha_minimap
 	local pluginHandler = self.plugins[pluginName]
@@ -481,7 +420,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 			icon:SetScript("OnEnter", pinsHandler.OnEnter)
 			icon:SetScript("OnLeave", pinsHandler.OnLeave)
 			local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
-			Astrolabe:PlaceIconOnMinimap(icon, mapID2, level2 or level, x, y)
+			HBDPins:AddMinimapIconMF("HandyNotes" .. pluginName, icon, mapID2, level2 or level, x, y)
 			t:ClearAllPoints()
 			t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
 			minimapPins[pluginName][mapID2*1e8 + coord] = icon
@@ -509,37 +448,6 @@ function HandyNotes:UpdatePluginMap(message, pluginName)
 		self:UpdateMinimapPlugin(pluginName)
 	end
 end
-
--- This function is called by Astrolabe whenever a note changes its OnEdge status
-function HandyNotes.AstrolabeEdgeCallback()
-	for pluginName, pluginHandler in pairs(HandyNotes.plugins) do
-		for coordID, icon in pairs(minimapPins[pluginName]) do
-			if Astrolabe.IconsOnEdge[icon] then
-				icon:Hide()
-			else
-				icon:Show()
-			end
-		end
-	end
-end
-
--- OnUpdate frame we use to update the minimap icons
-local updateFrame = CreateFrame("Frame")
-updateFrame:Hide()
-do
-	local zone
-	updateFrame:SetScript("OnUpdate", function()
-		local zone2 = GetRealZoneText()
-		local level = WorldMapFrame:IsShown() and levelUpValue or GetCurrentMapDungeonLevel()
-		if zone ~= zone2 or levelUpValue ~= level then
-			if zone ~= zone2 and WorldMapFrame:IsShown() then level = 0 end
-			zone = zone2
-			levelUpValue = level
-			HandyNotes:UpdateMinimap()
-		end
-	end)
-end
-
 
 ---------------------------------------------------------
 -- Our options table
@@ -675,23 +583,20 @@ function HandyNotes:OnEnable()
 	end
 	self:RegisterEvent("WORLD_MAP_UPDATE", "UpdateWorldMap")
 	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdatePluginMap")
-	Astrolabe:Register_OnEdgeChanged_Callback(self.AstrolabeEdgeCallback, true)
-	updateFrame:Show()
 	self:UpdateMinimap()
 	self:UpdateWorldMap()
+	HBD.RegisterCallback(self, "PlayerZoneChanged", "UpdateMinimap")
 end
 
 function HandyNotes:OnDisable()
 	-- Remove all the pins
 	for pluginName, pluginHandler in pairs(self.plugins) do
-		for coordID, icon in pairs(minimapPins[pluginName]) do
-			Astrolabe:RemoveIconFromMinimap(icon)
-		end
+		HBDPins:RemoveAllMinimapIcons("HandyNotes" .. pluginName)
+		HBDPins:RemoveAllWorldMapIcons("HandyNotes" .. pluginName)
 		clearAllPins(worldmapPins[pluginName])
 		clearAllPins(minimapPins[pluginName])
 	end
-	Astrolabe:Register_OnEdgeChanged_Callback(self.AstrolabeEdgeCallback)
-	updateFrame:Hide()
+	HBD.UnregisterCallback(self, "PlayerZoneChanged")
 end
 
 function HandyNotes:OnProfileChanged(event, database, newProfileKey)
