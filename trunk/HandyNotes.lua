@@ -104,9 +104,9 @@ local function recyclePin(pin)
 end
 
 local function clearAllPins(t)
-	for coord, pin in pairs(t) do
+	for key, pin in pairs(t) do
 		recyclePin(pin)
-		t[coord] = nil
+		t[key] = nil
 	end
 end
 
@@ -354,7 +354,7 @@ function HandyNotes:UpdateWorldMapPlugin(pluginName)
 		end
 		t:ClearAllPoints()
 		t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
-		worldmapPins[pluginName][(mapID2 or 0)*1e8 + coord] = icon
+		worldmapPins[pluginName][icon] = icon
 		icon.pluginName = pluginName
 		icon.coord = coord
 		icon.mapFile = mapFile2 or mapFile
@@ -423,7 +423,7 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 			HBDPins:AddMinimapIconMF("HandyNotes" .. pluginName, icon, mapID2, level2 or level, x, y)
 			t:ClearAllPoints()
 			t:SetAllPoints(icon) -- Not sure why this is necessary, but people are reporting weirdly sized textures
-			minimapPins[pluginName][mapID2*1e8 + coord] = icon
+			minimapPins[pluginName][icon] = icon
 			icon.pluginName = pluginName
 			icon.coord = coord
 			icon.mapFile = mapFile2 or mapFile
