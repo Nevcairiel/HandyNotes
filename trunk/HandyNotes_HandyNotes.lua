@@ -209,11 +209,26 @@ do
 			-- Only move if we're viewing the same map as the icon's map
 			if mapFile == HandyNotes:WhereAmI() or mapFile == "World" or mapFile == "Cosmic" then
 				isMoving = true
+			local x, y = self:GetCenter()
+				local s = WorldMapButton:GetEffectiveScale() / UIParent:GetEffectiveScale()
+				self:ClearAllPoints()
+				self:SetParent(UIParent)
+				self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * s, y * s)
+				self:SetFrameStrata("TOOLTIP")
 				self:StartMoving()
 			end
 		elseif isMoving and not down then
 			isMoving = false
 			self:StopMovingOrSizing()
+			local x, y = self:GetCenter()
+			local s = WorldMapButton:GetEffectiveScale() / UIParent:GetEffectiveScale()
+			self:ClearAllPoints()
+			self:SetParent(WorldMapButton)
+			x = x / s - WorldMapButton:GetLeft()
+			y = y / s - WorldMapButton:GetTop()
+			self:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x, y)
+			self:SetFrameStrata("TOOLTIP")
+			self:SetUserPlaced(false)
 			-- Get the new coordinate
 			local x, y = self:GetCenter()
 			x = (x - WorldMapButton:GetLeft()) / WorldMapButton:GetWidth()
