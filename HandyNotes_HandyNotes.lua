@@ -419,6 +419,7 @@ function HN:FillDungeonLevelData()
 	if IsLegion then
 		levels = { GetNumDungeonMapLevels() }
 	else
+		levels = {}
 		for f = 1, GetNumDungeonMapLevels() do
 			levels[f] = f
 		end
