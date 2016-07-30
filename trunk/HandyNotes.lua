@@ -37,7 +37,6 @@ local pairs, next, type = pairs, next, type
 local CreateFrame = CreateFrame
 local GetCurrentMapContinent, GetCurrentMapZone = GetCurrentMapContinent, GetCurrentMapZone
 local GetCurrentMapDungeonLevel = GetCurrentMapDungeonLevel
-local GetRealZoneText = GetRealZoneText
 local WorldMapButton, Minimap = WorldMapButton, Minimap
 
 
