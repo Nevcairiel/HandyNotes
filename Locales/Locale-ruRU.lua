@@ -5,4 +5,4 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("HandyNotes", "ruRU")
 if not L then return end
 
---@localization(locale="ruRU", format="lua_additive_table", table-name="L", handle-unlocalized="comment")@
+--@localization(locale="ruRU", format="lua_additive_table", table-name="L", handle-unlocalized="ignore")@
