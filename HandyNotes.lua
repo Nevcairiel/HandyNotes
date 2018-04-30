@@ -2,6 +2,11 @@
 HandyNotes
 ]]
 
+-- This is the WoW 8.0 version
+if select(4, GetBuildInfo()) < 80000 then
+    return
+end
+
 ---------------------------------------------------------
 -- Addon declaration
 HandyNotes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes", "AceConsole-3.0", "AceEvent-3.0")
