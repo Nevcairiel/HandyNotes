@@ -13,8 +13,9 @@ HandyNotes = LibStub("AceAddon-3.0"):NewAddon("HandyNotes", "AceConsole-3.0", "A
 local HandyNotes = HandyNotes
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 
-local HBD = LibStub("HereBeDragons-1.0")
-local HBDPins = LibStub("HereBeDragons-Pins-1.0")
+local HBD = LibStub("HereBeDragons-2.0")
+local HBDPins = LibStub("HereBeDragons-Pins-2.0")
+local HBDMigrate = LibStub("HereBeDragons-Migrate")
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
