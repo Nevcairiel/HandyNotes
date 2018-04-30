@@ -20,8 +20,6 @@ local defaults = {
 	},
 }
 
-local IsLegion = select(4, GetBuildInfo()) >= 70000
-
 ---------------------------------------------------------
 -- Localize some globals
 local next = next
@@ -415,15 +413,7 @@ function HN:FillDungeonLevelData()
 	-- Thus no WhereAmI here.
 	local mapname = strupper(GetMapInfo() or "")
 	local usesTerrainMap = DungeonUsesTerrainMap() and 1 or 0
-	local levels
-	if IsLegion then
-		levels = { GetNumDungeonMapLevels() }
-	else
-		levels = {}
-		for f = 1, GetNumDungeonMapLevels() do
-			levels[f] = f
-		end
-	end
+	local levels = { GetNumDungeonMapLevels() }
 	if #levels > 0 then
 		HNEditFrame.leveldata[0] = ALL
 	end
