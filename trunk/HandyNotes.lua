@@ -118,6 +118,19 @@ In this table, the format is:
 	["Name of plugin"] = {table containing a set of standard functions, which we'll call pluginHandler}
 
 Standard functions we require for every plugin:
+	iter, state, value = pluginHandler:GetNodes2(uiMapID, minimap)
+		Parameters
+		- uiMapID: The zone we want data for
+		- minimap: Boolean argument indicating that we want to get nodes to display for the minimap
+		Returns:
+		- iter: An iterator function that will loop over and return 5 values
+			(coord, uiMapID, iconpath, scale, alpha)
+			for every node in the requested zone. If the uiMapID return value is nil, we assume it is the
+			same uiMapID as the argument passed in. Mainly used for continent uiMapID where the map passed
+			in is a continent, and the return values are coords of subzone maps.
+		- state, value: First 2 args to pass into iter() on the initial iteration
+
+Legacy Alternative - You're strongly urged to update to GetNodes2!
 	iter, state, value = pluginHandler:GetNodes(mapFile, minimap, dungeonLevel)
 		Parameters
 		- mapFile: The zone we want data for
