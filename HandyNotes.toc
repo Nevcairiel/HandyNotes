@@ -46,6 +46,7 @@ Locales\Locale-zhTW.lua
 
 # Core files
 HandyNotes.lua
+HandyNotes.xml
 HandyNotesLegion.lua
 HandyNotes_HandyNotes.lua
 HandyNotes_EditFrame.lua
