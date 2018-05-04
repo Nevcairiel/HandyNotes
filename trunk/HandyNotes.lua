@@ -146,11 +146,11 @@ Legacy Alternative - You're strongly urged to update to GetNodes2!
 		- state, value: First 2 args to pass into iter() on the initial iteration
 
 Standard functions you can provide optionally:
-	pluginHandler:OnEnter(mapFile, coord)
+	pluginHandler:OnEnter(uiMapID/mapFile, coord)
 		Function we will call when the mouse enters a HandyNote, you will generally produce a tooltip here.
-	pluginHandler:OnLeave(mapFile, coord)
+	pluginHandler:OnLeave(uiMapID/mapFile, coord)
 		Function we will call when the mouse leaves a HandyNote, you will generally hide the tooltip here.
-	pluginHandler:OnClick(button, down, mapFile, coord)
+	pluginHandler:OnClick(button, down, uiMapID/mapFile, coord)
 		Function we will call when the user clicks on a HandyNote, you will generally produce a menu here on right-click.
 ]]
 
@@ -336,6 +336,8 @@ function HandyNotes.WorldMapDataProvider:RefreshPlugin(pluginName)
 	
 	if not db.enabledPlugins[pluginName] then return end
 	local uiMapID = self:GetMap():GetMapID()
+	if not uiMapID then return end
+	
 	for coord, uiMapID2, iconpath, scale, alpha in IterateNodes(pluginName, uiMapID, false) do
 		local x, y = floor(coord / 10000) / 10000, (coord % 10000) / 10000
 		if uiMapID2 and uiMapID ~= uiMapID2 then
@@ -356,6 +358,7 @@ function HandyNotesWorldMapPinMixin:OnLoad()
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
 	--self:RegisterForClicks("LeftButtonDown", "LeftButtonUp", "RightButtonDown", "RightButtonUp")
 	self:SetMovable(true)
+	self:SetScalingLimits(1, 1.0, 1.2);
 end
 
 function HandyNotesWorldMapPinMixin:OnAcquired(pluginName, x, y, iconpath, scale, alpha, originalCoord, originalMapID, legacyMapFile)
@@ -398,8 +401,12 @@ function HandyNotesWorldMapPinMixin:OnMouseLeave()
 	pinsHandler.OnLeave(self)
 end
 
-function HandyNotesWorldMapPinMixin:OnClick(button)
-	pinsHandler.OnClick(self, button)
+function HandyNotesWorldMapPinMixin:OnMouseDown(button)
+	pinsHandler.OnClick(self, button, true)
+end
+
+function HandyNotesWorldMapPinMixin:OnMouseUp(button)
+	pinsHandler.OnClick(self, button, false)
 end
 
 function HandyNotes:UpdateWorldMapPlugin(pluginName)
