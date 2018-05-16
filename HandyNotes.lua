@@ -169,12 +169,10 @@ end
 
 local pinsHandler = {}
 function pinsHandler:OnEnter(motion)
-	WorldMap_HijackTooltip(self:GetMap())
 	safecall(HandyNotes.plugins[self.pluginName].OnEnter, self, self.mapFile or self.uiMapID, self.coord)
 end
 function pinsHandler:OnLeave(motion)
 	safecall(HandyNotes.plugins[self.pluginName].OnLeave, self, self.mapFile or self.uiMapID, self.coord)
-	WorldMap_RestoreTooltip()
 end
 function pinsHandler:OnClick(button, down)
 	safecall(HandyNotes.plugins[self.pluginName].OnClick, self, button, down, self.mapFile or self.uiMapID, self.coord)
@@ -634,7 +632,7 @@ function HandyNotes:OnEnable()
 	
 	self:RegisterMessage("HandyNotes_NotifyUpdate", "UpdatePluginMap")
 	self:UpdateMinimap()
-	TestWorldMapFrame:AddDataProvider(HandyNotes.WorldMapDataProvider)
+	WorldMapFrame:AddDataProvider(HandyNotes.WorldMapDataProvider)
 	self:UpdateWorldMap()
 	HBD.RegisterCallback(self, "PlayerZoneChanged", "UpdateMinimap")
 end
@@ -645,7 +643,7 @@ function HandyNotes:OnDisable()
 		HBDPins:RemoveAllMinimapIcons("HandyNotes" .. pluginName)
 		clearAllPins(minimapPins[pluginName])
 	end
-	TestWorldMapFrame:RemoveDataProvider(HandyNotes.WorldMapDataProvider)
+	WorldMapFrame:RemoveDataProvider(HandyNotes.WorldMapDataProvider)
 	HBD.UnregisterCallback(self, "PlayerZoneChanged")
 end
 
