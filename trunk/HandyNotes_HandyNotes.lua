@@ -7,6 +7,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 local WoW80 = select(4, GetBuildInfo()) >= 80000
 
 local HBD = WoW80 and LibStub("HereBeDragons-2.0") or LibStub("HereBeDragons-1.0")
+local PIN_DRAG_SCALE = 1.2
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
@@ -133,6 +134,7 @@ end
 
 do
 	local isMoving = false
+	local movingPinScale = nil
 	local info = {}
 	local clickedMapFile = nil
 	local clickedCoord = nil
@@ -220,24 +222,57 @@ do
 					self:StartMoving()
 				end
 			else
-				-- TODO: pin moving
+				if mapFile == WorldMapFrame:GetMapID() then
+					isMoving = true
+					movingPinScale = self:GetScale()
+					local x, y = self:GetCenter()
+					local s = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
+					self:ClearAllPoints()
+					self:SetParent(UIParent)
+					self:SetScale(PIN_DRAG_SCALE)
+					self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * s / PIN_DRAG_SCALE, y * s / PIN_DRAG_SCALE)
+					self:SetFrameStrata("TOOLTIP")
+					self:StartMoving()
+				end
 			end
 		elseif isMoving and not down then
 			isMoving = false
 			self:StopMovingOrSizing()
 			local x, y = self:GetCenter()
-			local s = WorldMapButton:GetEffectiveScale() / UIParent:GetEffectiveScale()
-			self:ClearAllPoints()
-			self:SetParent(WorldMapButton)
-			x = x / s - WorldMapButton:GetLeft()
-			y = y / s - WorldMapButton:GetTop()
-			self:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x, y)
-			self:SetFrameStrata("TOOLTIP")
-			self:SetUserPlaced(false)
-			-- Get the new coordinate
-			local x, y = self:GetCenter()
-			x = (x - WorldMapButton:GetLeft()) / WorldMapButton:GetWidth()
-			y = (WorldMapButton:GetTop() - y) / WorldMapButton:GetHeight()
+			if not WoW80 then
+				local s = WorldMapButton:GetEffectiveScale() / UIParent:GetEffectiveScale()
+				self:ClearAllPoints()
+				self:SetParent(WorldMapButton)
+				x = x / s - WorldMapButton:GetLeft()
+				y = y / s - WorldMapButton:GetTop()
+				self:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x, y)
+				self:SetFrameStrata("TOOLTIP")
+				self:SetUserPlaced(false)
+
+				-- Get the new coordinate
+				x, y = self:GetCenter()
+				x = (x - WorldMapButton:GetLeft()) / WorldMapButton:GetWidth()
+				y = (WorldMapButton:GetTop() - y) / WorldMapButton:GetHeight()
+			else
+				if movingPinScale then
+					x = x * PIN_DRAG_SCALE / movingPinScale
+					y = y * PIN_DRAG_SCALE / movingPinScale
+					self:SetScale(movingPinScale)
+					movingPinScale = nil
+				end
+				local s = self:GetEffectiveScale() / WorldMapFrame.ScrollContainer.Child:GetEffectiveScale()
+				x = x * s - WorldMapFrame.ScrollContainer.Child:GetLeft()
+				y = y * s - WorldMapFrame.ScrollContainer.Child:GetTop()
+				self:ClearAllPoints()
+				self:SetParent(WorldMapFrame.ScrollContainer.Child)
+				self:SetPoint("CENTER", WorldMapFrame.ScrollContainer.Child, "TOPLEFT", x / self:GetScale(), y / self:GetScale())
+				self:SetFrameStrata("TOOLTIP")
+				self:SetUserPlaced(false)
+
+				-- Get the new coordinate
+				x = x / WorldMapFrame.ScrollContainer.Child:GetWidth()
+				y = -y / WorldMapFrame.ScrollContainer.Child:GetHeight()
+			end
 			-- Move the button back into the map if it was dragged outside
 			if x < 0.001 then x = 0.001 end
 			if x > 0.999 then x = 0.999 end
@@ -448,6 +483,29 @@ function HN:FillDungeonLevelData()
 end
 end
 
+if WoW80 then
+function HN.OnCanvasClicked(mapCanvas, button, cursorX, cursorY)
+	local self = HN
+	if button == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
+		
+		local coord = HandyNotes:getCoord(cursorX, cursorY)
+		local x, y = HandyNotes:getXY(coord)
+		
+		-- Pass the data to the edit note frame
+		local HNEditFrame = self.HNEditFrame
+		HNEditFrame.x = x
+		HNEditFrame.y = y
+		HNEditFrame.coord = coord
+		HNEditFrame.mapID = mapCanvas:GetMapID()
+		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
+		HNEditFrame:Show()
+
+		return true
+	end
+	return false
+end
+end
+
 -- Function to create a note where the player is
 function HN:CreateNoteHere(arg1)
 	local mapID, level, x, y
@@ -594,6 +652,9 @@ function HN:OnInitialize()
 	HandyNotes:RegisterPluginDB("HandyNotes", HNHandler, options)
 
 	--WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
+	if WoW80 then
+		WorldMapFrame:AddCanvasClickHandler(self.OnCanvasClicked)
+	end
 
 	-- Slash command
 	self:RegisterChatCommand("hnnew", "CreateNoteHere")
@@ -607,4 +668,3 @@ end
 
 function HN:OnDisable()
 end
-
