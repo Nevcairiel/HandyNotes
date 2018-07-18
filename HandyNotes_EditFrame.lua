@@ -113,7 +113,6 @@ HNEditFrame.descinputbox:SetScript("OnCursorChanged", function(self, x, y, w, h)
 	local height = scrollFrame:GetHeight()
 	local range = scrollFrame:GetVerticalScrollRange()
 	local scroll = scrollFrame:GetVerticalScroll()
-	local size = height + range
 	local cursorOffset = -y
 	while ( cursorOffset < scroll ) do
 		scroll = (scroll - (height / 2))
