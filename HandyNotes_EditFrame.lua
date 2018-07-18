@@ -4,8 +4,6 @@ local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:GetModule("HandyNotes")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 
-local WoW80 = select(4, GetBuildInfo()) >= 80000
-
 local info = {}
 local backdrop2 = {
 	bgFile = nil,
@@ -203,33 +201,6 @@ HNEditFrame.continentcheckbox:SetChecked(true)
 HNEditFrame.continentcheckbox:SetHitRectInsets(0, -HNEditFrame.continentcheckbox.string:GetStringWidth(), 0, 0)
 HNEditFrame.continentcheckbox:SetPushedTextOffset(0, 0)
 
--- Create the Level Dropdown
-if not WoW80 then
-HNEditFrame.leveldropdown = CreateFrame("Frame", "HandyNotes_LevelDropDown", HNEditFrame, "UIDropDownMenuTemplate")
-HNEditFrame.leveldropdown:SetPoint("TOPLEFT", HNEditFrame.icondropdown, "BOTTOMLEFT", 0, 8)
-HNEditFrame.leveldropdown:SetHitRectInsets(16, 16, 0, 0)
-UIDropDownMenu_SetWidth(HNEditFrame.leveldropdown, 282)
-UIDropDownMenu_EnableDropDown(HNEditFrame.leveldropdown)
-HNEditFrame.leveldropdown.displayMode = "MENU"
-HNEditFrame.leveldropdown.text = HandyNotes_LevelDropDownText
-HNEditFrame.leveldropdown.OnClick = function(button, value)
-	HNEditFrame.leveldropdown.selectedValue = value
-	HNEditFrame.leveldropdown.text:SetText(HNEditFrame.leveldata[value] or ALL)
-end
-HNEditFrame.leveldata = {}
-HNEditFrame.leveldropdown.initialize = function(level)
-	wipe(info)
-	for floorNumber, text in pairs(HNEditFrame.leveldata) do
-		info.text = text
-		info.arg1 = floorNumber
-		info.func = HNEditFrame.leveldropdown.OnClick
-		info.checked = HNEditFrame.leveldropdown.selectedValue == floorNumber
-		info.keepShownOnClick = nil
-		UIDropDownMenu_AddButton(info)
-	end
-end
-end
-
 -- Create the OK button
 HNEditFrame.okbutton = CreateFrame("Button", nil, HNEditFrame, "OptionsButtonTemplate")
 HNEditFrame.okbutton:SetWidth(150)
@@ -265,37 +236,19 @@ tinsert(UISpecialFrames, "HNEditFrame")
 -- OnShow function to show a note for adding or editing
 
 HNEditFrame:SetScript("OnShow", function(self)
-	local data = HN.db.global[self.mapFile or self.mapID][self.coord]
+	local data = HN.db.global[self.mapID][self.coord]
 	if data then
 		HNEditFrame.title:SetText(L["Edit Handy Note"])
 		HNEditFrame.titleinputbox:SetText(data.title)
 		HNEditFrame.descinputbox:SetText(data.desc)
 		HNEditFrame.icondropdown.OnClick(nil, data.icon)
 		HNEditFrame.continentcheckbox:SetChecked(data.cont)
-		if not WoW80 then
-			if HNEditFrame.leveldata[0] then
-				UIDropDownMenu_EnableDropDown(HNEditFrame.leveldropdown)
-				HNEditFrame.leveldropdown.OnClick(nil, data.level)
-			else
-				UIDropDownMenu_DisableDropDown(HNEditFrame.leveldropdown)
-				HNEditFrame.leveldropdown.text:SetText("")
-			end
-		end
 	else
 		HNEditFrame.title:SetText(L["Add Handy Note"])
 		HNEditFrame.titleinputbox:SetText("")
 		HNEditFrame.descinputbox:SetText("")
 		HNEditFrame.icondropdown.OnClick(nil, 1)
 		HNEditFrame.continentcheckbox:SetChecked(nil)
-		if not WoW80 then
-			if HNEditFrame.leveldata[0] then
-				UIDropDownMenu_EnableDropDown(HNEditFrame.leveldropdown)
-				HNEditFrame.leveldropdown.OnClick(nil, HNEditFrame.level)
-			else
-				UIDropDownMenu_DisableDropDown(HNEditFrame.leveldropdown)
-				HNEditFrame.leveldropdown.text:SetText("")
-			end
-		end
 	end
 	if WorldMapFrame:IsShown() then
 		self:SetParent(WorldMapFrame)
@@ -309,19 +262,15 @@ end)
 -- OnClick function to accept the changes for a new/edited note
 
 HNEditFrame.okbutton:SetScript("OnClick", function(self)
-	local data = HN.db.global[HNEditFrame.mapFile or HNEditFrame.mapID][HNEditFrame.coord]
+	local data = HN.db.global[HNEditFrame.mapID][HNEditFrame.coord]
 	if not data then
 		data = {}
-		HN.db.global[HNEditFrame.mapFile or HNEditFrame.mapID][HNEditFrame.coord] = data
+		HN.db.global[HNEditFrame.mapID][HNEditFrame.coord] = data
 	end
 	data.title = HNEditFrame.titleinputbox:GetText()
 	data.desc = HNEditFrame.descinputbox:GetText()
 	data.icon = HNEditFrame.icondropdown.selectedValue
 	data.cont = HNEditFrame.continentcheckbox:GetChecked()
-	if not WoW80 then
-		data.level = HNEditFrame.leveldropdown.selectedValue
-		if data.level == 0 then data.level = nil end
-	end
 	HNEditFrame:Hide()
 	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 end)
