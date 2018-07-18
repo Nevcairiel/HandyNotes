@@ -74,7 +74,7 @@ HN.icons = {
 local HNHandler = {}
 
 function HNHandler:OnEnter(mapID, coord)
-	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
+	local tooltip = self:GetParent() == WorldMapFrame:GetCanvas() and WorldMapTooltip or GameTooltip
 	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
 		tooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
@@ -90,7 +90,7 @@ function HNHandler:OnEnter(mapID, coord)
 end
 
 function HNHandler:OnLeave(mapID, coord)
-	if self:GetParent() == WorldMapButton then
+	if self:GetParent() == WorldMapFrame:GetCanvas() then
 		WorldMapTooltip:Hide()
 	else
 		GameTooltip:Hide()
@@ -319,7 +319,7 @@ do
 			tablepool[tbl] = nil
 			tbl.C = C
 			tbl.Z = next(C)
-			tbl.contId = uiMapID
+			tbl.contId = uiMapId
 			return iterCont, tbl, nil
 		else -- It is a zone
 			local tbl = next(tablepool) or {}
