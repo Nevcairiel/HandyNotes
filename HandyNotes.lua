@@ -472,9 +472,10 @@ function HandyNotes:UpdateMinimapPlugin(pluginName)
 		icon.pluginName = pluginName
 		icon.coord = coord
 		if not HandyNotes.plugins[pluginName].GetNodes2 then
-			mapFile = select(3, HBDMigrate:GetLegacyMapInfo(uiMapID2 or uiMapID))
-		end
-		icon.mapFile = mapFile
+			icon.mapFile = select(3, HBDMigrate:GetLegacyMapInfo(uiMapID2 or uiMapID))
+		else
+			icon.mapFile = nil
+		 end
 		icon.uiMapID = uiMapID2 or uiMapID
 	end
 end
