@@ -4,9 +4,7 @@ local HandyNotes = LibStub("AceAddon-3.0"):GetAddon("HandyNotes")
 local HN = HandyNotes:NewModule("HandyNotes", "AceEvent-3.0", "AceHook-3.0", "AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("HandyNotes", false)
 
-local WoW80 = select(4, GetBuildInfo()) >= 80000
-
-local HBD = WoW80 and LibStub("HereBeDragons-2.0") or LibStub("HereBeDragons-1.0")
+local HBD = LibStub("HereBeDragons-2.0")
 local PIN_DRAG_SCALE = 1.2
 
 ---------------------------------------------------------
@@ -75,15 +73,15 @@ HN.icons = {
 
 local HNHandler = {}
 
-function HNHandler:OnEnter(mapFile, coord)
+function HNHandler:OnEnter(mapID, coord)
 	local tooltip = self:GetParent() == WorldMapButton and WorldMapTooltip or GameTooltip
 	if ( self:GetCenter() > UIParent:GetCenter() ) then -- compare X coordinate
 		tooltip:SetOwner(self, "ANCHOR_LEFT")
 	else
 		tooltip:SetOwner(self, "ANCHOR_RIGHT")
 	end
-	local title = dbdata[mapFile][coord].title
-	local desc = dbdata[mapFile][coord].desc
+	local title = dbdata[mapID][coord].title
+	local desc = dbdata[mapID][coord].desc
 	if title == "" and desc == "" then title = L["(No Title)"] end
 	if title == "" and desc ~= "" then title = desc  desc = nil end
 	tooltip:SetText(title)
@@ -91,7 +89,7 @@ function HNHandler:OnEnter(mapFile, coord)
 	tooltip:Show()
 end
 
-function HNHandler:OnLeave(mapFile, coord)
+function HNHandler:OnLeave(mapID, coord)
 	if self:GetParent() == WorldMapButton then
 		WorldMapTooltip:Hide()
 	else
@@ -99,22 +97,20 @@ function HNHandler:OnLeave(mapFile, coord)
 	end
 end
 
-local function deletePin(button, mapFile, coord)
+local function deletePin(button, mapID, coord)
 	local HNEditFrame = HN.HNEditFrame
-	if HNEditFrame.coord == coord and HNEditFrame.mapFile == mapFile then
+	if HNEditFrame.coord == coord and HNEditFrame.mapID == mapID then
 		HNEditFrame:Hide()
 	end
-	dbdata[mapFile][coord] = nil
+	dbdata[mapID][coord] = nil
 	HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 end
 
-local function editPin(button, mapFile, coord)
+local function editPin(button, mapID, coord)
 	local HNEditFrame = HN.HNEditFrame
 	HNEditFrame.x, HNEditFrame.y = HandyNotes:getXY(coord)
 	HNEditFrame.coord = coord
-	HNEditFrame.mapFile = mapFile
-	HNEditFrame.level = dbdata[mapFile][coord].level
-	HN:FillDungeonLevelData()
+	HNEditFrame.mapID = mapID
 	HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 	HNEditFrame:Show()
 end
@@ -136,7 +132,7 @@ do
 	local isMoving = false
 	local movingPinScale = nil
 	local info = {}
-	local clickedMapFile = nil
+	local clickedMapID = nil
 	local clickedCoord = nil
 	local function generateMenu(button, level)
 		if (not level) then return end
@@ -146,7 +142,7 @@ do
 			info.isTitle      = 1
 			info.text         = L["HandyNotes"]
 			info.notCheckable = 1
-			local t = HN.icons[dbdata[clickedMapFile][clickedCoord].icon]
+			local t = HN.icons[dbdata[clickedMapID][clickedCoord].icon]
 			info.icon         = t.icon
 			info.tCoordLeft   = t.tCoordLeft
 			info.tCoordRight  = t.tCoordRight
@@ -165,21 +161,21 @@ do
 			info.tCoordBottom = nil
 			info.text = L["Edit Handy Note"]
 			info.func = editPin
-			info.arg1 = clickedMapFile
+			info.arg1 = clickedMapID
 			info.arg2 = clickedCoord
 			UIDropDownMenu_AddButton(info, level)
 
 			-- Delete menu item
 			info.text = L["Delete Handy Note"]
 			info.func = deletePin
-			info.arg1 = clickedMapFile
+			info.arg1 = clickedMapID
 			info.arg2 = clickedCoord
 			UIDropDownMenu_AddButton(info, level)
 
 			if TomTom then
 				info.text = L["Add this location to TomTom waypoints"]
 				info.func = addTomTomWaypoint
-				info.arg1 = clickedMapFile
+				info.arg1 = clickedMapID
 				info.arg2 = clickedCoord
 				UIDropDownMenu_AddButton(info, level)
 			end
@@ -203,76 +199,47 @@ do
 	HandyNotes_HandyNotesDropdownMenu.displayMode = "MENU"
 	HandyNotes_HandyNotesDropdownMenu.initialize = generateMenu
 
-	function HNHandler:OnClick(button, down, mapFile, coord)
+	function HNHandler:OnClick(button, down, mapID, coord)
 		if button == "RightButton" and not down then
-			clickedMapFile = mapFile
+			clickedMapID = mapID
 			clickedCoord = coord
 			ToggleDropDownMenu(1, nil, HandyNotes_HandyNotesDropdownMenu, self, 0, 0)
 		elseif button == "LeftButton" and down and IsControlKeyDown() and IsShiftKeyDown() then
 			-- Only move if we're viewing the same map as the icon's map
-			if not WoW80 then
-				if mapFile == HandyNotes:WhereAmI() or mapFile == "World" or mapFile == "Cosmic" then
-					isMoving = true
-					local x, y = self:GetCenter()
-					local s = WorldMapButton:GetEffectiveScale() / UIParent:GetEffectiveScale()
-					self:ClearAllPoints()
-					self:SetParent(UIParent)
-					self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * s, y * s)
-					self:SetFrameStrata("TOOLTIP")
-					self:StartMoving()
-				end
-			else
-				if mapFile == WorldMapFrame:GetMapID() then
-					isMoving = true
-					movingPinScale = self:GetScale()
-					local x, y = self:GetCenter()
-					local s = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
-					self:ClearAllPoints()
-					self:SetParent(UIParent)
-					self:SetScale(PIN_DRAG_SCALE)
-					self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * s / PIN_DRAG_SCALE, y * s / PIN_DRAG_SCALE)
-					self:SetFrameStrata("TOOLTIP")
-					self:StartMoving()
-				end
+			if mapID == WorldMapFrame:GetMapID() then
+				isMoving = true
+				movingPinScale = self:GetScale()
+				local x, y = self:GetCenter()
+				local s = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
+				self:ClearAllPoints()
+				self:SetParent(UIParent)
+				self:SetScale(PIN_DRAG_SCALE)
+				self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * s / PIN_DRAG_SCALE, y * s / PIN_DRAG_SCALE)
+				self:SetFrameStrata("TOOLTIP")
+				self:StartMoving()
 			end
 		elseif isMoving and not down then
 			isMoving = false
 			self:StopMovingOrSizing()
 			local x, y = self:GetCenter()
-			if not WoW80 then
-				local s = WorldMapButton:GetEffectiveScale() / UIParent:GetEffectiveScale()
-				self:ClearAllPoints()
-				self:SetParent(WorldMapButton)
-				x = x / s - WorldMapButton:GetLeft()
-				y = y / s - WorldMapButton:GetTop()
-				self:SetPoint("CENTER", WorldMapButton, "TOPLEFT", x, y)
-				self:SetFrameStrata("TOOLTIP")
-				self:SetUserPlaced(false)
-
-				-- Get the new coordinate
-				x, y = self:GetCenter()
-				x = (x - WorldMapButton:GetLeft()) / WorldMapButton:GetWidth()
-				y = (WorldMapButton:GetTop() - y) / WorldMapButton:GetHeight()
-			else
-				if movingPinScale then
-					x = x * PIN_DRAG_SCALE / movingPinScale
-					y = y * PIN_DRAG_SCALE / movingPinScale
-					self:SetScale(movingPinScale)
-					movingPinScale = nil
-				end
-				local s = self:GetEffectiveScale() / WorldMapFrame.ScrollContainer.Child:GetEffectiveScale()
-				x = x * s - WorldMapFrame.ScrollContainer.Child:GetLeft()
-				y = y * s - WorldMapFrame.ScrollContainer.Child:GetTop()
-				self:ClearAllPoints()
-				self:SetParent(WorldMapFrame.ScrollContainer.Child)
-				self:SetPoint("CENTER", WorldMapFrame.ScrollContainer.Child, "TOPLEFT", x / self:GetScale(), y / self:GetScale())
-				self:SetFrameStrata("TOOLTIP")
-				self:SetUserPlaced(false)
-
-				-- Get the new coordinate
-				x = x / WorldMapFrame.ScrollContainer.Child:GetWidth()
-				y = -y / WorldMapFrame.ScrollContainer.Child:GetHeight()
+			if movingPinScale then
+				x = x * PIN_DRAG_SCALE / movingPinScale
+				y = y * PIN_DRAG_SCALE / movingPinScale
+				self:SetScale(movingPinScale)
+				movingPinScale = nil
 			end
+			local s = self:GetEffectiveScale() / WorldMapFrame.ScrollContainer.Child:GetEffectiveScale()
+			x = x * s - WorldMapFrame.ScrollContainer.Child:GetLeft()
+			y = y * s - WorldMapFrame.ScrollContainer.Child:GetTop()
+			self:ClearAllPoints()
+			self:SetParent(WorldMapFrame.ScrollContainer.Child)
+			self:SetPoint("CENTER", WorldMapFrame.ScrollContainer.Child, "TOPLEFT", x / self:GetScale(), y / self:GetScale())
+			self:SetFrameStrata("TOOLTIP")
+			self:SetUserPlaced(false)
+
+			-- Get the new coordinate
+			x = x / WorldMapFrame.ScrollContainer.Child:GetWidth()
+			y = -y / WorldMapFrame.ScrollContainer.Child:GetHeight()
 			-- Move the button back into the map if it was dragged outside
 			if x < 0.001 then x = 0.001 end
 			if x > 0.999 then x = 0.999 end
@@ -281,7 +248,7 @@ do
 			local newCoord = HandyNotes:getCoord(x, y)
 			-- Search in 4 directions till we find an unused coord
 			local count = 0
-			local zoneData = dbdata[mapFile]
+			local zoneData = dbdata[mapID]
 			while true do
 				if not zoneData[newCoord + count] then
 					zoneData[newCoord + count] = zoneData[coord]
@@ -298,7 +265,7 @@ do
 				end
 				count = count + 1
 			end
-			dbdata[mapFile][coord] = nil
+			dbdata[mapID][coord] = nil
 			HN:SendMessage("HandyNotes_NotifyUpdate", "HandyNotes")
 		end
 	end
@@ -307,126 +274,59 @@ end
 do
 	local tablepool = setmetatable({}, {__mode = 'k'})
 
-	if not WoW80 then
-		-- This is a custom iterator we use to iterate over every node in a given zone
-		local function iter(t, prestate)
-			if not t then return end
-			local data = t.data
-			local level = t.L
-			local state, value = next(data, prestate)
-			if value then
-				while value do -- Have we reached the end of this zone?
-					-- Map has no dungeon levels or dungeon level matches
-					if not value.level or level == 0 or level == value.level then
-						return state, nil, HN.icons[value.icon], db.icon_scale, db.icon_alpha
+	-- This is a custom iterator we use to iterate over every node in a given zone
+	local function iter(t, prestate)
+		if not t then return end
+		local data = t.data
+		local state, value = next(data, prestate)
+		if value then
+			return state, nil, HN.icons[value.icon], db.icon_scale, db.icon_alpha
+		end
+		wipe(t)
+		tablepool[t] = true
+	end
+
+	-- This is a funky custom iterator we use to iterate over every zone's nodes
+	-- in a given continent + the continent itself
+	local function iterCont(t, prestate)
+		if not t then return end
+		local zone = t.C[t.Z]
+		local data = dbdata[zone]
+		local state, value
+		while zone do
+			if data then -- Only if there is data for this zone
+				state, value = next(data, prestate)
+				while state do -- Have we reached the end of this zone?
+					if value.cont or zone == t.contId then -- Show on continent?
+						return state, zone, HN.icons[value.icon], db.icon_scale, db.icon_alpha
 					end
 					state, value = next(data, state) -- Get next data
 				end
 			end
-			wipe(t)
-			tablepool[t] = true
+			-- Get next zone
+			t.Z = next(t.C, t.Z)
+			zone = t.C[t.Z]
+			data = dbdata[zone]
+			prestate = nil
 		end
+		wipe(t)
+		tablepool[t] = true
+	end
 
-		-- This is a funky custom iterator we use to iterate over every zone's nodes
-		-- in a given continent + the continent itself
-		local function iterCont(t, prestate)
-			if not t then return end
-			local zone = t.Z
-			local mapFile = HandyNotes:GetMapIDtoMapFile(t.C[zone])
-			local data = dbdata[mapFile]
-			local state, value
-			while mapFile do
-				if data then -- Only if there is data for this zone
-					state, value = next(data, prestate)
-					while state do -- Have we reached the end of this zone?
-						if value.cont or zone == 0 then -- Show on continent?
-							return state, mapFile, HN.icons[value.icon], db.icon_scale, db.icon_alpha
-						end
-						state, value = next(data, state) -- Get next data
-					end
-				end
-				-- Get next zone
-				zone = next(t.C, zone)
-				t.Z = zone
-				mapFile = HandyNotes:GetMapIDtoMapFile(t.C[zone])
-				data = dbdata[mapFile]
-				prestate = nil
-			end
-			wipe(t)
-			tablepool[t] = true
-		end
-
-		function HNHandler:GetNodes(mapFile, minimap, dungeonLevel)
-			local C = HandyNotes:GetContinentZoneList(mapFile) -- Is this a continent?
-			if C then
-				local tbl = next(tablepool) or {}
-				tablepool[tbl] = nil
-				tbl.C = C
-				tbl.Z = next(C)
-				return iterCont, tbl, nil
-			else -- It is a zone
-				local tbl = next(tablepool) or {}
-				tablepool[tbl] = nil
-				tbl.data = dbdata[mapFile]
-				tbl.L = dungeonLevel
-				return iter, tbl, nil
-			end
-		end
-	else
-		-- This is a custom iterator we use to iterate over every node in a given zone
-		local function iter(t, prestate)
-			if not t then return end
-			local data = t.data
-			local state, value = next(data, prestate)
-			if value then
-				return state, nil, HN.icons[value.icon], db.icon_scale, db.icon_alpha
-			end
-			wipe(t)
-			tablepool[t] = true
-		end
-
-		-- This is a funky custom iterator we use to iterate over every zone's nodes
-		-- in a given continent + the continent itself
-		local function iterCont(t, prestate)
-			if not t then return end
-			local zone = t.C[t.Z]
-			local data = dbdata[zone]
-			local state, value
-			while zone do
-				if data then -- Only if there is data for this zone
-					state, value = next(data, prestate)
-					while state do -- Have we reached the end of this zone?
-						if value.cont or zone == t.contId then -- Show on continent?
-							return state, mapFile, HN.icons[value.icon], db.icon_scale, db.icon_alpha
-						end
-						state, value = next(data, state) -- Get next data
-					end
-				end
-				-- Get next zone
-				t.Z = next(t.C, t.Z)
-				zone = t.C[t.Z]
-				data = dbdata[zone]
-				prestate = nil
-			end
-			wipe(t)
-			tablepool[t] = true
-		end
-
-		function HNHandler:GetNodes2(uiMapId, minimap)
-			local C = HandyNotes:GetContinentZoneList(uiMapId) -- Is this a continent?
-			if C then
-				local tbl = next(tablepool) or {}
-				tablepool[tbl] = nil
-				tbl.C = C
-				tbl.Z = next(C)
-				tbl.contId = uiMapID
-				return iterCont, tbl, nil
-			else -- It is a zone
-				local tbl = next(tablepool) or {}
-				tablepool[tbl] = nil
-				tbl.data = dbdata[uiMapId]
-				return iter, tbl, nil
-			end
+	function HNHandler:GetNodes2(uiMapId, minimap)
+		local C = HandyNotes:GetContinentZoneList(uiMapId) -- Is this a continent?
+		if C then
+			local tbl = next(tablepool) or {}
+			tablepool[tbl] = nil
+			tbl.C = C
+			tbl.Z = next(C)
+			tbl.contId = uiMapID
+			return iterCont, tbl, nil
+		else -- It is a zone
+			local tbl = next(tablepool) or {}
+			tablepool[tbl] = nil
+			tbl.data = dbdata[uiMapId]
+			return iter, tbl, nil
 		end
 	end
 end
@@ -435,55 +335,6 @@ end
 ---------------------------------------------------------
 -- HandyNotes core
 
-if not WoW80 then
--- Hooked function on clicking the world map
--- button is guaranteed to be passed in with the WorldMapButton frame
-function HN:WorldMapButton_OnClick(button, mouseButton, ...)
-	if mouseButton == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
-		local mapFile, L = HandyNotes:WhereAmI(), GetCurrentMapDungeonLevel()
-
-		-- Get the coordinate clicked on
-		local x, y = GetCursorPosition()
-		local scale = button:GetEffectiveScale()
-		x = (x/scale - button:GetLeft()) / button:GetWidth()
-		y = (button:GetTop() - y/scale) / button:GetHeight()
-		local coord = HandyNotes:getCoord(x, y)
-		x, y = HandyNotes:getXY(coord)
-
-		-- Pass the data to the edit note frame
-		local HNEditFrame = self.HNEditFrame
-		HNEditFrame.x = x
-		HNEditFrame.y = y
-		HNEditFrame.coord = coord
-		HNEditFrame.mapFile = mapFile
-		HNEditFrame.level = L
-		self:FillDungeonLevelData()
-		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
-		HNEditFrame:Show()
-	else
-		return self.hooks[button].OnClick(button, mouseButton, ...)
-	end
-end
-
-function HN:FillDungeonLevelData()
-	local HNEditFrame = self.HNEditFrame
-	wipe(HNEditFrame.leveldata)
-	-- Note: Even if we're in a microdungeon, the constants are still based off the containing zone
-	-- Thus no WhereAmI here.
-	local mapname = strupper(GetMapInfo() or "")
-	local usesTerrainMap = DungeonUsesTerrainMap() and 1 or 0
-	local levels = { GetNumDungeonMapLevels() }
-	if #levels > 0 then
-		HNEditFrame.leveldata[0] = ALL
-	end
-	for id, floorNum in pairs(levels) do
-		local floorname = _G["DUNGEON_FLOOR_" .. mapname .. floorNum]
-		HNEditFrame.leveldata[floorNum] = floorname or string.format(FLOOR_NUMBER, floorNum)
-	end
-end
-end
-
-if WoW80 then
 function HN.OnCanvasClicked(mapCanvas, button, cursorX, cursorY)
 	local self = HN
 	if button == "RightButton" and IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
@@ -503,7 +354,6 @@ function HN.OnCanvasClicked(mapCanvas, button, cursorX, cursorY)
 		return true
 	end
 	return false
-end
 end
 
 -- Function to create a note where the player is
@@ -538,11 +388,6 @@ function HN:CreateNoteHere(arg1)
 		HNEditFrame.y = y
 		HNEditFrame.coord = coord
 		HNEditFrame.mapID = mapID
-		if not WoW80 then
-			HNEditFrame.mapFile = HandyNotes:WhereAmI()
-			HNEditFrame.level = GetCurrentMapDungeonLevel()
-			self:FillDungeonLevelData()
-		end
 		HNEditFrame:Hide() -- Hide first to trigger the OnShow handler
 		HNEditFrame:Show()
 	else
@@ -597,54 +442,31 @@ function HN:OnInitialize()
 	dbdata = self.db.global
 
 	-- migrate data, if neccessary
-	if not WoW80 then
-		local migration = {}
-		for zone in pairs(dbdata) do
-			if zone:find("_terrain%d+$") then
-				migration[zone] = true
-			end
+	local HBDMigrate = LibStub("HereBeDragons-Migrate")
+	
+	local migration = {}
+	for zone in pairs(dbdata) do
+		if type(zone) == "string" then
+			migration[zone] = true
 		end
+	end
+	
+	for zone in pairs(migration) do
+		local data = dbdata[zone]
+		dbdata[zone] = nil
 
-		for zone in pairs(migration) do
-			local data = dbdata[zone]
-			dbdata[zone] = nil
-
-			local stripped_zone = zone:gsub("_terrain%d+$", "")
-			if dbdata[stripped_zone] then
-				for coord, info in pairs(data) do
-					dbdata[stripped_zone][coord] = info
+		local stripped_zone = zone:gsub("_terrain%d+$", "")
+		for coord, info in pairs(data) do
+			local newzone = HBDMigrate:GetUIMapIDFromMapFile(stripped_zone, info.level)
+			if newzone then
+				info.level = nil
+				if not dbdata[newzone] then
+					dbdata[newzone] = {}
 				end
-			else
-				dbdata[stripped_zone] = data
-			end
-		end
-	else
-		local HBDMigrate = LibStub("HereBeDragons-Migrate")
-		
-		local migration = {}
-		for zone in pairs(dbdata) do
-			if type(zone) == "string" then
-				migration[zone] = true
+				dbdata[newzone][coord] = info
 			end
 		end
 		
-		for zone in pairs(migration) do
-			local data = dbdata[zone]
-			dbdata[zone] = nil
-
-			local stripped_zone = zone:gsub("_terrain%d+$", "")
-			for coord, info in pairs(data) do
-				local newzone = HBDMigrate:GetUIMapIDFromMapFile(stripped_zone, info.level)
-				if newzone then
-					info.level = nil
-					if not dbdata[newzone] then
-						dbdata[newzone] = {}
-					end
-					dbdata[newzone][coord] = info
-				end
-			end
-			
-		end
 	end
 	HNData = dbdata
 
@@ -652,18 +474,13 @@ function HN:OnInitialize()
 	HandyNotes:RegisterPluginDB("HandyNotes", HNHandler, options)
 
 	--WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
-	if WoW80 then
-		WorldMapFrame:AddCanvasClickHandler(self.OnCanvasClicked)
-	end
+	WorldMapFrame:AddCanvasClickHandler(self.OnCanvasClicked)
 
 	-- Slash command
 	self:RegisterChatCommand("hnnew", "CreateNoteHere")
 end
 
 function HN:OnEnable()
-	if not WoW80 then
-		self:RawHookScript(WorldMapButton, "OnClick", "WorldMapButton_OnClick")
-	end
 end
 
 function HN:OnDisable()
