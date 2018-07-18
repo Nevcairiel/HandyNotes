@@ -41,9 +41,7 @@ local floor = floor
 local tconcat = table.concat
 local pairs, next, type = pairs, next, type
 local CreateFrame = CreateFrame
-local GetCurrentMapContinent, GetCurrentMapZone = GetCurrentMapContinent, GetCurrentMapZone
-local GetCurrentMapDungeonLevel = GetCurrentMapDungeonLevel
-local WorldMapButton, Minimap = WorldMapButton, Minimap
+local Minimap = Minimap
 
 
 ---------------------------------------------------------
@@ -91,12 +89,12 @@ local function getNewPin()
 	end
 	-- create a new pin
 	pinCount = pinCount + 1
-	pin = CreateFrame("Button", "HandyNotesPin"..pinCount, WorldMapButton)
+	pin = CreateFrame("Button", "HandyNotesPin"..pinCount, Minimap)
 	pin:SetFrameLevel(5)
 	pin:EnableMouse(true)
 	pin:SetWidth(12)
 	pin:SetHeight(12)
-	pin:SetPoint("CENTER", WorldMapButton, "CENTER")
+	pin:SetPoint("CENTER", Minimap, "CENTER")
 	local texture = pin:CreateTexture(nil, "OVERLAY")
 	pin.texture = texture
 	texture:SetAllPoints(pin)
