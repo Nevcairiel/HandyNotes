@@ -357,7 +357,7 @@ end
 
 -- Function to create a note where the player is
 function HN:CreateNoteHere(arg1)
-	local mapID, level, x, y
+	local mapID, x, y
 
 	if arg1 ~= "" then
 		-- Coordinates entered
@@ -371,10 +371,10 @@ function HN:CreateNoteHere(arg1)
 			self:Print(L["Syntax:"].." /hnnew [x, y]")
 			return
 		end
-		mapID, level = HBD:GetPlayerZone()
+		mapID = HBD:GetPlayerZone()
 	else
 		-- No coordinates entered, get the coordinates of player
-		x, y, mapID, level = HBD:GetPlayerZonePosition()
+		x, y, mapID = HBD:GetPlayerZonePosition()
 	end
 
 	if mapID and x and y then

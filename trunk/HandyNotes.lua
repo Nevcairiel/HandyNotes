@@ -38,7 +38,6 @@ local defaults = {
 ---------------------------------------------------------
 -- Localize some globals
 local floor = floor
-local tconcat = table.concat
 local pairs, next, type = pairs, next, type
 local CreateFrame = CreateFrame
 local Minimap = Minimap
@@ -481,7 +480,7 @@ end
 -- This function updates all the icons on the minimap for every plugin
 function HandyNotes:UpdateMinimap()
 	--if not Minimap:IsVisible() then return end
-	for pluginName, pluginHandler in pairs(self.plugins) do
+	for pluginName in pairs(self.plugins) do
 		safecall(self.UpdateMinimapPlugin, self, pluginName)
 	end
 end
@@ -638,7 +637,7 @@ end
 
 function HandyNotes:OnDisable()
 	-- Remove all the pins
-	for pluginName, pluginHandler in pairs(self.plugins) do
+	for pluginName in pairs(self.plugins) do
 		HBDPins:RemoveAllMinimapIcons("HandyNotes" .. pluginName)
 		clearAllPins(minimapPins[pluginName])
 	end
