@@ -115,12 +115,11 @@ local function editPin(button, mapID, coord)
 	HNEditFrame:Show()
 end
 
-local function addTomTomWaypoint(button, mapFile, coord)
+local function addTomTomWaypoint(button, mapID, coord)
 	if TomTom then
-		local mapId = HandyNotes:GetMapFiletoMapID(mapFile)
 		local x, y = HandyNotes:getXY(coord)
-		TomTom:AddMFWaypoint(mapId, nil, x, y, {
-			title = dbdata[mapFile][coord].title,
+		TomTom:AddWaypoint(mapID, x, y, {
+			title = dbdata[mapID][coord].title,
 			persistent = nil,
 			minimap = true,
 			world = true
