@@ -311,10 +311,13 @@ function HandyNotes.WorldMapDataProvider:OnEvent(event, ...)
 end
 
 function HandyNotes.WorldMapDataProvider:RemoveAllData()
-	self:GetMap():RemoveAllPinsByTemplate("HandyNotesWorldMapPinTemplate")
+	if self:GetMap() then
+		self:GetMap():RemoveAllPinsByTemplate("HandyNotesWorldMapPinTemplate")
+	end
 end
 
 function HandyNotes.WorldMapDataProvider:RefreshAllData(fromOnShow)
+	if not self:GetMap() then return end
 	self:RemoveAllData()
 
 	for pluginName in pairs(HandyNotes.plugins) do
@@ -405,11 +408,13 @@ function HandyNotesWorldMapPinMixin:OnMouseUp(button)
 end
 
 function HandyNotes:UpdateWorldMapPlugin(pluginName)
+	if not HandyNotes:IsEnabled() then return end
 	HandyNotes.WorldMapDataProvider:RefreshPlugin(pluginName)
 end
 
 -- This function updates all the icons on the world map for every plugin
 function HandyNotes:UpdateWorldMap()
+	if not HandyNotes:IsEnabled() then return end
 	HandyNotes.WorldMapDataProvider:RefreshAllData()
 end
 
