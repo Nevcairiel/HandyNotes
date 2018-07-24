@@ -345,7 +345,9 @@ function HandyNotes.WorldMapDataProvider:RefreshPlugin(pluginName)
 		if not HandyNotes.plugins[pluginName].GetNodes2 then
 			mapFile = select(3, HBDMigrate:GetLegacyMapInfo(uiMapID2 or uiMapID))
 		end
-		self:GetMap():AcquirePin("HandyNotesWorldMapPinTemplate", pluginName, x, y, iconpath, scale, alpha, coord, uiMapID2 or uiMapID, mapFile)
+		if x and y then
+			self:GetMap():AcquirePin("HandyNotesWorldMapPinTemplate", pluginName, x, y, iconpath, scale, alpha, coord, uiMapID2 or uiMapID, mapFile)
+		end
 	end
 end
 
