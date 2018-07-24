@@ -296,20 +296,6 @@ end
 
 HandyNotes.WorldMapDataProvider = CreateFromMixins(MapCanvasDataProviderMixin)
 
-function HandyNotes.WorldMapDataProvider:OnShow()
-	--self:RegisterEvent("WORLD_MAP_UPDATE")
-end
-
-function HandyNotes.WorldMapDataProvider:OnHide()
-	--self:UnregisterEvent("WORLD_MAP_UPDATE")
-end
-
-function HandyNotes.WorldMapDataProvider:OnEvent(event, ...)
-	--[[if event == "WORLD_MAP_UPDATE" then
-		self:RefreshAllData()
-	end]]
-end
-
 function HandyNotes.WorldMapDataProvider:RemoveAllData()
 	if self:GetMap() then
 		self:GetMap():RemoveAllPinsByTemplate("HandyNotesWorldMapPinTemplate")
@@ -356,7 +342,6 @@ HandyNotesWorldMapPinMixin = CreateFromMixins(MapCanvasPinMixin)
 
 function HandyNotesWorldMapPinMixin:OnLoad()
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
-	--self:RegisterForClicks("LeftButtonDown", "LeftButtonUp", "RightButtonDown", "RightButtonUp")
 	self:SetMovable(true)
 	self:SetScalingLimits(1, 1.0, 1.2);
 end
