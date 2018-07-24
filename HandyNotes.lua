@@ -97,7 +97,7 @@ local function getNewPin()
 	local texture = pin:CreateTexture(nil, "OVERLAY")
 	pin.texture = texture
 	texture:SetAllPoints(pin)
-	pin:RegisterForClicks("LeftButtonDown", "LeftButtonUp", "RightButtonDown", "RightButtonUp")
+	pin:RegisterForClicks("AnyUp", "AnyDown")
 	pin:SetMovable(true)
 	pin:Hide()
 	return pin
