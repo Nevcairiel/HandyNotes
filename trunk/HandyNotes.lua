@@ -92,6 +92,8 @@ local function getNewPin()
 	local texture = pin:CreateTexture(nil, "OVERLAY")
 	pin.texture = texture
 	texture:SetAllPoints(pin)
+	texture:SetTexelSnappingBias(0)
+	texture:SetSnapToPixelGrid(false)
 	pin:RegisterForClicks("AnyUp", "AnyDown")
 	pin:SetMovable(true)
 	pin:Hide()
