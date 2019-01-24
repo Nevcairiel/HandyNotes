@@ -630,7 +630,9 @@ function HandyNotes:OnDisable()
 		HBDPins:RemoveAllMinimapIcons("HandyNotes" .. pluginName)
 		clearAllPins(minimapPins[pluginName])
 	end
-	WorldMapFrame:RemoveDataProvider(HandyNotes.WorldMapDataProvider)
+	if WorldMapFrame.dataProviders[HandyNotes.WorldMapDataProvider] then
+		WorldMapFrame:RemoveDataProvider(HandyNotes.WorldMapDataProvider)
+	end
 	HBD.UnregisterCallback(self, "PlayerZoneChanged")
 end
 
