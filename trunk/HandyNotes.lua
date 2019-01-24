@@ -281,7 +281,7 @@ local function IterateNodes(pluginName, uiMapID, minimap)
 			return next, emptyTbl
 		end
 		local iter, data, state = handler:GetNodes(mapFile, minimap, level)
-		local t = { mapFile = mapFile, level, iter = iter, data = data }
+		local t = { mapFile = mapFile, level = level, iter = iter, data = data }
 		return LegacyNodeIterator, t, state
 	else
 		error(("Plugin %s does not have GetNodes or GetNodes2"):format(pluginName))
