@@ -251,8 +251,10 @@ HNEditFrame:SetScript("OnShow", function(self)
 	end
 	if WorldMapFrame:IsShown() then
 		self:SetParent(WorldMapFrame)
+		self:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 20)
 	else
 		self:SetParent(UIParent)
+		self:SetFrameLevel(10)
 	end
 end)
 
