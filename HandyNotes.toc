@@ -8,6 +8,8 @@
 ## X-Category: Map
 ## X-eMail: xinhuan @ gmail DOT com
 ## OptionalDeps: Ace3, TomTom, HereBeDragons
+## X-Curse-Project-ID: 14154
+## X-WoWI-ID: 15716
 
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Always: delayed
