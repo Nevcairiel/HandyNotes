@@ -37,6 +37,7 @@ read_globals = {
     "MouseIsOver",
 
     -- FrameXML API
+    "BackdropTemplateMixin",
     "CreateFromMixins",
     "CloseDropDownMenus",
     "MapCanvasDataProviderMixin",
