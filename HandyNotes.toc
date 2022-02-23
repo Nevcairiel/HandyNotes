@@ -1,6 +1,6 @@
-## Interface: 90100
-## Interface-Classic: 11307
-## Interface-BCC: 20501
+## Interface: 90200
+## Interface-Classic: 11402
+## Interface-BCC: 20503
 ## Title: HandyNotes
 ## Notes: Handy notes for your maps
 ## Notes-frFR: Notes pratiques pour vos cartes.
