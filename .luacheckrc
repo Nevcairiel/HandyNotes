@@ -50,9 +50,16 @@ read_globals = {
     -- FrameXML Frames
     "GameTooltip",
     "Minimap",
+    "RAID_TARGET_1",
+    "RAID_TARGET_2",
+    "RAID_TARGET_3",
+    "RAID_TARGET_4",
+    "RAID_TARGET_5",
+    "RAID_TARGET_6",
+    "RAID_TARGET_7",
+    "RAID_TARGET_8",
     "UIParent",
     "UISpecialFrames",
-    "UnitPopupButtons",
     "WorldMapFrame",
 
     -- FrameXML Constants
