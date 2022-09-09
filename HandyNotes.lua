@@ -180,11 +180,13 @@ local continentZoneList = WoWClassic and {
 	[1414] = true, -- Kalimdor
 	[1415] = true, -- Eastern Kingdoms
 	[1945] = true, -- Outlands
+	[113] = true, -- Northrend
 
 	-- mapFile compat entries
 	["Kalimdor"]              = 1414,
 	["Azeroth"]               = 1415,
 	["Expansion01"]           = 1945,
+	["Northrend"]             = 113,
 }
 or {
 	[12]  = true, -- Kalimdor
