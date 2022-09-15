@@ -365,6 +365,11 @@ function HandyNotesWorldMapPinMixin:OnAcquired(pluginName, x, y, iconpath, scale
 
 	self:SetPosition(x, y)
 
+	-- we need to handle right clicks for our nodes, so disable button pass-through
+	if self.SetPassThroughButtons then
+		self:SetPassThroughButtons("")
+	end
+
 	local size = 12 * db.icon_scale * scale
 	self:SetSize(size, size)
 	self:SetAlpha(db.icon_alpha * alpha)
