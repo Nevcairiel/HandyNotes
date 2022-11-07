@@ -467,7 +467,31 @@ function HN:OnInitialize()
 	HandyNotes:RegisterPluginDB("HandyNotes", HNHandler, options)
 
 	--WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
-	WorldMapFrame:AddCanvasClickHandler(self.OnCanvasClicked)
+	--WorldMapFrame:AddCanvasClickHandler(self.OnCanvasClicked)
+
+	-- Work-around for taint from canvas click handlers
+	self.ClickHandlerFrame = CreateFrame("Frame", nil, WorldMapFrame.ScrollContainer)
+	self.ClickHandlerFrame:SetAllPoints()
+
+	self.ClickHandlerFrame.UpdateCapture = function(f)
+		-- only Alt and no other keys, then show our capture frame
+		if IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
+			f:Show()
+		else
+			f:Hide()
+		end
+	end
+
+	self.ClickHandlerFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
+	self.ClickHandlerFrame:SetScript("OnEvent", self.ClickHandlerFrame.UpdateCapture)
+
+	-- always pass through buttons other then right click
+	self.ClickHandlerFrame:SetPassThroughButtons("LeftButton", "MiddleButton", "Button4", "Button5")
+	self.ClickHandlerFrame:UpdateCapture()
+
+	self.ClickHandlerFrame:SetScript("OnMouseUp", function(f, button)
+		HN.OnCanvasClicked(WorldMapFrame, button, WorldMapFrame.ScrollContainer:NormalizeUIPosition(WorldMapFrame.ScrollContainer:GetCursorPosition()))
+	end)
 
 	-- Slash command
 	self:RegisterChatCommand("hnnew", "CreateNoteHere")
