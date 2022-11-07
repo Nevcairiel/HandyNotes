@@ -487,6 +487,9 @@ function HN:OnInitialize()
 		self.ClickHandlerFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
 		self.ClickHandlerFrame:SetScript("OnEvent", self.ClickHandlerFrame.UpdateCapture)
 
+		-- fallback check OnUpdate. It'll only run while the capture frame is visible, and hide if the modifiers change
+		self.ClickHandlerFrame:SetScript("OnUpdate", self.ClickHandlerFrame.UpdateCapture)
+
 		-- always pass through buttons other then right click
 		self.ClickHandlerFrame:SetPassThroughButtons("LeftButton", "MiddleButton", "Button4", "Button5")
 		self.ClickHandlerFrame:UpdateCapture()
