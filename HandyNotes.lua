@@ -411,6 +411,9 @@ function HandyNotesWorldMapPinMixin:OnMouseUp(button)
 	pinsHandler.OnClick(self, button, false)
 end
 
+-- hack to avoid error in combat in 10.1.5
+HandyNotesWorldMapPinMixin.SetPassThroughButtons = function() end
+
 function HandyNotes:UpdateWorldMapPlugin(pluginName)
 	if not HandyNotes:IsEnabled() then return end
 	HandyNotes.WorldMapDataProvider:RefreshPlugin(pluginName)
