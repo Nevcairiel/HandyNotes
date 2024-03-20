@@ -1,6 +1,5 @@
-## Interface: 100107
-## Interface-Classic: 11404
-## Interface-BCC: 20504
+## Interface: 100206
+## Interface-Classic: 11501
 ## Interface-Wrath: 30403
 ## Title: HandyNotes
 ## Notes: Handy notes for your maps
