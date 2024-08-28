@@ -12,6 +12,7 @@
 ## OptionalDeps: Ace3, TomTom, HereBeDragons
 ## X-Curse-Project-ID: 14154
 ## X-WoWI-ID: 15716
+## X-Wago-ID: mNwQMlKo
 
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Always: delayed
