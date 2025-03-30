@@ -1,6 +1,6 @@
-## Interface: 110005,110007
-## Interface-Classic: 11504
-## Interface-Cata: 40401
+## Interface: 110100,110105
+## Interface-Classic: 11506
+## Interface-Cata: 40402
 ## Title: HandyNotes
 ## Notes: Handy notes for your maps
 ## Notes-frFR: Notes pratiques pour vos cartes.
