@@ -37,5 +37,3 @@ jobs:
           /home/runner/.luarocks/bin/luacheck . --no-color -q
 
       - uses: BigWigsMods/packager@v2
-        with:
-          args: -S
