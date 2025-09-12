@@ -5,13 +5,23 @@
 ## Author: Xinhuan
 ## Version: @project-version@
 ## DefaultState: enabled
-## X-Category: Map
 ## X-eMail: xinhuan @ gmail DOT com
 ## OptionalDeps: Ace3, TomTom, HereBeDragons
 ## X-Curse-Project-ID: 14154
 ## X-WoWI-ID: 15716
 ## X-Wago-ID: mNwQMlKo
 
+## Category: Map
+## Category-deDE: Karte
+## Category-esES: Mapa
+## Category-esMX: Mapa
+## Category-frFR: Carte
+## Category-itIT: Mappa
+## Category-koKR: 지도
+## Category-ptBR: Mapa
+## Category-ruRU: Карта
+## Category-zhCN: 地图
+## Category-zhTW: 地圖
 
 ## SavedVariables: HandyNotesDB, HandyNotes_HandyNotesDB
 
