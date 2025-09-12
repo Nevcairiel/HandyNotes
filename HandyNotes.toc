@@ -12,8 +12,6 @@
 ## X-WoWI-ID: 15716
 ## X-Wago-ID: mNwQMlKo
 
-## LoadManagers: AddonLoader
-## X-LoadOn-Always: delayed
 
 ## SavedVariables: HandyNotesDB, HandyNotes_HandyNotesDB
 
