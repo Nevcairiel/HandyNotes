@@ -206,6 +206,7 @@ or {
 	[1550] = true, -- Shadowlands
 	[1978] = true, -- Dragon Isles
 	[2274] = true, -- Khaz Algar
+	[2537] = true, -- Quel'thalas (Midnight)
 
 	-- mapFile compat entries
 	["Kalimdor"]              = 12,
