@@ -197,6 +197,7 @@ or {
 	[13]  = true, -- Azeroth
 	[101] = true, -- Outlands
 	[113] = true, -- Northrend
+	[203] = true, -- Vashjir
 	[424] = true, -- Pandaria
 	[572] = true, -- Draenor
 	[619] = true, -- Broken Isles
