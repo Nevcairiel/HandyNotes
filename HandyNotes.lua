@@ -671,3 +671,27 @@ function HandyNotes:OnProfileChanged(event, database, newProfileKey)
 	self:UpdateMinimap()
 	self:UpdateWorldMap()
 end
+
+--[[ start section for the Blizzard AddOns Compartment ]]--
+--[[ potential improvement: add option to disable displaying in the Compartment ]]--
+local aboutText = "Handy Notes";
+local mouseButtonNote = "\nThe Handy Note Displaying AddOn!";
+AddonCompartmentFrame:RegisterAddon({
+	text = aboutText,
+	icon = "Interface/Icons/inv_misc_notescript1c.blp",
+	notCheckable = true,
+	func = function(button, menuInputData, menu)
+		-- local buttonName = menuInputData.buttonName;  -- debugging check line
+		-- print("Hello from the addon compartment! You clicked " .. buttonName .. "!")  -- debugging check line
+		LibStub("AceConfigDialog-3.0"):Open("HandyNotes")
+	end,
+	funcOnEnter = function(button)
+		MenuUtil.ShowTooltip(button, function(tooltip)
+			tooltip:SetText(aboutText .. mouseButtonNote)
+		end)
+	end,
+	funcOnLeave = function(button)
+		MenuUtil.HideTooltip(button)
+	end,
+})
+--[[ end section for the Blizzard AddOns Compartment ]]--
