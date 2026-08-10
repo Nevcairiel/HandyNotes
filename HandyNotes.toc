@@ -1,4 +1,4 @@
-## Interface: 120007,11508,20505,50504
+## Interface: 120100,120007,11509,20506,50504
 ## Title: HandyNotes
 ## Notes: Handy notes for your maps
 ## Notes-frFR: Notes pratiques pour vos cartes.
