@@ -12,7 +12,8 @@ local HBD = LibStub("HereBeDragons-2.0")
 local HBDPins = LibStub("HereBeDragons-Pins-2.0")
 local HBDMigrate = LibStub("HereBeDragons-Migrate")
 
-local WoWClassic = (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE)
+local WoWForever = (WOW_PROJECT_ID == WOW_PROJECT_CAMELOT)
+local WoWClassic = (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and WOW_PROJECT_ID ~= WOW_PROJECT_CAMELOT)
 
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
@@ -176,7 +177,7 @@ end
 ---------------------------------------------------------
 -- Public functions
 
-local continentZoneList = WoWClassic and {
+local continentZoneList = (WoWClassic or WoWForever) and {
 	[1414] = true, -- Kalimdor
 	[1415] = true, -- Eastern Kingdoms
 	[1945] = true, -- Outlands

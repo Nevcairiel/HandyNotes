@@ -8,7 +8,7 @@ local HBD = LibStub("HereBeDragons-2.0")
 local PIN_DRAG_SCALE = 1.2
 
 
-local WoWRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+local WoWMainline = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or WOW_PROJECT_ID == WOW_PROJECT_CAMELOT)
 ---------------------------------------------------------
 -- Our db upvalue and db defaults
 local db
@@ -470,7 +470,7 @@ function HN:OnInitialize()
 
 	--WorldMapMagnifyingGlassButton:SetText(WorldMapMagnifyingGlassButton:GetText() .. L["\nAlt+Right Click To Add a HandyNote"])
 
-	if WoWRetail then
+	if WoWMainline then
 		-- Work-around for taint from canvas click handlers
 		self.ClickHandlerFrame = CreateFrame("Frame", nil, WorldMapFrame.ScrollContainer)
 		self.ClickHandlerFrame:SetAllPoints()

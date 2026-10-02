@@ -87,5 +87,6 @@ read_globals = {
     "MINIMAP_TRACKING_VENDOR_REAGENT",
     "OKAY",
     "WOW_PROJECT_ID",
+    "WOW_PROJECT_CAMELOT",
     "WOW_PROJECT_MAINLINE",
 }
